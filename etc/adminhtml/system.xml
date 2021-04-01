@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Config/etc/system_file.xsd">
+    <system>
+        <section id="payment">
+            <group id="comperiapayment" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>TakPay</label>
+                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Active</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Name</label>
+                </field>
+                <field id="produrl" translate="label" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Production host</label>
+                    <config_path>payment/comperiapayment/produrl</config_path>
+                    <can_be_empty>0</can_be_empty>
+                </field>
+                <field id="sandboxurl" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Sandbox host</label>
+                    <config_path>payment/comperiapayment/sandboxurl</config_path>
+                    <can_be_empty>0</can_be_empty>
+                </field>
+                <field id="sandbox" translate="label" type="select" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Sandbox</label>
+                    <config_path>payment/comperiapayment/sandbox</config_path>
+                    <source_model>Comperia\ComperiaGateway\Model\Sandbox\Sandbox</source_model>
+                    <can_be_empty>0</can_be_empty>
+                </field>
+                <field id="apikey" translate="label" type="text" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>API KEY</label>
+                    <config_path>payment/comperiapayment/apikey</config_path>
+                    <can_be_empty>0</can_be_empty>
+                </field>
+                <field id="allowspecific" translate="label" type="allowspecific" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Ograniczenie metody płatności do określonych państw</label>
+                    <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+                </field>
+                <field id="specificcountry" translate="label" type="multiselect" sortOrder="41" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Metoda płatności dozwolona w krajach</label>
+                    <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+                    <can_be_empty>1</can_be_empty>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Sort Order</label>
+                    <frontend_class>validate-number</frontend_class>
+                </field>
+            </group>
+            <!-- payment-group -->
+        </section>
+    </system>
+</config>
