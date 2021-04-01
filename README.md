@@ -1,5 +1,8 @@
 # TakPay for Magento 2.3
 
+TakPay payment module adds to Magento the ability to make purchases in installments as an additional payment system in the cart.
+After completing the order and selecting the payment channel "TakPay", the user is redirected to the page where he fills out the appropriate credit application.
+
 ## Requirements
  * Magento 2.3
  * PHP 7.1+
