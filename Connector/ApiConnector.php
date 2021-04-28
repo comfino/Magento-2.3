@@ -74,11 +74,11 @@ final class ApiConnector
         $urlProd = $this->scopeConfig->getValue(self::URL_PROD);
         $sandbox = $this->scopeConfig->getValue(self::SANDBOX);
         $apiUrl = ($sandbox === "0" ? $urlProd : $urlDev) . '/' . $transaction::PATH;
-        $this->logger->info('Żądanie otwarcia wniosku', ['url' => $apiUrl, 'transaction' => $transaction->getBody()]);
+        $this->logger->info('Request to open an application', ['url' => $apiUrl, 'transaction' => $transaction->getBody()]);
         $this->curl->addHeader('Content-Type', 'application/json');
         $this->curl->addHeader('Api-Key', $this->scopeConfig->getValue(self::API_KEY));
         $this->curl->post($apiUrl, $transaction->getBody());
-        $this->logger->info('Odpowiedź na żądanie otwarcia wniosku', ['response' => $this->curl->getBody()]);
+        $this->logger->info('Response to the request to open an application', ['response' => $this->curl->getBody()]);
 
         return new $responseClass($this->curl->getStatus(), json_decode($this->curl->getBody(), true));
     }
