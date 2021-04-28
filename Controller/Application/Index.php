@@ -83,14 +83,14 @@ class Index extends Action
         $response = $this->apiConnector->applicationTransaction();
         if (!$response->isSuccessfull()) {
             $this->logger->emergency(
-                'Nieudana próba otwarcia wniosku. Błąd komunikacji z API Comperia.',
+                __("Unsuccessful attempt to open the application. Communication error with Comperia API."),
                 [
                     'body' => $response->getBody(),
                     'code' => $response->getCode(),
                 ]
             );
 
-            return $responseJson->setData(['error' => 'Nieudana próba otwarcia wniosku. Spróbuj ponownie później.']);
+            return $responseJson->setData(['error' => __('Unsuccessful attempt to open the application. Please try again later.')]);
         }
 
         $this->saveApplication($response);
