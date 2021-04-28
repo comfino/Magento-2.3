@@ -8,6 +8,7 @@ use Comperia\ComperiaGateway\Connector\Transaction\Response\TransactionResponse;
 use Comperia\ComperiaGateway\Connector\Transaction\Transaction;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\HTTP\Client\Curl;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -70,13 +71,13 @@ final class ApiConnector
         Transaction $transaction,
         string $responseClass = TransactionResponse::class
     ): TransactionResponse {
-        $urlDev = $this->scopeConfig->getValue(self::URL_DEV);
-        $urlProd = $this->scopeConfig->getValue(self::URL_PROD);
-        $sandbox = $this->scopeConfig->getValue(self::SANDBOX);
         $apiUrl = ($sandbox === "0" ? $urlProd : $urlDev) . '/' . $transaction::PATH;
+        $urlDev  = $this->scopeConfig->getValue(self::URL_DEV, ScopeInterface::SCOPE_STORE);
+        $urlProd = $this->scopeConfig->getValue(self::URL_PROD, ScopeInterface::SCOPE_STORE);
+        $sandbox = $this->scopeConfig->getValue(self::SANDBOX, ScopeInterface::SCOPE_STORE);
         $this->logger->info('Request to open an application', ['url' => $apiUrl, 'transaction' => $transaction->getBody()]);
         $this->curl->addHeader('Content-Type', 'application/json');
-        $this->curl->addHeader('Api-Key', $this->scopeConfig->getValue(self::API_KEY));
+        $this->curl->addHeader('Api-Key', $this->scopeConfig->getValue(self::API_KEY, ScopeInterface::SCOPE_STORE));
         $this->curl->post($apiUrl, $transaction->getBody());
         $this->logger->info('Response to the request to open an application', ['response' => $this->curl->getBody()]);
 
