@@ -83,7 +83,7 @@ class Index extends Action
         $response = $this->apiConnector->applicationTransaction();
         if (!$response->isSuccessfull()) {
             $this->logger->emergency(
-                __("Unsuccessful attempt to open the application. Communication error with Comperia API."),
+                "Unsuccessful attempt to open the application. Communication error with Comperia API.",
                 [
                     'body' => $response->getBody(),
                     'code' => $response->getCode(),
