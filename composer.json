@@ -1,0 +1,14 @@
+{
+  "name": "comperia/comperiagateway",
+  "description": "TakPay payment module",
+  "version": "1.0.0",
+  "type": "magento2-module",
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Comperia\\ComperiaGateway\\": ""
+    }
+  }
+}
