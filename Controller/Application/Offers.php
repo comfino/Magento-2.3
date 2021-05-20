@@ -1,6 +1,6 @@
 <?php
 
-    namespace Comperia\ComperiaGateway\Controller\Application;
+namespace Comperia\ComperiaGateway\Controller\Application;
 
 use Comperia\ComperiaGateway\Connector\ApiConnector;
 use Magento\Framework\App\Action\Action;
@@ -18,7 +18,7 @@ use Exception;
  *
  * @package Comperia\ComperiaGateway\Controller\Application
  */
-class Index extends Action
+class Offers extends Action
 {
     /**
      * @var Context
@@ -84,46 +84,8 @@ class Index extends Action
     public function execute()
     {
         $responseJson = $this->jsonFactory->create();
+        $response = $this->apiConnector->getOffers();
 
-        /** @var ApplicationResponse $response */
-        $response = $this->apiConnector->applicationTransaction();
-        if (!$response->isSuccessfull()) {
-            $this->logger->emergency(
-                'Nieudana próba otwarcia wniosku. Błąd komunikacji z API Comperia.',
-                [
-                    'body' => $response->getBody(),
-                    'code' => $response->getCode(),
-                ]
-            );
-
-            return $responseJson->setData(['error' => 'Nieudana próba otwarcia wniosku. Spróbuj ponownie później.']);
-        }
-
-        $this->saveApplication($response);
-
-        return $responseJson->setData(['redirectUrl' => $response->getRedirectUri()]);
-    }
-
-    /**
-     * @param ApplicationResponse $response
-     *
-     * @throws Exception
-     */
-    private function saveApplication(ApplicationResponse $response): void
-    {
-        $order = $this->checkoutSession->getLastRealOrder();
-
-        $data = [
-            'status'       => $response->getStatus(),
-            'external_id'  => $response->getExternalId(),
-            'created_at'   => date('Y-m-d H:i:s'),
-            'redirect_uri' => $response->getRedirectUri(),
-            'href'         => $response->getHref(),
-            'order_id'     => $order->getEntityId(),
-        ];
-
-        $comperiaApplicationFactory = $this->comperiaApplicationFactory->create();
-        $comperiaApplicationFactory->addData($data);
-        $comperiaApplicationFactory->save();
+        return $responseJson->setData($response->getOffersData(), true);
     }
 }

@@ -92,8 +92,8 @@ class InstallSchema implements InstallSchemaInterface
                                'nullable' => false,
                            ]
                        );
-        $setup->getConnection()
-              ->createTable($table);
+
+        $setup->getConnection()->createTable($table);
         $setup->endSetup();
     }
 }

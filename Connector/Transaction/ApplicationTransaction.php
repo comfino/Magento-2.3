@@ -12,7 +12,6 @@ use Magento\Catalog\Model\Product;
 use Comperia\ComperiaGateway\Controller\Notification\Index as NotificationController;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Address;
-use Magento\Sales\Model\Order\Item;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
@@ -68,6 +67,7 @@ final class ApplicationTransaction extends Transaction
         $this->imageHelper = $imageHelper;
         $this->session = $session;
         $this->urlBuilder = $urlBuilder;
+
         $this->setBody(json_encode($this->createApplicationData()));
     }
 
@@ -79,13 +79,9 @@ final class ApplicationTransaction extends Transaction
     {
         /** @var Order $currentOrder */
         $order = $this->session->getLastRealOrder();
-        /** @var Address $shippingAddress */
-        $shippingAddress = $order->getShippingAddress()
-            ->getData();
 
         $totalAmount = $order->getGrandTotal() * 100;
 
-        //TODO get by DI?
         $objectManager = ObjectManager::getInstance();
         $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
 
@@ -101,18 +97,7 @@ final class ApplicationTransaction extends Transaction
                 'deliveryCost' => (int)$order->getBaseShippingAmount() * 100,
                 'products' => $this->buildProductsList($order),
             ],
-            'customer' => [
-                'firstName' => $shippingAddress['firstname'],
-                'lastName' => $shippingAddress['lastname'],
-                'email' => $order->getCustomerEmail(),
-                'phoneNumber' => $order->getShippingAddress()->getTelephone(),
-                'address' => [
-                    'street' => $shippingAddress['street'],
-                    'postalCode' => $shippingAddress['postcode'],
-                    'city' => $shippingAddress['city'],
-                    'countryCode' => $shippingAddress['country_id'],
-                ],
-            ],
+            'customer' => $this->buildCustomer($order),
         ];
     }
 
@@ -124,13 +109,13 @@ final class ApplicationTransaction extends Transaction
     private function buildProductsList(Order $order): array
     {
         $products = [];
-        /** @var Item $item */
+
         foreach ($order->getAllItems() as $item) {
             /** @var Product $product */
             $product = $item->getProduct();
             $imageHelper = $this->imageHelper->init($product, 'product_page_image_small');
-            $image = $imageHelper->setImageFile($product->getImage())
-                ->getUrl();
+            $image = $imageHelper->setImageFile($product->getImage())->getUrl();
+
             $products[] = [
                 'name' => $item->getName(),
                 'quantity' => (int)$item->getQtyOrdered(),
@@ -142,5 +127,28 @@ final class ApplicationTransaction extends Transaction
         }
 
         return $products;
+    }
+
+    private function buildCustomer(Order $order): array
+    {
+        if ($order->getShippingAddress()) {
+            /** @var Address $shippingAddress */
+            $shippingAddress = $order->getShippingAddress()->getData();
+
+            return [
+                'firstName' => $shippingAddress['firstname'],
+                'lastName' => $shippingAddress['lastname'],
+                'email' => $order->getCustomerEmail(),
+                'phoneNumber' => $order->getShippingAddress()->getTelephone(),
+                'address' => [
+                    'street' => $shippingAddress['street'],
+                    'postalCode' => $shippingAddress['postcode'],
+                    'city' => $shippingAddress['city'],
+                    'countryCode' => $shippingAddress['country_id'],
+                ],
+            ];
+        }
+
+        return [];
     }
 }
