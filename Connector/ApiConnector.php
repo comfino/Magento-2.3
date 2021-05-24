@@ -22,6 +22,7 @@ final class ApiConnector
     const SANDBOX = 'payment/comperiapayment/sandbox';
     const RETURN_URL = 'payment/comperiapayment/continueurl';
     const API_KEY = 'payment/comperiapayment/apikey';
+    const LOAN_TERM = 'payment/comperiapayment/loanTerm';
     const URL_PROD = 'payment/comperiapayment/produrl';
     const URL_DEV = 'payment/comperiapayment/sandboxurl';
     const APPLICATION_URI = '/v1/orders';
@@ -89,6 +90,8 @@ final class ApiConnector
 
         $this->curl->addHeader('Content-Type', 'application/json');
         $this->curl->addHeader('Api-Key', $this->scopeConfig->getValue(self::API_KEY));
+        $this->curl->addHeader('User-Agent', 'Magento 2.3');
+
         $this->curl->post($apiUrl, $transaction->getBody());
 
         $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);

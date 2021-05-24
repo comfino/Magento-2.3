@@ -3,7 +3,7 @@
     <system>
         <section id="payment">
             <group id="comperiapayment" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>TakPay</label>
+                <label>Comfino</label>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Active</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -33,9 +33,9 @@
                     <can_be_empty>0</can_be_empty>
                 </field>
                 <field id="tenor" translate="label" type="text" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Ilość rat</label>
-                    <config_path>payment/comperiapayment/tenor</config_path>
-                    <can_be_empty>10</can_be_empty>
+                    <label>Loan Term</label>
+                    <config_path>payment/comperiapayment/loanTerm</config_path>
+                    <can_be_empty>48</can_be_empty>
                 </field>
                 <field id="allowspecific" translate="label" type="allowspecific" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Ograniczenie metody płatności do określonych państw</label>

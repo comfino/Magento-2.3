@@ -9,7 +9,7 @@ define(
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Ui/js/modal/modal'
     ],
-    function ($, Component, redirectOnSuccessAction, url, customerData, errorProcessor, fullScreenLoader) {
+    function ($, Component, redirectOnSuccessAction, url, customerData, errorProcessor, fullScreenLoader, modal) {
         'use strict';
         return Component.extend({
             redirectAfterPlaceOrder: false,
@@ -37,6 +37,20 @@ define(
             showCardPayment: function () {
                 let gatewayEndpoint = url.build('comperia/application/offers');
 
+                let options = {
+                    type: 'popup',
+                    responsive: true,
+                    innerScroll: true,
+                    title: 'Przykład reprezentatywny',
+                    buttons: [{
+                        text: $.mage.__('Close'),
+                        class: 'modal-close',
+                        click: function (){
+                            this.closeModal();
+                        }
+                    }]
+                };
+
                 $.get(gatewayEndpoint, 'json')
                     .done(function (response) {
                         $.each(response, function( key, value ) {
@@ -49,8 +63,12 @@ define(
                 '                        <div>Całkowita kwota do spłaty: ' + value.sumAmount + ' zł, RRSO: ' + value.rrso + ' %</div>\n' +
                 '                    </div>\n' +
                 '                    <div class="description" style="margin-bottom: 10px;">' + value.description + '</div>\n' +
-                '                    <div><a id="example_a_' + value.type + '" href="#">Przykład reprezentatywny</a></div>\n' +
-                '                   <div style="desplay: none" id="example_modal_' + value.type + '"></div>\n' +
+                '                    <div><a id="representativeExample_a_' + value.type + '" href="#">Przykład reprezentatywny</a></div>\n' +
+                '                    <div style="display: none" id="representativeExample_modal_' + value.type + '">\n' +
+                '                        <div class="modal-inner-content">\n' +
+                '                            <p id="representativeExample_modal_text' + value.type + '"></p>\n' +
+                '                        </div>\n' +
+                '                    </div>\n' +
                 '                </div>\n' +
                 '            </div>';
 
@@ -64,60 +82,13 @@ define(
                                 $(this).css({ "border": "1px solid red" });
                             });
 
-                            require(
-                                [
-                                    'jquery',
-                                    'Magento_Ui/js/modal/modal'
-                                ],
-                                function ($, modal) {
-
-                                    var options = {
-                                        type: 'popup',
-                                        responsive: true,
-                                        title: $.mage.__('My Title'),
-                                        buttons: []
-                                    };
-
-                                    var popup = modal(options, $('.content'));
-                                    $("#click-section").on('click',function(){
-                                        $('#example_a_' +  value.type).modal("openModal");
-                                    });
-                                });
-
-                            $('#example_a_' +  value.type).click(function() {
-                                require(
-                                    [
-                                        'jquery',
-                                        'jquery/ui',
-                                        'Magento_Ui/js/modal/modal'
-                                    ],
-                                    function(
-                                        $,
-                                        modal
-                                    ) {
-                                        let options = {
-                                            type: 'popup',
-                                            responsive: true,
-                                            innerScroll: true,
-                                            title: 'Przykład reprezentatywny',
-                                            buttons: [{
-                                                text: $.mage.__('Continue'),
-                                                class: '',
-                                                click: function () {
-                                                    this.closeModal();
-                                                }
-                                            }]
-                                        };
-
-                                        let popup = modal(options, $('example_modal_' + value.type));
-                                        $('#example_modal_' +  value.type).modal('openModal');
-                                    }
-                                );
+                            $('#representativeExample_a_' +  value.type).click(function() {
+                                $('#representativeExample_modal_text' +  value.type).html(value.representativeExample);
+                                let popup = modal(options, $('#representativeExample_modal_' + value.type));
+                                $('#representativeExample_modal_' +  value.type).modal('openModal');
                             });
                         });
-
-                    })
-                ;
+                });
             }
         });
     }

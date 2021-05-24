@@ -5,13 +5,13 @@
         <payment>
             <comperiapayment>
                 <active>1</active>
-                <title>TakPay</title>
+                <title>Comfino</title>
                 <order_status>pending_payment</order_status>
                 <instructions>Instruction.</instructions>
                 <payment_action>true</payment_action>
                 <model>Comperia\ComperiaGateway\Model\ComperiaPayment</model>
                 <group>offline</group>
-                <produrl>https://api-ecommerce.comperiaraty.pl</produrl>
+                <produrl>https://api-ecommerce.comfino.pl</produrl>
                 <sandboxurl>https://api-ecommerce.craty.pl</sandboxurl>
             </comperiapayment>
         </payment>

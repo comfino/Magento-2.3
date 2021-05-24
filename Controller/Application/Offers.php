@@ -83,6 +83,8 @@ class Offers extends Action
      */
     public function execute()
     {
+        $order = $this->checkoutSession->getLastRealOrder();
+
         $responseJson = $this->jsonFactory->create();
         $response = $this->apiConnector->getOffers();
 

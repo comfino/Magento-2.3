@@ -2,9 +2,11 @@
 
 namespace Comperia\ComperiaGateway\Connector\Transaction;
 
+use Comperia\ComperiaGateway\Connector\ApiConnector;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ObjectManager;
+use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Framework\UrlInterface;
 use Magento\Catalog\Helper\Image;
 use Magento\Framework\Math\Random;
@@ -42,6 +44,10 @@ final class ApplicationTransaction extends Transaction
      * @var UrlInterface
      */
     private $urlBuilder;
+    /**
+     * @var RemoteAddress
+     */
+    private $remoteAddress;
 
     /**
      * ApplicationTransaction constructor.
@@ -59,7 +65,8 @@ final class ApplicationTransaction extends Transaction
         Random $random,
         Image $imageHelper,
         Session $session,
-        UrlInterface $urlBuilder
+        UrlInterface $urlBuilder,
+        RemoteAddress $remoteAddress
     )
     {
         $this->scopeConfig = $scopeConfig;
@@ -67,6 +74,7 @@ final class ApplicationTransaction extends Transaction
         $this->imageHelper = $imageHelper;
         $this->session = $session;
         $this->urlBuilder = $urlBuilder;
+        $this->remoteAddress = $remoteAddress;
 
         $this->setBody(json_encode($this->createApplicationData()));
     }
@@ -87,10 +95,11 @@ final class ApplicationTransaction extends Transaction
 
         return [
             'returnUrl' => $storeManager->getStore()->getBaseUrl() . 'checkout/onepage/success',
-            'orderId' => $this->random->getUniqueHash(),
+            'orderId' => $order->getId(),
             'notifyUrl' => $storeManager->getStore()->getBaseUrl() . NotificationController::NOTIFICATION_URL,
             'loanParameters' => [
-                'amount' => $totalAmount
+                'amount' => $totalAmount,
+                'term' => (int)$this->scopeConfig->getValue(ApiConnector::LOAN_TERM),
             ],
             'cart' => [
                 'totalAmount' => $totalAmount,
@@ -138,6 +147,7 @@ final class ApplicationTransaction extends Transaction
             return [
                 'firstName' => $shippingAddress['firstname'],
                 'lastName' => $shippingAddress['lastname'],
+                'ip' => $this->remoteAddress->getRemoteAddress(),
                 'email' => $order->getCustomerEmail(),
                 'phoneNumber' => $order->getShippingAddress()->getTelephone(),
                 'address' => [
