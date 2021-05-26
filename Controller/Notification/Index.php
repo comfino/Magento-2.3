@@ -15,6 +15,7 @@ use Magento\Sales\Model\OrderRepository;
 use Magento\Sales\Model\Order;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class Index
@@ -163,7 +164,7 @@ class Index extends Action
     {
         $crSignature = $this->request->getHeader('CR-Signature');
 
-        $apiKey = $this->scopeConfig->getValue(ApiConnector::API_KEY);
+        $apiKey = $this->scopeConfig->getValue(ApiConnector::API_KEY, ScopeInterface::SCOPE_STORE);
 
         return $crSignature === hash('sha3-256' , $apiKey . $jsonData);
     }
