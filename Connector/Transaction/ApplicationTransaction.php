@@ -131,7 +131,7 @@ final class ApplicationTransaction extends Transaction
                 'photoUrl' => $image,
                 'ean' => null,
                 'externalId' => $item->getId(),
-                'price' => $item->getPrice() * 100,
+                'price' => $item->getPriceInclTax() * 100,
             ];
         }
 
