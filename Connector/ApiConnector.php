@@ -11,6 +11,7 @@ use Comperia\ComperiaGateway\Connector\Transaction\TransactionInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\HTTP\Client\Curl;
 use Psr\Log\LoggerInterface;
+use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class ApiConnector
@@ -81,15 +82,15 @@ final class ApiConnector
      */
     private function send(TransactionInterface $transaction, string $responseClass = TransactionResponse::class): TransactionResponse
     {
-        $urlDev = $this->scopeConfig->getValue(self::URL_DEV);
-        $urlProd = $this->scopeConfig->getValue(self::URL_PROD);
-        $sandbox = $this->scopeConfig->getValue(self::SANDBOX);
+        $urlDev  = $this->scopeConfig->getValue(self::URL_DEV, ScopeInterface::SCOPE_STORE);
+        $urlProd = $this->scopeConfig->getValue(self::URL_PROD, ScopeInterface::SCOPE_STORE);
+        $sandbox = $this->scopeConfig->getValue(self::SANDBOX, ScopeInterface::SCOPE_STORE);
         $apiUrl = ($sandbox === "0" ? $urlProd : $urlDev) . '/' . $transaction::PATH;
 
         $this->logger->info('REQUEST', ['url' => $apiUrl, 'transaction' => $transaction->getBody()]);
 
         $this->curl->addHeader('Content-Type', 'application/json');
-        $this->curl->addHeader('Api-Key', $this->scopeConfig->getValue(self::API_KEY));
+        $this->curl->addHeader('Api-Key', $this->scopeConfig->getValue(self::API_KEY, ScopeInterface::SCOPE_STORE));
         $this->curl->addHeader('User-Agent', 'Magento 2.3');
 
         $this->curl->post($apiUrl, $transaction->getBody());
@@ -109,16 +110,16 @@ final class ApiConnector
      */
     private function request(RequestInterface $request, string $method, string $responseClass, string $endpoint): ResponseInterface
     {
-        $urlDev = $this->scopeConfig->getValue(self::URL_DEV);
-        $urlProd = $this->scopeConfig->getValue(self::URL_PROD);
-        $sandbox = $this->scopeConfig->getValue(self::SANDBOX);
+        $urlDev = $this->scopeConfig->getValue(self::URL_DEV, ScopeInterface::SCOPE_STORE);
+        $urlProd = $this->scopeConfig->getValue(self::URL_PROD, ScopeInterface::SCOPE_STORE);
+        $sandbox = $this->scopeConfig->getValue(self::SANDBOX, ScopeInterface::SCOPE_STORE);
 
         $apiUrl = ($sandbox === "0" ? $urlProd : $urlDev) . '/' . $endpoint;
 
         $this->logger->info('REQUEST', ['url' => $apiUrl, 'method' => $method, 'params' => http_build_query($request->getParams()), 'body' => $request->getBody()]);
 
         $this->curl->addHeader('Content-Type', 'application/json');
-        $this->curl->addHeader('Api-Key', $this->scopeConfig->getValue(self::API_KEY));
+        $this->curl->addHeader('Api-Key', $this->scopeConfig->getValue(self::API_KEY, ScopeInterface::SCOPE_STORE));
 
         if ($method === self::METHOD_GET) {
             $this->curl->get($apiUrl . '?' . http_build_query($request->getParams()));

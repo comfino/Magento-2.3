@@ -34,8 +34,8 @@ class Sandbox implements ArrayInterface
     public function toArray()
     {
         $choose = [
-            '0' => 'Wyłączony',
-            '1' => 'Włączony',
+            '0' => __('Deactivated'),
+            '1' => __('Activated'),
         ];
 
         return $choose;
