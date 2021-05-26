@@ -149,7 +149,7 @@ final class ApplicationTransaction extends Transaction
                 'lastName' => $shippingAddress['lastname'],
                 'ip' => $this->remoteAddress->getRemoteAddress(),
                 'email' => $order->getCustomerEmail(),
-                'phoneNumber' => $order->getShippingAddress()->getTelephone(),
+                'phoneNumber' => $this->filterPhoneNumber($order->getShippingAddress()->getTelephone()),
                 'address' => [
                     'street' => $shippingAddress['street'],
                     'postalCode' => $shippingAddress['postcode'],
@@ -160,5 +160,12 @@ final class ApplicationTransaction extends Transaction
         }
 
         return [];
+    }
+
+    private function filterPhoneNumber(string $phoneNumber)
+    {
+        preg_match('/^\(?\+?\(?(\d{2})?\)?(\d{9})$/', $phoneNumber,  $matches);
+
+        return $matches[2];
     }
 }
