@@ -164,7 +164,7 @@ final class ApplicationTransaction extends Transaction
 
     private function filterPhoneNumber(string $phoneNumber)
     {
-        preg_match('/^\(?\+?\(?(\d{2})?\)?(\d{9})$/', $phoneNumber,  $matches);
+        preg_match('/^\(?\+?\(?(\d{2})?\)?(\d{9})$/', str_replace([' ', '-'], ['', ''], $phoneNumber),  $matches);
 
         return $matches[2];
     }
