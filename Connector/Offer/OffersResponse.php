@@ -43,11 +43,12 @@ class OffersResponse implements  ResponseInterface
         $this->request = $request;
         $this->body = $body;
 
-        for ($i = 0; $i < count($this->body); $i++) {
+        foreach ($this->body as $i => $offer) {
             $this->body[$i]['loanTerm'] = $this->request->getParams()['loanTerm'];
-            $this->body[$i]['rrso'] = $this->body[$i]['rrso'] * 100;
-            $this->body[$i]['sumAmount'] = $this->body[$i]['instalmentAmount'] * $this->body[$i]['loanTerm'] / 100;
-            $this->body[$i]['instalmentAmount'] = $this->body[$i]['instalmentAmount'] / 100;
+            $this->body[$i]['rrso'] = $offer['rrso'] * 100;
+            $this->body[$i]['sumAmount'] = $offer['instalmentAmount'] * $offer['loanTerm'] / 100;
+            $this->body[$i]['instalmentAmount'] = $offer['instalmentAmount'] / 100;
+            $this->body[$i]['toPay'] = $offer['toPay'] / 100;
         }
     }
 }

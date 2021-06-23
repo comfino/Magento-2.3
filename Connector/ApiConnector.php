@@ -145,6 +145,6 @@ final class ApiConnector
      */
     public function getOffers(): OffersResponse
     {
-        return $this->request($this->offersRequest, Self::METHOD_GET, OffersResponse::class, OffersRequest::ENDPOINT);
+        return $this->request($this->offersRequest, self::METHOD_GET, OffersResponse::class, OffersRequest::ENDPOINT);
     }
 }
