@@ -60,7 +60,7 @@ define(
                 '                    <div class="name" style="margin-bottom: 10px;"><strong>' + value.name + '</strong></div>\n' +
                 '                    <div class="offer" style="margin-bottom: 10px;">\n' +
                 '                        <div><strong > ' + value.loanTerm + ' rat x ' + value.instalmentAmount + ' zł</strong></div>\n' +
-                '                        <div>Całkowita kwota do spłaty: ' + value.sumAmount + ' zł, RRSO: ' + value.rrso + ' %</div>\n' +
+                '                        <div>Całkowita kwota do spłaty: ' + value.toPay + ' zł</div>\n' +
                 '                    </div>\n' +
                 '                    <div class="description" style="margin-bottom: 10px;">' + value.description + '</div>\n' +
                 '                    <div><a id="representativeExample_a_' + value.type + '" href="#">Przykład reprezentatywny</a></div>\n' +
