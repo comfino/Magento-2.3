@@ -55,6 +55,7 @@ class Index extends Action
     private $completedState = [
         self::STATUS_ACCEPTED,
         self::STATUS_PAID,
+        self::WAITING_FOR_PAYMENT,
     ];
     /**
      * @var Context
