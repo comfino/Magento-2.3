@@ -63,7 +63,7 @@ define(
                 '                        <div>Całkowita kwota do spłaty: ' + value.toPay + ' zł, RRSO: ' + value.rrso + ' %</div>\n' +
                 '                    </div>\n' +
                 '                    <div class="description" style="margin-bottom: 10px;">' + value.description + '</div>\n' +
-                '                    <div><a id="representativeExample_a_' + value.type + '" href="#">Przykład reprezentatywny</a></div>\n' +
+                '                    <div><a id="representativeExample_a_' + value.type + '">Przykład reprezentatywny</a></div>\n' +
                 '                    <div style="display: none" id="representativeExample_modal_' + value.type + '">\n' +
                 '                        <div class="modal-inner-content">\n' +
                 '                            <p id="representativeExample_modal_text' + value.type + '"></p>\n' +
