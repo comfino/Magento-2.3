@@ -27,8 +27,6 @@ class Offers extends Action
     private $jsonFactory;
 
     /**
-     * Index constructor.
-     *
      * @param Context $context
      * @param ApiConnector $apiConnector
      * @param JsonFactory $jsonFactory
