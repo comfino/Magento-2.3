@@ -7,7 +7,6 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Psr\Log\LoggerInterface;
-use Comperia\ComperiaGateway\Connector\Transaction\Response\ApplicationResponse;
 use Comperia\ComperiaGateway\Model\ComperiaApplicationFactory;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Controller\ResultInterface;
@@ -83,8 +82,6 @@ class Offers extends Action
      */
     public function execute()
     {
-        $order = $this->checkoutSession->getLastRealOrder();
-
         $responseJson = $this->jsonFactory->create();
         $response = $this->apiConnector->getOffers();
 
