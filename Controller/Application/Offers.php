@@ -6,9 +6,6 @@ use Comperia\ComperiaGateway\Connector\ApiConnector;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Psr\Log\LoggerInterface;
-use Comperia\ComperiaGateway\Model\ComperiaApplicationFactory;
-use Magento\Checkout\Model\Session;
 use Magento\Framework\Controller\ResultInterface;
 use Exception;
 
@@ -20,11 +17,6 @@ use Exception;
 class Offers extends Action
 {
     /**
-     * @var Context
-     */
-    private $context;
-
-    /**
      * @var ApiConnector
      */
     private $apiConnector;
@@ -35,36 +27,17 @@ class Offers extends Action
     private $jsonFactory;
 
     /**
-     * @var ComperiaApplicationFactory
-     */
-    private $comperiaApplicationFactory;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
      * Index constructor.
      *
-     * @param Context                    $context
-     * @param ApiConnector               $apiConnector
-     * @param JsonFactory                $jsonFactory
-     * @param ComperiaApplicationFactory $comperiaApplicationFactory
-     * @param LoggerInterface            $logger
+     * @param Context $context
+     * @param ApiConnector $apiConnector
+     * @param JsonFactory $jsonFactory
      */
-    public function __construct(
-        Context $context,
-        ApiConnector $apiConnector,
-        JsonFactory $jsonFactory,
-        ComperiaApplicationFactory $comperiaApplicationFactory,
-        LoggerInterface $logger
-    ) {
-        $this->context = $context;
+    public function __construct(Context $context, ApiConnector $apiConnector, JsonFactory $jsonFactory)
+    {
         $this->apiConnector = $apiConnector;
         $this->jsonFactory = $jsonFactory;
-        $this->comperiaApplicationFactory = $comperiaApplicationFactory;
-        $this->logger = $logger;
+
         parent::__construct($context);
     }
 
