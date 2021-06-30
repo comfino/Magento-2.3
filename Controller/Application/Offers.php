@@ -35,15 +35,10 @@ class Offers extends Action
     private $jsonFactory;
 
     /**
-     * @var Session
-     */
-    private $checkoutSession;
-
-    /**
      * @var ComperiaApplicationFactory
      */
-
     private $comperiaApplicationFactory;
+
     /**
      * @var LoggerInterface
      */
@@ -56,7 +51,6 @@ class Offers extends Action
      * @param ApiConnector               $apiConnector
      * @param JsonFactory                $jsonFactory
      * @param ComperiaApplicationFactory $comperiaApplicationFactory
-     * @param Session                    $checkoutSession
      * @param LoggerInterface            $logger
      */
     public function __construct(
@@ -64,14 +58,12 @@ class Offers extends Action
         ApiConnector $apiConnector,
         JsonFactory $jsonFactory,
         ComperiaApplicationFactory $comperiaApplicationFactory,
-        Session $checkoutSession,
         LoggerInterface $logger
     ) {
         $this->context = $context;
         $this->apiConnector = $apiConnector;
         $this->jsonFactory = $jsonFactory;
         $this->comperiaApplicationFactory = $comperiaApplicationFactory;
-        $this->checkoutSession = $checkoutSession;
         $this->logger = $logger;
         parent::__construct($context);
     }
