@@ -1,6 +1,6 @@
 <?php
 
-    namespace Comperia\ComperiaGateway\Controller\Application;
+namespace Comperia\ComperiaGateway\Controller\Application;
 
 use Comperia\ComperiaGateway\Connector\ApiConnector;
 use Magento\Framework\App\Action\Action;
