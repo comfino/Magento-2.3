@@ -23,7 +23,7 @@ final class ApiConnector
     const SANDBOX = 'payment/comperiapayment/sandbox';
     const RETURN_URL = 'payment/comperiapayment/continueurl';
     const API_KEY = 'payment/comperiapayment/apikey';
-    const LOAN_TERM = 'payment/comperiapayment/loanTerm';
+    const LOAN_TERM = 'payment/comperiapayment/loanterm';
     const URL_PROD = 'payment/comperiapayment/produrl';
     const URL_DEV = 'payment/comperiapayment/sandboxurl';
     const APPLICATION_URI = '/v1/orders';
