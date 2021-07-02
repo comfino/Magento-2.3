@@ -125,7 +125,7 @@ class Index extends Action
             if (!$this->isValidSignature($jsonContent)) {
                 $this->getResponse()
                     ->setStatusCode(400)
-                    ->setContent('Failed comparison of CR-Signature and shop hash.');
+                    ->setContent('Failed comparission of CR-Signature and shop hash.');
 
                 return;
             }
@@ -194,23 +194,24 @@ class Index extends Action
     private function changeOrderStatus(array $application, string $orderStatus): void
     {
         $order = $this->orderRepository->get($application['order_id']);
+        $payment = $order->getPayment();
 
         if (in_array($orderStatus, $this->newState, true)) {
-            $order->setStatus(Order::STATE_NEW)
-                ->setState(Order::STATE_NEW)
-                ->addStatusToHistory($orderStatus, 'Comfino status: '.$orderStatus);
+            $order->addStatusToHistory($order->getStatus(), 'Comfino status: ' . $orderStatus);
         }
 
         if (in_array($orderStatus, $this->rejectedState, true)) {
             $order->setStatus(Order::STATE_CANCELED)
                 ->setState(Order::STATE_CANCELED)
-                ->addStatusToHistory($orderStatus, 'Comfino status: '.$orderStatus);
+                ->addStatusToHistory(Order::STATE_CANCELED, 'Comfino status: ' . $orderStatus);
         }
 
         if (in_array($orderStatus, $this->completedState, true)) {
-            $order->setStatus(Order::STATE_COMPLETE)
-                ->setState(Order::STATE_COMPLETE)
-                ->addStatusToHistory($orderStatus, 'Comfino status: '.$orderStatus);
+            $order->addStatusToHistory($order->getStatus(), 'Comfino status: ' . $orderStatus);
+            $amount = $order->getGrandTotal();
+
+            $payment->registerAuthorizationNotification($amount);
+            $payment->registerCaptureNotification($amount);
         }
 
         $order->save();
