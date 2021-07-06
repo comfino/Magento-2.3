@@ -4,7 +4,6 @@ namespace Comperia\ComperiaGateway\Controller\Notification;
 
 use Comperia\ComperiaGateway\Connector\ApiConnector;
 use Comperia\ComperiaGateway\Exception\InvalidExternalIdException;
-use Comperia\ComperiaGateway\Exception\InvalidSignatureException;
 use Comperia\ComperiaGateway\Model\ComperiaApplicationFactory;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
@@ -24,55 +23,63 @@ use Magento\Store\Model\ScopeInterface;
  */
 class Index extends Action
 {
-    const CREATED_STATUS = 'CREATED';
-    const WAITING_FOR_FILLING_STATUS = "WAITING_FOR_FILLING";
-    const WAITING_FOR_CONFIRMATION_STATUS = "WAITING_FOR_CONFIRMATION";
-    const ACCEPTED_STATUS = "ACCEPTED";
-    const REJECTED_STATUS = "REJECTED";
-    const CANCELLED_STATUS = "CANCELLED";
-    const PAID_STATUS = "PAID";
+    public const CREATED_STATUS = 'CREATED';
+    public const WAITING_FOR_FILLING_STATUS = "WAITING_FOR_FILLING";
+    public const WAITING_FOR_CONFIRMATION_STATUS = "WAITING_FOR_CONFIRMATION";
+    public const WAITING_FOR_PAYMENT_STATUS = "WAITING_FOR_PAYMENT";
+    public const ACCEPTED_STATUS = "ACCEPTED";
+    public const REJECTED_STATUS = "REJECTED";
+    public const CANCELLED_STATUS = "CANCELLED";
+    public const PAID_STATUS = "PAID";
 
-    const NOTIFICATION_URL = 'comperia/notification';
+    public const NOTIFICATION_URL = 'comperia/notification';
 
     /**
      * @var array
      */
     private $newState = [
-        self::STATUS_CREATED,
-        self::STATUS_WAITING_FOR_CONFIRMATION,
-        self::STATUS_WAITING_FOR_FILLING,
+        self::CREATED_STATUS,
+        self::WAITING_FOR_CONFIRMATION_STATUS,
+        self::WAITING_FOR_FILLING_STATUS,
     ];
+
     /**
      * @var array
      */
     private $rejectedState = [
-        self::STATUS_CANCELLED,
-        self::STATUS_CANCELLED_BY_SHOP,
+        self::REJECTED_STATUS,
+        self::CANCELLED_STATUS,
     ];
+
     /**
      * @var array
      */
     private $completedState = [
-        self::STATUS_ACCEPTED,
-        self::STATUS_PAID,
-        self::WAITING_FOR_PAYMENT,
+        self::ACCEPTED_STATUS,
+        self::PAID_STATUS,
+        self::WAITING_FOR_PAYMENT_STATUS,
     ];
+
     /**
      * @var Context
      */
     private $context;
+
     /**
      * @var RequestInterface
      */
     private $request;
+
     /**
      * @var ScopeConfigInterface
      */
     private $scopeConfig;
+
     /**
      * @var ComperiaApplicationFactory
      */
     private $comperiaApplicationFactory;
+
     /**
      * @var OrderRepository
      */
@@ -87,13 +94,8 @@ class Index extends Action
      * @param ComperiaApplicationFactory $comperiaApplicationFactory
      * @param OrderRepository            $orderRepository
      */
-    public function __construct(
-        Context $context,
-        RequestInterface $request,
-        ScopeConfigInterface $scopeConfig,
-        ComperiaApplicationFactory $comperiaApplicationFactory,
-        OrderRepository $orderRepository
-    ) {
+    public function __construct(Context $context, RequestInterface $request, ScopeConfigInterface $scopeConfig, ComperiaApplicationFactory $comperiaApplicationFactory, OrderRepository $orderRepository)
+    {
         $this->context = $context;
         $this->request = $request;
         $this->scopeConfig = $scopeConfig;
@@ -103,31 +105,39 @@ class Index extends Action
     }
 
     /**
+     * @throws InputException
      * @throws InvalidExternalIdException
-     * @throws InvalidSignatureException
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
         $jsonContent = $this->request->getContent();
         $content = json_decode($jsonContent, true);
-        $application = $this->getApplication($content['externalId'])
-                            ->getData();
 
-        if (empty($application)) {
-            throw new InvalidExternalIdException('Invalid external ID!');
-        }
+        if (isset($content['externalId'])) {
+            $application = $this->getApplication($content['externalId'])
+                ->getData();
 
-        if (!$this->isValidSignature($jsonContent)) {
+            if (empty($application)) {
+                throw new InvalidExternalIdException('Invalid external ID!');
+            }
+
+            if (!$this->isValidSignature($jsonContent)) {
+                $this->getResponse()
+                    ->setStatusCode(400)
+                    ->setContent('Failed comparission of CR-Signature and shop hash.');
+
+                return;
+            }
+
+            $orderStatus = $content['status'];
+            $this->changeApplicationStatus($orderStatus, $content['externalId']);
+            $this->changeOrderStatus($application[0], $orderStatus);
+        } else {
             $this->getResponse()
-                ->setStatusCode(400)
-                ->setContent('Failed comparission of CR-Signature and shop hash.');
-
-            return;
+                ->setStatusCode(404)
+                ->setContent('Empty content.');
         }
-
-        $orderStatus = $content['status'];
-        $this->changeApplicationStatus($orderStatus, $content['externalId']);
-        $this->changeOrderStatus($application[0], $orderStatus);
     }
 
     /**
@@ -138,10 +148,12 @@ class Index extends Action
     {
         /** @var AbstractCollection $collection */
         $application = $this->getApplication($externalId);
+
         foreach ($application as $item) {
             $item->setStatus($orderStatus);
             $item->setUpdatedAt(date('Y-m-d H:i:s'));
         }
+
         $application->save();
     }
 
@@ -153,12 +165,13 @@ class Index extends Action
     private function getApplication(string $externalId): AbstractCollection
     {
         return $this->comperiaApplicationFactory->create()
-                                                ->getCollection()
-                                                ->addFieldToFilter('external_id', $externalId);
+            ->getCollection()
+            ->addFieldToFilter('external_id', $externalId);
     }
 
     /**
      * @param string $jsonData
+     *
      * @return bool
      */
     private function isValidSignature(string $jsonData): bool
@@ -167,7 +180,7 @@ class Index extends Action
 
         $apiKey = $this->scopeConfig->getValue(ApiConnector::API_KEY, ScopeInterface::SCOPE_STORE);
 
-        return $crSignature === hash('sha3-256' , $apiKey . $jsonData);
+        return $crSignature === hash('sha3-256', $apiKey . $jsonData);
     }
 
     /**
@@ -176,30 +189,29 @@ class Index extends Action
      *
      * @throws InputException
      * @throws NoSuchEntityException
+     * @throws \Exception
      */
     private function changeOrderStatus(array $application, string $orderStatus): void
     {
         $order = $this->orderRepository->get($application['order_id']);
+        $payment = $order->getPayment();
 
-        switch ($orderStatus) {
-            case self::CREATED_STATUS:
-            case self::WAITING_FOR_FILLING_STATUS:
-            case self::WAITING_FOR_CONFIRMATION_STATUS:
+        if (in_array($orderStatus, $this->newState, true)) {
+            $order->addStatusToHistory($order->getStatus(), 'Comfino status: ' . $orderStatus);
         }
 
-        if (in_array($orderStatus, $this->newState)) {
-            $order->setStatus(Order::STATE_NEW)
-                  ->setState(Order::STATE_NEW);
-        }
-
-        if (in_array($orderStatus, $this->rejectedState)) {
+        if (in_array($orderStatus, $this->rejectedState, true)) {
             $order->setStatus(Order::STATE_CANCELED)
-                  ->setState(Order::STATE_CANCELED);
+                ->setState(Order::STATE_CANCELED)
+                ->addStatusToHistory(Order::STATE_CANCELED, 'Comfino status: ' . $orderStatus);
         }
 
-        if (in_array($orderStatus, $this->completedState)) {
-            $order->setStatus(Order::STATE_COMPLETE)
-                  ->setState(Order::STATE_COMPLETE);
+        if (in_array($orderStatus, $this->completedState, true)) {
+            $order->addStatusToHistory($order->getStatus(), 'Comfino status: ' . $orderStatus);
+            $amount = $order->getGrandTotal();
+
+            $payment->registerAuthorizationNotification($amount);
+            $payment->registerCaptureNotification($amount);
         }
 
         $order->save();
