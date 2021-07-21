@@ -98,7 +98,6 @@ final class ApplicationTransaction extends Transaction
             'orderId' => $order->getId(),
             'notifyUrl' => $storeManager->getStore()->getBaseUrl() . NotificationController::NOTIFICATION_URL,
             'loanParameters' => [
-                'amount' => $totalAmount,
                 'term' => (int)$this->scopeConfig->getValue(ApiConnector::LOAN_TERM),
             ],
             'cart' => [
