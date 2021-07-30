@@ -3,16 +3,12 @@
 namespace Comperia\ComperiaGateway\Model;
 
 use Magento\Framework\Model\AbstractModel;
+use Comperia\ComperiaGateway\Model\ResourceModel\ComperiaApplication as ComperiaApplicationResource;
 
-/**
- * Class ComperiaApplication
- *
- * @package Comperia\ComperiaGateway\Model
- */
 class ComperiaApplication extends AbstractModel
 {
     public function _construct()
     {
-        $this->_init('Comperia\ComperiaGateway\Model\ResourceModel\ComperiaApplication');
+        $this->_init(ComperiaApplicationResource::class);
     }
 }

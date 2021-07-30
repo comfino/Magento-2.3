@@ -2,17 +2,14 @@
 
 namespace Comperia\ComperiaGateway\Model\ResourceModel\ComperiaApplication;
 
+use Comperia\ComperiaGateway\Model\ComperiaApplication;
+use Comperia\ComperiaGateway\Model\ResourceModel\ComperiaApplication as ComperiaResource;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
-/**
- * Class Collection
- *
- * @package Comperia\ComperiaGateway\Model\ResourceModel\ComperiaApplication
- */
 class Collection extends AbstractCollection
 {
     public function _construct()
     {
-        $this->_init('Comperia\ComperiaGateway\Model\ComperiaApplication', 'Comperia\ComperiaGateway\Model\ResourceModel\ComperiaApplication');
+        $this->_init(ComperiaApplication::class, ComperiaResource::class);
     }
 }

@@ -2,27 +2,12 @@
 
 namespace Comperia\ComperiaGateway\Controller\Result;
 
-use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\View\Result\Page;
 
-/**
- * Class Index
- *
- * @package Comperia\ComperiaGateway\Controller\Result
- */
-class Index extends Action
+class Index implements HttpGetActionInterface
 {
-    /**
-     * @var Context
-     */
-    private $context;
-    /**
-     * @var RequestInterface
-     */
-    private $request;
     /**
      * @var PageFactory
      */
@@ -31,19 +16,11 @@ class Index extends Action
     /**
      * Index constructor.
      *
-     * @param Context          $context
-     * @param RequestInterface $request
-     * @param PageFactory      $pageFactory
+     * @param PageFactory $pageFactory
      */
-    public function __construct(
-        Context $context,
-        RequestInterface $request,
-        PageFactory $pageFactory
-    ) {
-        $this->context = $context;
-        $this->request = $request;
+    public function __construct(PageFactory $pageFactory)
+    {
         $this->pageFactory = $pageFactory;
-        parent::__construct($context);
     }
 
     /**

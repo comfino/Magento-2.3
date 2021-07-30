@@ -2,13 +2,8 @@
 
 namespace Comperia\ComperiaGateway\Exception;
 
-use Exception;
+use Magento\Framework\Exception\LocalizedException;
 
-/**
- * Class InvalidSignatureException
- *
- * @package Comperia\ComperiaGateway\Exception
- */
-class InvalidSignatureException extends Exception
+class InvalidSignatureException extends LocalizedException
 {
 }

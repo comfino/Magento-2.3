@@ -1,6 +1,9 @@
-<h2><?= /* @escapeNotVerified */
-    __('Thank you for your order'); ?></h2>
-<p><?= /* @escapeNotVerified */
-    __('Your application is being processed by TakPay.'); ?></p>
-<p><?= /* @escapeNotVerified */
-    __('You will be informed about the change of the order status.'); ?></p>
+<?php
+/** @var Escaper $escaper */
+
+use Magento\Framework\Escaper;
+
+?>
+<h2><?= $escaper->escapeHtml(__('Thank you for your order')); ?></h2>
+<p><?= $escaper->escapeHtml(__('Your application is being processed by TakPay.')); ?></p>
+<p><?= $escaper->escapeHtml(__('You will be informed about the change of the order status.')); ?></p>

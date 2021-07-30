@@ -2,13 +2,8 @@
 
 namespace Comperia\ComperiaGateway\Exception;
 
-use Exception;
+use Magento\Framework\Exception\LocalizedException;
 
-/**
- * Class InvalidExternalIdException
- *
- * @package Comperia\ComperiaGateway\Exception
- */
-class InvalidExternalIdException extends Exception
+class InvalidExternalIdException extends LocalizedException
 {
 }

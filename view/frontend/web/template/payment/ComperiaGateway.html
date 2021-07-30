@@ -6,12 +6,13 @@
                data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
         <label data-bind="attr: {'for': getCode()}" class="label"><span data-bind="text: getTitle()"></span></label>
     </div>
-    <div class="payment-method-content">
+    <div class="payment-method-content" data-bind="visible: isMethodAvailable()">
         <!-- ko foreach: getRegion('messages') -->
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
 
-        <div id="comfino-offers" data-bind="attr: { src: showCardPayment()}" class="takpay-offers-block" style="display: flex; margin-bottom: 20px;">
+        <div id="comfino-offers" data-bind="attr: { src: showCardPayment()}" class="takpay-offers-block"
+             style="display: flex; margin-bottom: 20px;">
 
         </div>
 
@@ -22,7 +23,7 @@
         </div>
         <div class="checkout-agreements-block">
             <!-- ko foreach: $parent.getRegion('before-place-order') -->
-                <!-- ko template: getTemplate() --><!-- /ko -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
             <!--/ko-->
         </div>
 
@@ -34,12 +35,15 @@
                         click: placeOrder,
                         attr: {title: $t('Place Order')},
                         css: {disabled: !isPlaceOrderActionAllowed()},
-                        enable: (getCode() == isChecked())
+                        enable: (getCode() == isChecked() && isMethodAvailable())
                         "
                         disabled>
                     <span data-bind="i18n: 'Place Order'"></span>
                 </button>
             </div>
         </div>
+    </div>
+    <div class="message message-warning warning" data-bind="visible: !isMethodAvailable()">
+        <!-- ko i18n: 'No offers currently available.' --><!-- /ko -->
     </div>
 </div>

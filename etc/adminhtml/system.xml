@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Config/etc/system_file.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="payment">
             <group id="comperiapayment" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -22,10 +22,9 @@
                     <can_be_empty>0</can_be_empty>
                 </field>
                 <field id="sandbox" translate="label" type="select" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Sandbox</label>
+                    <label>Enable Sandbox</label>
                     <config_path>payment/comperiapayment/sandbox</config_path>
-                    <source_model>Comperia\ComperiaGateway\Model\Sandbox\Sandbox</source_model>
-                    <can_be_empty>0</can_be_empty>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="apikey" translate="label" type="text" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>API KEY</label>
@@ -38,11 +37,11 @@
                     <can_be_empty>48</can_be_empty>
                 </field>
                 <field id="allowspecific" translate="label" type="allowspecific" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Ograniczenie metody płatności do określonych państw</label>
+                    <label>Restrict payment method to specific countries</label>
                     <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
                 </field>
                 <field id="specificcountry" translate="label" type="multiselect" sortOrder="41" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Metoda płatności dozwolona w krajach</label>
+                    <label>Payment method allowed in countries</label>
                     <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
                     <can_be_empty>1</can_be_empty>
                 </field>
