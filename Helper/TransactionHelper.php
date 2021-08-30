@@ -6,6 +6,7 @@ use Comperia\ComperiaGateway\Api\Data\ApplicationResponseInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Checkout\Model\Session;
+use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Catalog\Helper\Image;
 use Magento\Catalog\Model\Product;
@@ -21,18 +22,27 @@ class TransactionHelper extends AbstractHelper
      * @var Image
      */
     private $imageHelper;
+
     /**
      * @var Session
      */
     private $session;
+
+    /**
+     * @var CustomerSession
+     */
+    private $customerSession;
+
     /**
      * @var RemoteAddress
      */
     private $remoteAddress;
+
     /**
      * @var UrlInterface
      */
     private $urlBuilder;
+
     /**
      * @var SerializerInterface
      */
@@ -43,6 +53,7 @@ class TransactionHelper extends AbstractHelper
      * @param Context $context
      * @param Image $imageHelper
      * @param Session $session
+     * @param CustomerSession $customerSession
      * @param RemoteAddress $remoteAddress
      * @param SerializerInterface $serializer
      * @param UrlInterface $urlBuilder
@@ -51,12 +62,14 @@ class TransactionHelper extends AbstractHelper
         Context $context,
         Image $imageHelper,
         Session $session,
+        CustomerSession $customerSession,
         RemoteAddress $remoteAddress,
         SerializerInterface $serializer,
         UrlInterface $urlBuilder
     ) {
         $this->imageHelper = $imageHelper;
         $this->session = $session;
+        $this->customerSession = $customerSession;
         $this->remoteAddress = $remoteAddress;
         $this->urlBuilder = $urlBuilder;
         $this->serializer = $serializer;
@@ -99,6 +112,7 @@ class TransactionHelper extends AbstractHelper
                 'products' => $this->buildProductsList($order),
             ],
             'customer' => $this->buildCustomer($order),
+            'logged' => $this->customerSession->isLoggedIn(),
         ];
     }
 
