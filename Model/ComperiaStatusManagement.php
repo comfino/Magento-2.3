@@ -122,18 +122,81 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
     protected function changeOrderStatus($orderId, $status)
     {
         $order = $this->orderRepository->get($orderId);
-        if (in_array($status, ComperiaStatusManagement::REJECTED_STATE, true)) {
-            $order->setStatus(Order::STATE_CANCELED)->setState(Order::STATE_CANCELED);
-        }
-        $order->addStatusToHistory($order->getStatus(), __('Comfino status: %1', $status));
-        if ($status == ComperiaStatusManagement::ACCEPTED_STATUS) {
+        $origStatus = $order->getStatus();
+        $this->setOrderStatus($order, $status);
+        if ($origStatus !== Order::STATE_PROCESSING && $this->isCompletedStatus($status)) {
             $amount = $order->getGrandTotal();
             $payment = $order->getPayment();
             $payment->registerAuthorizationNotification($amount);
             $payment->registerCaptureNotification($amount);
         }
-
         $this->orderRepository->save($order);
+    }
+
+    /**
+     * @param $status
+     * @param $group
+     * @return bool
+     */
+    private function checkStatusGroup($status, $group): bool
+    {
+        return in_array($status, $group, true);
+    }
+
+    /**
+     * @param OrderInterface $order
+     * @param string $status
+     */
+    private function setOrderStatus(OrderInterface $order, string $status)
+    {
+        $newStatus = $this->mapStatus($status);
+        $order->setStatus($newStatus)->setState($newStatus);
+        $order->addStatusToHistory($newStatus, __('Comfino status: %1', $status));
+    }
+
+    /**
+     * @param $status
+     * @return mixed|string
+     */
+    private function mapStatus($status)
+    {
+        if ($this->isCompletedStatus($status)) {
+            return Order::STATE_PROCESSING;
+        }
+        if ($this->isNewStatus($status)) {
+            return Order::STATE_PENDING_PAYMENT;
+        }
+        if ($this->isRejectedStatus($status)) {
+            return Order::STATE_CANCELED;
+        }
+        return $status;
+    }
+
+    /**
+     * @param $status
+     * @return bool
+     */
+    private function isRejectedStatus($status): bool
+    {
+        return $this->checkStatusGroup($status, ComperiaStatusManagement::REJECTED_STATE);
+    }
+
+    /**
+     * @param $status
+     * @return bool
+     */
+    private function isNewStatus($status): bool
+    {
+        return $this->checkStatusGroup($status, ComperiaStatusManagement::NEW_STATE);
+    }
+
+    /**
+     * @param $status
+     * @return bool
+     */
+    private function isCompletedStatus($status): bool
+    {
+        return $this->checkStatusGroup($status, ComperiaStatusManagement::COMPLETED_STATE);
     }
 
     /**
