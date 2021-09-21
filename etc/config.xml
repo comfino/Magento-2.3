@@ -7,11 +7,10 @@
                 <title>Comfino</title>
                 <order_status>pending_payment</order_status>
                 <instructions>Instruction.</instructions>
-                <payment_action>true</payment_action>
                 <model>ComperiaFacade</model>
                 <group>offline</group>
                 <produrl>https://api-ecommerce.comfino.pl</produrl>
-                <sandboxurl>https://api-ecommerce.ecraty.pl</sandboxurl>
+                <sandboxurl>https://api-ecommerce.craty.pl</sandboxurl>
                 <can_use_checkout>1</can_use_checkout>
             </comperiapayment>
         </payment>
