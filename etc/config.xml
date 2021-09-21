@@ -10,7 +10,7 @@
                 <model>ComperiaFacade</model>
                 <group>offline</group>
                 <produrl>https://api-ecommerce.comfino.pl</produrl>
-                <sandboxurl>https://api-ecommerce.craty.pl</sandboxurl>
+                <sandboxurl>https://api-ecommerce.ecraty.pl</sandboxurl>
                 <can_use_checkout>1</can_use_checkout>
             </comperiapayment>
         </payment>

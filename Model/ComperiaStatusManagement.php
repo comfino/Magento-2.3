@@ -130,6 +130,7 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
             $payment->registerAuthorizationNotification($amount);
             $payment->registerCaptureNotification($amount);
         }
+
         $this->orderRepository->save($order);
     }
 
