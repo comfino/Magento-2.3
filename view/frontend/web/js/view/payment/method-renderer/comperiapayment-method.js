@@ -1,4 +1,4 @@
-define(
+    define(
     [
         'jquery',
         'ko',
@@ -8,9 +8,10 @@ define(
         'Magento_Customer/js/customer-data',
         'Magento_Checkout/js/model/error-processor',
         'Magento_Checkout/js/model/full-screen-loader',
-        'Magento_Ui/js/modal/modal'
+        'Magento_Ui/js/modal/modal',
+        'mage/translate',
     ],
-    function ($, ko, Component, redirectOnSuccessAction, url, customerData, errorProcessor, fullScreenLoader, modal) {
+    function ($, ko, Component, redirectOnSuccessAction, url, customerData, errorProcessor, fullScreenLoader, modal, t) {
         'use strict';
         return Component.extend({
             redirectAfterPlaceOrder: false,
