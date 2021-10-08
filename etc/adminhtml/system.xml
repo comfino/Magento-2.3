@@ -31,11 +31,6 @@
                     <config_path>payment/comperiapayment/apikey</config_path>
                     <can_be_empty>0</can_be_empty>
                 </field>
-                <field id="tenor" translate="label" type="text" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Loan Term</label>
-                    <config_path>payment/comperiapayment/loanterm</config_path>
-                    <can_be_empty>48</can_be_empty>
-                </field>
                 <field id="allowspecific" translate="label" type="allowspecific" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Restrict payment method to specific countries</label>
                     <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>

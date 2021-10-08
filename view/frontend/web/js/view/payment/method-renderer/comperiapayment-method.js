@@ -1,4 +1,4 @@
-    define(
+define(
     [
         'jquery',
         'ko',
@@ -26,16 +26,12 @@
                 return {
                     'method': this.getCode(),
                     'additional_data': {
-                        'type': this.loanType,
-                        'term': this.loanTerm
+                        'type': this.loanType
                     }
                 };
             },
             setLoanType: function (type) {
                 this.loanType = type;
-            },
-            setLoanTerm: function (term) {
-                this.loanTerm = term;
             },
             isMethodAvailable: function () {
                 return this.isAvailable();
@@ -105,15 +101,18 @@
                     '                        <div><strong > ' + value.loanTerm + '  ' + $.mage.__('rates') + ' x ' + value.instalmentAmount + '</strong></div>\n' +
                     '                        <div>' + $.mage.__('Total amount to pay') + ': ' + value.toPay + ', RRSO: ' + value.rrso + ' %</div>\n' +
                     '                    </div>\n' +
-                    '                    <div class="description" style="margin-bottom: 10px;">' + value.description + '</div>\n' +
-                    '                    <div><a id="representativeExample_a_' + value.type + '">' + $.mage.__('Representative Example') + '</a></div>\n' +
+                    '                    <div class="description" style="margin-bottom: 10px;">' + value.description + '</div>\n';
+
+                if (value.representativeExample !== '') {
+                    data = data + '      <div><a id="representativeExample_a_' + value.type + '">' + $.mage.__('Representative Example') + '</a></div>\n' +
                     '                    <div style="display: none" id="representativeExample_modal_' + value.type + '">\n' +
                     '                        <div class="modal-inner-content">\n' +
                     '                            <p id="representativeExample_modal_text' + value.type + '"></p>\n' +
                     '                        </div>\n' +
-                    '                    </div>\n' +
-                    '                </div>\n' +
-                    '            </div>';
+                    '                    </div>\n';
+                }
+
+                data = data + '</div></div>';
 
                 $(data).appendTo($('#comfino-offers'));
             },

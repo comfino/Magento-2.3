@@ -107,7 +107,7 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
      * @param string $status
      * @throws AlreadyExistsException
      */
-    private function changeApplicationStatus(ComperiaApplication $application, string $status)
+    private function changeApplicationStatus(ComperiaApplication $application, string $status): void
     {
         $application->setStatus($status);
         $this->applicationResource->save($application);
@@ -119,7 +119,7 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
      * @throws AlreadyExistsException
      * @throws InputException
      */
-    protected function changeOrderStatus($orderId, $status)
+    protected function changeOrderStatus($orderId, $status): void
     {
         $order = $this->orderRepository->get($orderId);
         $origStatus = $order->getStatus();

@@ -138,6 +138,7 @@ class TransactionHelper extends AbstractHelper
                 'ean' => null,
                 'externalId' => $item->getId(),
                 'price' => $item->getPriceInclTax() * 100,
+                'loanTerm' => $item->getLoanTerm(),
             ];
         }
 

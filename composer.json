@@ -1,7 +1,7 @@
 {
-  "name": "comperia/comperiagateway",
-  "description": "TakPay payment module",
-  "version": "1.0.0",
+  "name": "comperia/comfino",
+  "description": "Comfino payment module",
+  "version": "1.2.0",
   "type": "magento2-module",
   "autoload": {
     "files": [
