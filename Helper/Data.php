@@ -7,11 +7,14 @@ use Magento\Store\Model\ScopeInterface;
 
 class Data extends AbstractHelper
 {
-    const XML_PATH_SANDBOX_ENABLED = 'payment/comperiapayment/sandbox';
-    const XML_PATH_API_KEY = 'payment/comperiapayment/apikey';
-    const XML_PATH_LOAN_TERM = 'payment/comperiapayment/loanterm';
-    const XML_PATH_URL_PROD = 'payment/comperiapayment/produrl';
-    const XML_PATH_URL_DEV = 'payment/comperiapayment/sandboxurl';
+    private const XML_PATH_SANDBOX_ENABLED = 'payment/comperiapayment/sandbox';
+    private const XML_PATH_API_KEY = 'payment/comperiapayment/apikey';
+    private const XML_PATH_LOAN_TERM = 'payment/comperiapayment/loanterm';
+    private const XML_PATH_URL_PROD = 'payment/comperiapayment/produrl';
+    private const XML_PATH_URL_DEV = 'payment/comperiapayment/sandboxurl';
+
+    private const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
+    private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
 
     /**
      * Return store configuration value by path
@@ -60,7 +63,7 @@ class Data extends AbstractHelper
      */
     public function getProdUrl(): ?string
     {
-        return $this->getConfigValue(self::XML_PATH_URL_PROD);
+        return self::COMFINO_PRODUCTION_HOST;
     }
 
     /**
@@ -69,6 +72,6 @@ class Data extends AbstractHelper
      */
     public function getSandboxUrl(): ?string
     {
-        return $this->getConfigValue(self::XML_PATH_URL_DEV);
+        return self::COMFINO_SANDBOX_HOST;
     }
 }

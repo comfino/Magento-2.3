@@ -11,16 +11,6 @@
                 <field id="title" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Title</label>
                 </field>
-                <field id="produrl" translate="label" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Production host</label>
-                    <config_path>payment/comperiapayment/produrl</config_path>
-                    <can_be_empty>0</can_be_empty>
-                </field>
-                <field id="sandboxurl" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Sandbox host</label>
-                    <config_path>payment/comperiapayment/sandboxurl</config_path>
-                    <can_be_empty>0</can_be_empty>
-                </field>
                 <field id="sandbox" translate="label" type="select" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enable Sandbox</label>
                     <config_path>payment/comperiapayment/sandbox</config_path>
