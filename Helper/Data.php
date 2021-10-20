@@ -49,15 +49,6 @@ class Data extends AbstractHelper
     }
 
     /**
-     * Get Loan Term
-     * @return string|null
-     */
-    public function getLoanTerm(): ?string
-    {
-        return $this->getConfigValue(self::XML_PATH_LOAN_TERM);
-    }
-
-    /**
      * Get Production host
      * @return string|null
      */

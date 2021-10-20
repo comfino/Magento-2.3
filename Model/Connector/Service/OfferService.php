@@ -58,7 +58,7 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
     {
         $apiUrl = $this->getApiUrl() . self::COMPERIA_API_OFFERS_URI;
         $loanAmount = $this->session->getQuote()->getGrandTotal() * 100;
-        $params = ['loanAmount' => $loanAmount, 'loanTerm' => $this->helper->getLoanTerm()];
+        $params = ['loanAmount' => $loanAmount];
 
         $this->sendGetRequest($apiUrl, $params);
 
@@ -74,7 +74,6 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
         $body = $this->decode($this->curl->getBody());
         $offers = is_array($body) ? $body : [];
         foreach ($offers as &$offer) {
-            $offer['loanTerm'] = $this->helper->getLoanTerm();
             $offer['instalmentAmount'] = $this->getFormattedAmount($offer['instalmentAmount']);
             $offer['rrso'] = $offer['rrso'] * 100;
             $offer['toPay'] = $this->getFormattedAmount($offer['toPay']);
