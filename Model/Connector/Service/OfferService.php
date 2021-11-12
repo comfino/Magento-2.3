@@ -17,6 +17,7 @@ use \Magento\Framework\Pricing\Helper\Data as PriceHelper;
 class OfferService extends ServiceAbstract implements OfferServiceInterface
 {
     const COMPERIA_API_OFFERS_URI = '/v1/financial-products';
+
     /**
      * @var PriceHelper
      */
@@ -49,7 +50,8 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
     }
 
     /**
-     * Get offers from Comperia API
+     * Get offers from Comperia API.
+     *
      * @return array
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -66,18 +68,27 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
     }
 
     /**
-     *
      * @return array
      */
     private function getOffersResponse(): array
     {
         $body = $this->decode($this->curl->getBody());
         $offers = is_array($body) ? $body : [];
+
         foreach ($offers as &$offer) {
+            $offer['icon'] = str_ireplace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']);
             $offer['instalmentAmount'] = $this->getFormattedAmount($offer['instalmentAmount']);
-            $offer['rrso'] = $offer['rrso'] * 100;
+            $offer['rrso'] *= 100;
             $offer['toPay'] = $this->getFormattedAmount($offer['toPay']);
+            $offer['loanParameters'] = array_map(function ($loanParams) {
+                return [
+                    'loanTerm' => $loanParams['loanTerm'],
+                    'instalmentAmount' => $this->getFormattedAmount($loanParams['instalmentAmount']),
+                    'toPay' => $this->getFormattedAmount($loanParams['toPay']),
+                ];
+            }, $offer['loanParameters']);
         }
+
         return $offers;
     }
 
@@ -88,7 +99,6 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
      */
     private function getFormattedAmount($amount): string
     {
-        $amount = $amount / 100;
-        return $this->priceHelper->currency($amount);
+        return $this->priceHelper->currency($amount / 100, false, false);
     }
 }

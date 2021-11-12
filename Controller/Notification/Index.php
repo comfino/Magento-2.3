@@ -69,7 +69,7 @@ class Index extends Action
             return $this->_response;
         }
         if (!$this->isValidSignature($jsonContent)) {
-            $this->setResponse(400, __('Failed comparission of CR-Signature and shop hash.'));
+            $this->setResponse(400, __('Failed comparison of CR-Signature and shop hash.'));
             return $this->_response;
         }
 
@@ -99,7 +99,7 @@ class Index extends Action
     private function isValidSignature(string $jsonData): bool
     {
         $crSignature = $this->request->getHeader('CR-Signature');
-        $hash = hash('sha3-256', $this->helper->getApiKey() . $jsonData);
+        $hash = hash('sha3-256', $this->helper->getApiKey().$jsonData);
 
         return $crSignature === $hash;
     }
