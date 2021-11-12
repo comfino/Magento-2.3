@@ -12,8 +12,6 @@ use Comperia\ComperiaGateway\Helper\TransactionHelper;
 use Comperia\ComperiaGateway\Api\Data\ApplicationResponseInterface;
 use Comperia\ComperiaGateway\Model\ResourceModel\ComperiaApplication as ApplicationResource;
 use Magento\Framework\App\ProductMetadataInterface;
-use Magento\Framework\Controller\Result\Json;
-use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\HTTP\Client\Curl;
@@ -47,11 +45,6 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
      */
     private $statusManagement;
 
-    /**
-     * @var JsonFactory
-     */
-    private $resultJsonFactory;
-
 
     /**
      * ApplicationService constructor.
@@ -67,7 +60,6 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
      * @param ApplicationResource $applicationResource
      * @param Request $request
      * @param ComperiaStatusManagementInterface $statusManagement
-     * @param JsonFactory $resultJsonFactory
      */
     public function __construct(
         Curl $curl,
@@ -80,8 +72,7 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         ComperiaApplicationFactory $comperiaApplicationFactory,
         ApplicationResource $applicationResource,
         Request $request,
-        ComperiaStatusManagementInterface $statusManagement,
-        JsonFactory $resultJsonFactory
+        ComperiaStatusManagementInterface $statusManagement
     ) {
         parent::__construct($curl, $logger, $serializer, $helper, $session, $productMetadata, $request);
 
@@ -89,7 +80,6 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         $this->comperiaApplicationFactory = $comperiaApplicationFactory;
         $this->applicationResource = $applicationResource;
         $this->statusManagement = $statusManagement;
-        $this->resultJsonFactory = $resultJsonFactory;
     }
 
     /**
