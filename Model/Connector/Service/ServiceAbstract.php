@@ -16,14 +16,17 @@ abstract class ServiceAbstract
      * @var Curl
      */
     protected $curl;
+
     /**
      * @var LoggerInterface
      */
     protected $logger;
+
     /**
      * @var SerializerInterface
      */
     protected $serializer;
+
     /**
      * @var Data
      */
@@ -33,10 +36,12 @@ abstract class ServiceAbstract
      * @var Session
      */
     protected $session;
+
     /**
      * @var ProductMetadataInterface
      */
     private $productMetaData;
+
     /**
      * @var Request
      */
@@ -79,6 +84,7 @@ abstract class ServiceAbstract
     {
         return $this->helper->isSandboxEnabled() ? $this->helper->getSandboxUrl() : $this->helper->getProdUrl();
     }
+
     /**
      * Send Post Request
      * @param $url
@@ -111,7 +117,7 @@ abstract class ServiceAbstract
             ]
         );
         $this->prepareHeaders();
-        $this->curl->get($url . '?' . http_build_query($params));
+        $this->curl->get($url.'?'.http_build_query($params));
         $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
     }
 
@@ -132,7 +138,7 @@ abstract class ServiceAbstract
      */
     private function getUserAgent(): string
     {
-        return $this->productMetaData->getName() . ' ' . $this->productMetaData->getVersion();
+        return $this->productMetaData->getName().' '.$this->productMetaData->getVersion();
     }
 
     /**
@@ -163,7 +169,7 @@ abstract class ServiceAbstract
     protected function isValidSignature(string $jsonData): bool
     {
         $crSignature = $this->request->getHeader('CR-Signature');
-        $hash = hash('sha3-256', $this->helper->getApiKey() . $jsonData);
+        $hash = hash('sha3-256', $this->helper->getApiKey().$jsonData);
 
         return $crSignature === $hash;
     }

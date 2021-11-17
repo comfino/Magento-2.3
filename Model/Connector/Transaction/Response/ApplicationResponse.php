@@ -30,6 +30,7 @@ class ApplicationResponse extends DataObject implements ApplicationResponseInter
     {
         $data = [];
         $this->code = $code;
+
         if ($this->isSuccessful()) {
             $data = [
                 ApplicationResponseInterface::STATUS => $body['status'],
@@ -38,6 +39,7 @@ class ApplicationResponse extends DataObject implements ApplicationResponseInter
                 ApplicationResponseInterface::HREF => $body['_links']['self']['href']
             ];
         }
+
         parent::__construct($data);
     }
 

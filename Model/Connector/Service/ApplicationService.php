@@ -23,28 +23,32 @@ use Magento\Checkout\Model\Session;
 class ApplicationService extends ServiceAbstract implements ApplicationServiceInterface
 {
     const COMPERIA_API_TRANSACTION_URI = '/v1/orders';
-
     const NOTIFICATION_URL = 'rest/V1/comperia-gateway/application/status';
 
     /**
      * @var TransactionHelper
      */
     private $transactionHelper;
+
     /**
      * @var ComperiaApplicationFactory
      */
     private $comperiaApplicationFactory;
+
     /**
      * @var ApplicationResource
      */
     private $applicationResource;
+
     /**
      * @var ComperiaStatusManagementInterface
      */
     private $statusManagement;
 
+
     /**
      * ApplicationService constructor.
+     *
      * @param Curl $curl
      * @param LoggerInterface $logger
      * @param SerializerInterface $serializer
@@ -71,6 +75,7 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         ComperiaStatusManagementInterface $statusManagement
     ) {
         parent::__construct($curl, $logger, $serializer, $helper, $session, $productMetadata, $request);
+
         $this->transactionHelper = $transactionHelper;
         $this->comperiaApplicationFactory = $comperiaApplicationFactory;
         $this->applicationResource = $applicationResource;
@@ -78,14 +83,16 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
     }
 
     /**
-     * Create Application in Comperia API and Db Model
-     * @return string
+     * Create Application in Comperia API and Db Model.
+     *
+     * @return array
      * @throws AlreadyExistsException
      */
-    public function save(): string
+    public function save(): array
     {
-        //connect to Comperia API and create new application/transaction
+        // Connect to Comperia API and create new application/transaction
         $response = $this->createApplicationTransaction();
+
         if (!$response->isSuccessful()) {
             $this->statusManagement->applicationFailureStatus($this->session->getLastRealOrder());
             $this->logger->emergency(
@@ -95,22 +102,24 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
                     'code' => $response->getCode(),
                 ]
             );
-            $this->logger->info('Redirect url : ' . $response->getRedirectUri());
-            return $this->encode([
+            $this->logger->info('Redirect url: '.$response->getRedirectUri());
+
+            return [[
                 'redirectUrl' => 'onepage/failure',
                 'error' => __('Unsuccessful attempt to open the application. Please try again later.')
-            ]);
+            ]];
         }
 
         $data = $this->transactionHelper->parseModel($response);
         $model = $this->comperiaApplicationFactory->create()->addData($data);
         $this->applicationResource->save($model);
 
-        return $this->encode(['redirectUrl' => $response->getRedirectUri()]);
+        return [['redirectUrl' => $response->getRedirectUri()]];
     }
 
     /**
-     * Send POST request to Comperia API to create new application/transaction
+     * Send POST request to Comperia API to create new application/transaction.
+     *
      * @return ApplicationResponseInterface
      */
     public function createApplicationTransaction(): ApplicationResponseInterface
@@ -123,7 +132,8 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
     }
 
     /**
-     * Change status for application and related order
+     * Change status for application and related order.
+     *
      * @return void
      * @throws InvalidSignatureException
      * @throws ValidatorException
@@ -136,7 +146,7 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
             throw new ValidatorException(__('Empty content.'));
         }
         if (!$this->isValidSignature($this->encode($params))) {
-            throw new InvalidSignatureException(__('Failed comparission of CR-Signature and shop hash.'));
+            throw new InvalidSignatureException(__('Failed comparison of CR-Signature and shop hash.'));
         }
 
         $this->statusManagement->changeApplicationAndOrderStatus($params['externalId'], $params['status']);

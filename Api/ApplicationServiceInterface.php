@@ -5,9 +5,9 @@ namespace Comperia\ComperiaGateway\Api;
 interface ApplicationServiceInterface
 {
     /**
-     * @return string
+     * @return array
      */
-    public function save(): string;
+    public function save(): array;
 
     /**
      * @return void
