@@ -1,9 +1,9 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Controller\Notification;
+namespace Comfino\ComfinoGateway\Controller\Notification;
 
-use Comperia\ComperiaGateway\Api\ComperiaStatusManagementInterface;
-use Comperia\ComperiaGateway\Helper\Data;
+use Comfino\ComfinoGateway\Api\ComfinoStatusManagementInterface;
+use Comfino\ComfinoGateway\Helper\Data;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
@@ -13,22 +13,25 @@ use Magento\Framework\Serialize\SerializerInterface;
 
 class Index extends Action
 {
-    public const NOTIFICATION_URL = 'comperia/notification';
+    public const NOTIFICATION_URL = 'comfino/notification';
 
     /**
      * @var RequestInterface
      */
     private $request;
+
     /**
      * @var SerializerInterface
      */
     private $serializer;
+
     /**
      * @var Data
      */
     private $helper;
+
     /**
-     * @var ComperiaStatusManagementInterface
+     * @var ComfinoStatusManagementInterface
      */
     private $statusManagement;
 
@@ -39,19 +42,19 @@ class Index extends Action
      * @param RequestInterface $request
      * @param SerializerInterface $serializer
      * @param Data $helper
-     * @param ComperiaStatusManagementInterface $comperiaStatusManagement
+     * @param ComfinoStatusManagementInterface $comfinoStatusManagement
      */
     public function __construct(
         Context $context,
         RequestInterface $request,
         SerializerInterface $serializer,
         Data $helper,
-        ComperiaStatusManagementInterface $comperiaStatusManagement
+        ComfinoStatusManagementInterface $comfinoStatusManagement
     ) {
         $this->request = $request;
         $this->serializer = $serializer;
         $this->helper = $helper;
-        $this->statusManagement = $comperiaStatusManagement;
+        $this->statusManagement = $comfinoStatusManagement;
 
         parent::__construct($context);
     }
@@ -76,6 +79,7 @@ class Index extends Action
         $this->statusManagement->changeApplicationAndOrderStatus($content['externalId'], $content['status']);
 
         $this->setResponse(200, __('Application Status Changed'));
+
         return $this->_response;
     }
 

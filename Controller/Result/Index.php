@@ -1,6 +1,6 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Controller\Result;
+namespace Comfino\ComfinoGateway\Controller\Result;
 
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\View\Result\PageFactory;

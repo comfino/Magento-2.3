@@ -1,10 +1,10 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Model;
+namespace Comfino\ComfinoGateway\Model;
 
-use Comperia\ComperiaGateway\Api\ComperiaStatusManagementInterface;
-use Comperia\ComperiaGateway\Exception\InvalidExternalIdException;
-use Comperia\ComperiaGateway\Model\ResourceModel\ComperiaApplication as ApplicationResource;
+use Comfino\ComfinoGateway\Api\ComfinoStatusManagementInterface;
+use Comfino\ComfinoGateway\Exception\InvalidExternalIdException;
+use Comfino\ComfinoGateway\Model\ResourceModel\ComfinoApplication as ApplicationResource;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -12,7 +12,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderRepository;
 
-class ComperiaStatusManagement implements ComperiaStatusManagementInterface
+class ComfinoStatusManagement implements ComfinoStatusManagementInterface
 {
     public const CREATED_STATUS = 'CREATED';
     public const WAITING_FOR_FILLING_STATUS = "WAITING_FOR_FILLING";
@@ -44,26 +44,26 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
      */
     private $orderRepository;
     /**
-     * @var ComperiaApplicationFactory
+     * @var ComfinoApplicationFactory
      */
-    private $comperiaApplicationFactory;
+    private $comfinoApplicationFactory;
     /**
      * @var ApplicationResource
      */
     private $applicationResource;
 
     /**
-     * ComperiaStatusManagement constructor.
+     * ComfinoStatusManagement constructor.
      * @param OrderRepository $orderRepository
-     * @param ComperiaApplicationFactory $comperiaApplicationFactory
+     * @param ComfinoApplicationFactory $comfinoApplicationFactory
      * @param ApplicationResource $applicationResource
      */
     public function __construct(
         OrderRepository $orderRepository,
-        ComperiaApplicationFactory $comperiaApplicationFactory,
+        ComfinoApplicationFactory $comfinoApplicationFactory,
         ApplicationResource $applicationResource
     ) {
-        $this->comperiaApplicationFactory = $comperiaApplicationFactory;
+        $this->comfinoApplicationFactory = $comfinoApplicationFactory;
         $this->applicationResource = $applicationResource;
         $this->orderRepository = $orderRepository;
     }
@@ -92,22 +92,22 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
     /**
      * Get application by id
      * @param int $id
-     * @return ComperiaApplication
+     * @return ComfinoApplication
      */
-    private function getApplication(int $id): ComperiaApplication
+    private function getApplication(int $id): ComfinoApplication
     {
-        $application = $this->comperiaApplicationFactory->create();
+        $application = $this->comfinoApplicationFactory->create();
         $this->applicationResource->load($application, $id, 'external_id');
         return $application;
     }
 
     /**
-     * Change comperia application status
-     * @param ComperiaApplication $application
+     * Change comfino application status
+     * @param ComfinoApplication $application
      * @param string $status
      * @throws AlreadyExistsException
      */
-    private function changeApplicationStatus(ComperiaApplication $application, string $status): void
+    private function changeApplicationStatus(ComfinoApplication $application, string $status): void
     {
         $application->setStatus($status);
         $this->applicationResource->save($application);
@@ -179,7 +179,7 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
      */
     private function isRejectedStatus($status): bool
     {
-        return $this->checkStatusGroup($status, ComperiaStatusManagement::REJECTED_STATE);
+        return $this->checkStatusGroup($status, ComfinoStatusManagement::REJECTED_STATE);
     }
 
     /**
@@ -188,7 +188,7 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
      */
     private function isNewStatus($status): bool
     {
-        return $this->checkStatusGroup($status, ComperiaStatusManagement::NEW_STATE);
+        return $this->checkStatusGroup($status, ComfinoStatusManagement::NEW_STATE);
     }
 
     /**
@@ -197,7 +197,7 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
      */
     private function isCompletedStatus($status): bool
     {
-        return $this->checkStatusGroup($status, ComperiaStatusManagement::COMPLETED_STATE);
+        return $this->checkStatusGroup($status, ComfinoStatusManagement::COMPLETED_STATE);
     }
 
     /**
@@ -213,7 +213,7 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
         $order->setStatus($status)->setState($status);
         $order->addStatusToHistory(
             $order->getStatus(),
-            __('Unsuccessful attempt to open the application. Communication error with Comperia API.')
+            __('Unsuccessful attempt to open the application. Communication error with Comfino API.')
         );
         $this->orderRepository->save($order);
     }

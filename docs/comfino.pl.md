@@ -11,12 +11,12 @@ Magento 2.3.5+
 
 Po pobraniu archiwum comfino.zip i rozpakowaniu, przenieś zawartość katalogu *comfino* do katalogu modułów Magento.
 
-Docelowa lokalizacja: *magento/app/code/Comperia/ComperiaGateway*
+Docelowa lokalizacja: *magento/app/code/Comfino/ComfinoGateway*
 
 gdzie:
 
 * *magento* - nazwa katalogu bazowego sklepu (może być inna niż w powyższym przykładzie)
-* *Comperia*, *ComperiaGateway* - podkatalogi, które należy utworzyć w katalogu *app/code*
+* *Comfino*, *ComfinoGateway* - podkatalogi, które należy utworzyć w katalogu *app/code*
 
 ![Instalacja](images/dir_structure1.png "Instalacja")
 ![Instalacja](images/dir_structure2.png "Instalacja")
@@ -29,13 +29,13 @@ Wykonane polecenie powinno zwrócić odpowiedź podobną do poniższej:
 
 ![Instalacja](images/magento_console1.png "Instalacja")
 
-Moduł *Comperia_ComperiaGateway* powinien być na liście nieaktywnych modułów.
+Moduł *Comfino_ComfinoGateway* powinien być na liście nieaktywnych modułów.
 
 ![Instalacja](images/magento_console2.png "Instalacja")
 
 W celu aktywacji modułu wywołaj poniższe polecenia:
 
-* `./bin/magento module:enable Comperia_ComperiaGateway --clear-static-content`
+* `./bin/magento module:enable Comfino_ComfinoGateway --clear-static-content`
 * `./bin/magento setup:upgrade`
 * `./bin/magento setup:di:compile`
 * `./bin/magento setup:static-content:deploy -f`
@@ -52,7 +52,7 @@ Aby uzyskać dostęp do ustawień modułu, wykonaj poniższe kroki:
 ![Konfiguracja](images/pl/menu3.png "Konfiguracja")
 ![Konfiguracja](images/pl/menu4.png "Konfiguracja")
 
-Pole które jest najbardziej istotne i należy je wypełnić to: `"API KEY"`.
+Pole które jest najbardziej istotne i należy je wypełnić to: `"Klucz API"`.
 
 ![Konfiguracja](images/pl/mod_config.png "Konfiguracja")
 
@@ -60,7 +60,7 @@ Pole które jest najbardziej istotne i należy je wypełnić to: `"API KEY"`.
 
 W celu deaktywacji modułu należy wywołać w konsoli poniższe polecenie z poziomu katalogu głównego Magento:
 
-`./bin/magento module:disable Comperia_ComperiaGateway`
+`./bin/magento module:disable Comfino_ComfinoGateway`
 
 ## UWAGI
 

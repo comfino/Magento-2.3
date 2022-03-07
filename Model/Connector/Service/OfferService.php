@@ -1,9 +1,9 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Model\Connector\Service;
+namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
-use Comperia\ComperiaGateway\Api\OfferServiceInterface;
-use Comperia\ComperiaGateway\Helper\Data;
+use Comfino\ComfinoGateway\Api\OfferServiceInterface;
+use Comfino\ComfinoGateway\Helper\Data;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Exception\LocalizedException;
@@ -16,8 +16,6 @@ use \Magento\Framework\Pricing\Helper\Data as PriceHelper;
 
 class OfferService extends ServiceAbstract implements OfferServiceInterface
 {
-    const COMPERIA_API_OFFERS_URI = '/v1/financial-products';
-
     /**
      * @var PriceHelper
      */
@@ -50,7 +48,7 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
     }
 
     /**
-     * Get offers from Comperia API.
+     * Retrieves offers from Comfino API.
      *
      * @return array
      * @throws LocalizedException
@@ -58,42 +56,61 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
      */
     public function getList(): array
     {
-        $apiUrl = $this->getApiUrl() . self::COMPERIA_API_OFFERS_URI;
         $loanAmount = $this->session->getQuote()->getGrandTotal() * 100;
-        $params = ['loanAmount' => $loanAmount];
 
-        $this->sendGetRequest($apiUrl, $params);
+        $this->sendGetRequest($this->getApiUrl()."/v1/financial-products", ['loanAmount' => $loanAmount]);
 
-        return $this->getOffersResponse();
+        return $this->getOffersResponse($loanAmount);
     }
 
     /**
+     * @param float $total
      * @return array
      */
-    private function getOffersResponse(): array
+    private function getOffersResponse(float $total): array
     {
         $body = $this->decode($this->curl->getBody());
         $offers = is_array($body) ? $body : [];
+        $paymentOffers = [];
 
-        foreach ($offers as &$offer) {
-            $offer['icon'] = str_ireplace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']);
-            $offer['instalmentAmount'] = $this->getFormattedAmount($offer['instalmentAmount']);
-            $offer['rrso'] *= 100;
-            $offer['toPay'] = $this->getFormattedAmount($offer['toPay']);
-            $offer['loanParameters'] = array_map(function ($loanParams) {
-                return [
-                    'loanTerm' => $loanParams['loanTerm'],
-                    'instalmentAmount' => $this->getFormattedAmount($loanParams['instalmentAmount']),
-                    'toPay' => $this->getFormattedAmount($loanParams['toPay']),
-                ];
-            }, $offer['loanParameters']);
+        foreach ($offers as $offer) {
+            $paymentOffers[] = [
+                'name' => $offer['name'],
+                'description' => $offer['description'],
+                'icon' => str_ireplace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']),
+                'type' => $offer['type'],
+                'sumAmount' => $total / 100,
+                'sumAmountFormatted' => $this->getFormattedAmount($total / 100),
+                'representativeExample' => $offer['representativeExample'],
+                'rrso' => ((float)$offer['rrso']) * 100,
+                'loanTerm' => $offer['loanTerm'],
+                'instalmentAmount' => ((float)$offer['instalmentAmount']) / 100,
+                'instalmentAmountFormatted' => $this->getFormattedAmount(((float)$offer['instalmentAmount']) / 100),
+                'toPay' => ((float)$offer['toPay']) / 100,
+                'toPayFormatted' => $this->getFormattedAmount(((float)$offer['toPay']) / 100),
+                'loanParameters' => array_map(function ($loanParams) use ($total) {
+                    return [
+                        'loanTerm' => $loanParams['loanTerm'],
+                        'instalmentAmount' => ((float)$loanParams['instalmentAmount']) / 100,
+                        'instalmentAmountFormatted' => $this->getFormattedAmount(
+                            ((float)$loanParams['instalmentAmount']) / 100
+                        ),
+                        'toPay' => ((float)$loanParams['toPay']) / 100,
+                        'toPayFormatted' => $this->getFormattedAmount(((float)$loanParams['toPay']) / 100),
+                        'sumAmount' => $total / 100,
+                        'sumAmountFormatted' => $this->getFormattedAmount($total / 100),
+                        'rrso' => ((float)$loanParams['rrso']) * 100,
+                    ];
+                }, $offer['loanParameters'])
+            ];
         }
 
-        return $offers;
+        return $paymentOffers;
     }
 
     /**
-     * Reformat amount and add currency
+     * Reformat amount and add currency.
+     *
      * @param $amount
      * @return string
      */

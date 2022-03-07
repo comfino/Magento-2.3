@@ -1,16 +1,16 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Model\Connector\Service;
+namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
-use Comperia\ComperiaGateway\Api\ApplicationServiceInterface;
-use Comperia\ComperiaGateway\Exception\InvalidSignatureException;
-use Comperia\ComperiaGateway\Model\ComperiaApplicationFactory;
-use Comperia\ComperiaGateway\Api\ComperiaStatusManagementInterface;
-use Comperia\ComperiaGateway\Model\Connector\Transaction\Response\ApplicationResponse;
-use Comperia\ComperiaGateway\Helper\Data;
-use Comperia\ComperiaGateway\Helper\TransactionHelper;
-use Comperia\ComperiaGateway\Api\Data\ApplicationResponseInterface;
-use Comperia\ComperiaGateway\Model\ResourceModel\ComperiaApplication as ApplicationResource;
+use Comfino\ComfinoGateway\Api\ApplicationServiceInterface;
+use Comfino\ComfinoGateway\Exception\InvalidSignatureException;
+use Comfino\ComfinoGateway\Model\ComfinoApplicationFactory;
+use Comfino\ComfinoGateway\Api\ComfinoStatusManagementInterface;
+use Comfino\ComfinoGateway\Model\Connector\Transaction\Response\ApplicationResponse;
+use Comfino\ComfinoGateway\Helper\Data;
+use Comfino\ComfinoGateway\Helper\TransactionHelper;
+use Comfino\ComfinoGateway\Api\Data\ApplicationResponseInterface;
+use Comfino\ComfinoGateway\Model\ResourceModel\ComfinoApplication as ApplicationResource;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\ValidatorException;
@@ -22,8 +22,7 @@ use Magento\Checkout\Model\Session;
 
 class ApplicationService extends ServiceAbstract implements ApplicationServiceInterface
 {
-    const COMPERIA_API_TRANSACTION_URI = '/v1/orders';
-    const NOTIFICATION_URL = 'rest/V1/comperia-gateway/application/status';
+    const NOTIFICATION_URL = 'rest/V1/comfino-gateway/application/status';
 
     /**
      * @var TransactionHelper
@@ -31,9 +30,9 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
     private $transactionHelper;
 
     /**
-     * @var ComperiaApplicationFactory
+     * @var ComfinoApplicationFactory
      */
-    private $comperiaApplicationFactory;
+    private $comfinoApplicationFactory;
 
     /**
      * @var ApplicationResource
@@ -41,10 +40,9 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
     private $applicationResource;
 
     /**
-     * @var ComperiaStatusManagementInterface
+     * @var ComfinoStatusManagementInterface
      */
     private $statusManagement;
-
 
     /**
      * ApplicationService constructor.
@@ -56,10 +54,10 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
      * @param Session $session
      * @param ProductMetadataInterface $productMetadata
      * @param TransactionHelper $transactionHelper
-     * @param ComperiaApplicationFactory $comperiaApplicationFactory
+     * @param ComfinoApplicationFactory $comfinoApplicationFactory
      * @param ApplicationResource $applicationResource
      * @param Request $request
-     * @param ComperiaStatusManagementInterface $statusManagement
+     * @param ComfinoStatusManagementInterface $statusManagement
      */
     public function __construct(
         Curl $curl,
@@ -69,34 +67,34 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         Session $session,
         ProductMetadataInterface $productMetadata,
         TransactionHelper $transactionHelper,
-        ComperiaApplicationFactory $comperiaApplicationFactory,
+        ComfinoApplicationFactory $comfinoApplicationFactory,
         ApplicationResource $applicationResource,
         Request $request,
-        ComperiaStatusManagementInterface $statusManagement
+        ComfinoStatusManagementInterface $statusManagement
     ) {
         parent::__construct($curl, $logger, $serializer, $helper, $session, $productMetadata, $request);
 
         $this->transactionHelper = $transactionHelper;
-        $this->comperiaApplicationFactory = $comperiaApplicationFactory;
+        $this->comfinoApplicationFactory = $comfinoApplicationFactory;
         $this->applicationResource = $applicationResource;
         $this->statusManagement = $statusManagement;
     }
 
     /**
-     * Create Application in Comperia API and Db Model.
+     * Creates Application in Comfino API and Db Model.
      *
      * @return array
      * @throws AlreadyExistsException
      */
     public function save(): array
     {
-        // Connect to Comperia API and create new application/transaction
+        // Connect to Comfino API and create new application/transaction
         $response = $this->createApplicationTransaction();
 
         if (!$response->isSuccessful()) {
             $this->statusManagement->applicationFailureStatus($this->session->getLastRealOrder());
             $this->logger->emergency(
-                __('Unsuccessful attempt to open the application. Communication error with Comperia API.'),
+                __('Unsuccessful attempt to open the application. Communication error with Comfino API.'),
                 [
                     'body' => $response->getData(),
                     'code' => $response->getCode(),
@@ -111,28 +109,38 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         }
 
         $data = $this->transactionHelper->parseModel($response);
-        $model = $this->comperiaApplicationFactory->create()->addData($data);
+        $model = $this->comfinoApplicationFactory->create()->addData($data);
         $this->applicationResource->save($model);
 
         return [['redirectUrl' => $response->getRedirectUri()]];
     }
 
     /**
-     * Send POST request to Comperia API to create new application/transaction.
+     * Sends POST request to Comfino API to create new application/transaction.
      *
      * @return ApplicationResponseInterface
      */
     public function createApplicationTransaction(): ApplicationResponseInterface
     {
-        $apiUrl = $this->getApiUrl() . self::COMPERIA_API_TRANSACTION_URI;
-        $transaction = $this->transactionHelper->getTransactionData();
-        $this->sendPostRequest($apiUrl, $transaction);
+        $this->sendPostRequest($this->getApiUrl().'/v1/orders', $this->transactionHelper->getTransactionData());
 
         return new ApplicationResponse($this->curl->getStatus(), $this->decode($this->curl->getBody()));
     }
 
+    public function cancelApplicationTransaction(string $orderId): void
+    {
+        $this->sendPutRequest($this->getApiUrl()."/v1/orders/$orderId/cancel");
+    }
+
+    public function getWidgetKey(): string
+    {
+        $this->sendGetRequest($this->getApiUrl()."/v1/widget-key", []);
+
+        return $this->curl->getBody();
+    }
+
     /**
-     * Change status for application and related order.
+     * Changes status for application and related order.
      *
      * @return void
      * @throws InvalidSignatureException

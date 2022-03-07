@@ -1,6 +1,6 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Observer;
+namespace Comfino\ComfinoGateway\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Payment\Observer\AbstractDataAssignObserver;

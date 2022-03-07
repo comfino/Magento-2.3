@@ -1,8 +1,8 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Model\Connector\Service;
+namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
-use Comperia\ComperiaGateway\Helper\Data;
+use Comfino\ComfinoGateway\Helper\Data;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\SerializerInterface;
@@ -86,26 +86,30 @@ abstract class ServiceAbstract
     }
 
     /**
-     * Send Post Request
-     * @param $url
-     * @param $body
+     * Sends POST request.
+     *
+     * @param string $url
+     * @param mixed $body
      * @return void
      */
-    protected function sendPostRequest($url, $body): void
+    protected function sendPostRequest(string $url, $body): void
     {
         $this->logger->info('REQUEST', ['url' => $url, 'transaction' => $body]);
+
         $this->prepareHeaders();
         $this->curl->post($url, $body);
+
         $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
     }
 
     /**
-     * Send Get Request
-     * @param $url
-     * @param $params
+     * Sends GET request.
+     *
+     * @param string $url
+     * @param array $params
      * @return void
      */
-    protected function sendGetRequest($url, $params): void
+    protected function sendGetRequest(string $url, array $params = []): void
     {
         $this->logger->info(
             'REQUEST',
@@ -116,13 +120,34 @@ abstract class ServiceAbstract
                 'body' => ''
             ]
         );
+
         $this->prepareHeaders();
         $this->curl->get($url.'?'.http_build_query($params));
+
         $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
     }
 
     /**
-     * Prepare Headers for CURL request
+     * Sends PUT request.
+     *
+     * @param string $url
+     * @param mixed $body
+     * @return void
+     */
+    protected function sendPutRequest(string $url, $body = null): void
+    {
+        $this->logger->info('REQUEST', ['url' => $url, 'transaction' => $body]);
+
+        $this->prepareHeaders();
+        $this->curl->setOption(CURLOPT_CUSTOMREQUEST, 'PUT');
+        $this->curl->post($url, $body);
+
+        $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
+    }
+
+    /**
+     * Prepares headers for CURL request.
+     *
      * @return void
      */
     private function prepareHeaders(): void
@@ -133,12 +158,19 @@ abstract class ServiceAbstract
     }
 
     /**
-     * Get User Agent  from ProductMetaData (name and version)
+     * Returns User Agent from ProductMetaData (name and version).
+     *
      * @return string
      */
     private function getUserAgent(): string
     {
-        return $this->productMetaData->getName().' '.$this->productMetaData->getVersion();
+        return sprintf(
+            'Magento Comfino [%s, %s], Magento [%s], PHP [%s]',
+            $this->helper->getModuleVersion(),
+            $this->helper->getSetupVersion(),
+            $this->productMetaData->getVersion(),
+            PHP_VERSION
+        );
     }
 
     /**

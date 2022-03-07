@@ -1,12 +1,12 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Model\Ui;
+namespace Comfino\ComfinoGateway\Model\Ui;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 
 class ConfigProvider implements ConfigProviderInterface
 {
-    const CODE = 'comperiapayment';
+    const CODE = 'comfino';
 
     /**
      * @return array

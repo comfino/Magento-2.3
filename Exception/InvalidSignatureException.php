@@ -1,6 +1,6 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Exception;
+namespace Comfino\ComfinoGateway\Exception;
 
 use Magento\Framework\Exception\LocalizedException;
 

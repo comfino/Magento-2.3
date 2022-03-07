@@ -1,8 +1,8 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Model\Connector\Transaction\Response;
+namespace Comfino\ComfinoGateway\Model\Connector\Transaction\Response;
 
-use Comperia\ComperiaGateway\Api\Data\ApplicationResponseInterface;
+use Comfino\ComfinoGateway\Api\Data\ApplicationResponseInterface;
 use Magento\Framework\DataObject;
 use Symfony\Component\HttpFoundation\Response;
 
