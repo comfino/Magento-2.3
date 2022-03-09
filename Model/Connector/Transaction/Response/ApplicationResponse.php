@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ApplicationResponse extends DataObject implements ApplicationResponseInterface
 {
-    const POSITIVE_HTTP_CODES = [
+    private const POSITIVE_HTTP_CODES = [
         Response::HTTP_ACCEPTED,
         Response::HTTP_OK,
         Response::HTTP_CONTINUE,

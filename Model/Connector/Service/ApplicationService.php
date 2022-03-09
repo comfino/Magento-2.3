@@ -22,7 +22,7 @@ use Magento\Checkout\Model\Session;
 
 class ApplicationService extends ServiceAbstract implements ApplicationServiceInterface
 {
-    const NOTIFICATION_URL = 'rest/V1/comfino-gateway/application/status';
+    public const NOTIFICATION_URL = 'rest/V1/comfino-gateway/application/status';
 
     /**
      * @var TransactionHelper
@@ -134,9 +134,11 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
 
     public function getWidgetKey(): string
     {
-        $this->sendGetRequest($this->getApiUrl()."/v1/widget-key", []);
+        if ($this->sendGetRequest($this->getApiUrl()."/v1/widget-key", [])) {
+            return $this->curl->getBody();
+        }
 
-        return $this->curl->getBody();
+        return '';
     }
 
     /**

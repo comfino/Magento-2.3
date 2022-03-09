@@ -9,9 +9,17 @@ use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Webapi\Rest\Request;
 use Psr\Log\LoggerInterface;
 use Magento\Checkout\Model\Session;
+use Symfony\Component\HttpFoundation\Response;
 
 abstract class ServiceAbstract
 {
+    private const POSITIVE_HTTP_CODES = [
+        Response::HTTP_ACCEPTED,
+        Response::HTTP_OK,
+        Response::HTTP_CONTINUE,
+        Response::HTTP_CREATED
+    ];
+
     /**
      * @var Curl
      */
@@ -90,9 +98,10 @@ abstract class ServiceAbstract
      *
      * @param string $url
      * @param mixed $body
-     * @return void
+     *
+     * @return bool
      */
-    protected function sendPostRequest(string $url, $body): void
+    protected function sendPostRequest(string $url, $body): bool
     {
         $this->logger->info('REQUEST', ['url' => $url, 'transaction' => $body]);
 
@@ -100,6 +109,8 @@ abstract class ServiceAbstract
         $this->curl->post($url, $body);
 
         $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
+
+        return $this->isSuccessful();
     }
 
     /**
@@ -107,9 +118,10 @@ abstract class ServiceAbstract
      *
      * @param string $url
      * @param array $params
-     * @return void
+     *
+     * @return bool
      */
-    protected function sendGetRequest(string $url, array $params = []): void
+    protected function sendGetRequest(string $url, array $params = []): bool
     {
         $this->logger->info(
             'REQUEST',
@@ -125,6 +137,8 @@ abstract class ServiceAbstract
         $this->curl->get($url.'?'.http_build_query($params));
 
         $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
+
+        return $this->isSuccessful();
     }
 
     /**
@@ -132,9 +146,10 @@ abstract class ServiceAbstract
      *
      * @param string $url
      * @param mixed $body
-     * @return void
+     *
+     * @return bool
      */
-    protected function sendPutRequest(string $url, $body = null): void
+    protected function sendPutRequest(string $url, $body = null): bool
     {
         $this->logger->info('REQUEST', ['url' => $url, 'transaction' => $body]);
 
@@ -143,6 +158,8 @@ abstract class ServiceAbstract
         $this->curl->post($url, $body);
 
         $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
+
+        return $this->isSuccessful();
     }
 
     /**
@@ -174,8 +191,10 @@ abstract class ServiceAbstract
     }
 
     /**
-     * Decode json
+     * Decodes JSON.
+     *
      * @param $json
+     *
      * @return array|bool|float|int|string
      */
     protected function decode($json)
@@ -184,8 +203,10 @@ abstract class ServiceAbstract
     }
 
     /**
-     * Encode array to json
+     * Encodes array to JSON.
+     *
      * @param $json
+     *
      * @return bool|string
      */
     protected function encode($json)
@@ -204,5 +225,13 @@ abstract class ServiceAbstract
         $hash = hash('sha3-256', $this->helper->getApiKey().$jsonData);
 
         return $crSignature === $hash;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isSuccessful(): bool
+    {
+        return in_array($this->curl->getStatus(), self::POSITIVE_HTTP_CODES, true);
     }
 }

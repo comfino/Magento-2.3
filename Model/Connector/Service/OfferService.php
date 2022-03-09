@@ -58,13 +58,18 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
     {
         $loanAmount = $this->session->getQuote()->getGrandTotal() * 100;
 
-        $this->sendGetRequest($this->getApiUrl()."/v1/financial-products", ['loanAmount' => $loanAmount]);
+        if ($this->sendGetRequest($this->getApiUrl()."/v1/financial-products", ['loanAmount' => $loanAmount])) {
+            return $this->getOffersResponse($loanAmount);
+        }
 
-        return $this->getOffersResponse($loanAmount);
+        return [];
     }
 
     /**
+     * Processes offer data from API response.
+     *
      * @param float $total
+     *
      * @return array
      */
     private function getOffersResponse(float $total): array
