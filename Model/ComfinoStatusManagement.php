@@ -39,14 +39,17 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
         self::PAID_STATUS,
         self::WAITING_FOR_PAYMENT_STATUS,
     ];
+
     /**
      * @var OrderRepository
      */
     private $orderRepository;
+
     /**
      * @var ComfinoApplicationFactory
      */
     private $comfinoApplicationFactory;
+
     /**
      * @var ApplicationResource
      */
@@ -54,6 +57,7 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
 
     /**
      * ComfinoStatusManagement constructor.
+     *
      * @param OrderRepository $orderRepository
      * @param ComfinoApplicationFactory $comfinoApplicationFactory
      * @param ApplicationResource $applicationResource
@@ -69,9 +73,11 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
     }
 
     /**
-     * Change status for application and related order
+     * Change status for application and related order.
+     *
      * @param int $applicationId
      * @param string $orderStatus
+     *
      * @throws AlreadyExistsException
      * @throws InputException
      * @throws InvalidExternalIdException
@@ -84,37 +90,34 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
         if (!$application->getId()) {
             throw new InvalidExternalIdException(__('Invalid external ID!'));
         }
-        $this->changeApplicationStatus($application, $orderStatus);
 
+        $this->changeApplicationStatus($application, $orderStatus);
         $this->changeOrderStatus($application->getOrderId(), $orderStatus);
     }
 
     /**
-     * Get application by id
-     * @param int $id
-     * @return ComfinoApplication
-     */
-    private function getApplication(int $id): ComfinoApplication
-    {
-        $application = $this->comfinoApplicationFactory->create();
-        $this->applicationResource->load($application, $id, 'external_id');
-        return $application;
-    }
-
-    /**
-     * Change comfino application status
-     * @param ComfinoApplication $application
-     * @param string $status
+     * Handle application save failure.
+     *
+     * @param OrderInterface $order
+     *
      * @throws AlreadyExistsException
+     * @throws InputException
+     * @throws NoSuchEntityException
      */
-    private function changeApplicationStatus(ComfinoApplication $application, string $status): void
+    public function applicationFailureStatus(OrderInterface $order): void
     {
-        $application->setStatus($status);
-        $this->applicationResource->save($application);
+        $status = Order::STATE_PENDING_PAYMENT;
+        $order->setStatus($status)->setState($status);
+        $order->addStatusToHistory(
+            $order->getStatus(),
+            __('Unsuccessful attempt to open the application. Communication error with Comfino API.')
+        );
+        $this->orderRepository->save($order);
     }
 
     /**
-     * Change Status for Order and add status to history
+     * Change status for order and add status to history.
+     *
      * @throws NoSuchEntityException
      * @throws AlreadyExistsException
      * @throws InputException
@@ -124,6 +127,7 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
         $order = $this->orderRepository->get($orderId);
         $origStatus = $order->getStatus();
         $this->setOrderStatus($order, $status);
+
         if ($origStatus !== Order::STATE_PROCESSING && $this->isCompletedStatus($status)) {
             $amount = $order->getGrandTotal();
             $payment = $order->getPayment();
@@ -135,8 +139,37 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
     }
 
     /**
+     * Get application by id.
+     *
+     * @param int $id
+     *
+     * @return ComfinoApplication
+     */
+    private function getApplication(int $id): ComfinoApplication
+    {
+        $application = $this->comfinoApplicationFactory->create();
+        $this->applicationResource->load($application, $id, 'external_id');
+        return $application;
+    }
+
+    /**
+     * Change Comfino application status.
+     *
+     * @param ComfinoApplication $application
+     * @param string $status
+     *
+     * @throws AlreadyExistsException
+     */
+    private function changeApplicationStatus(ComfinoApplication $application, string $status): void
+    {
+        $application->setStatus($status);
+        $this->applicationResource->save($application);
+    }
+
+    /**
      * @param $status
      * @param $group
+     *
      * @return bool
      */
     private function checkStatusGroup($status, $group): bool
@@ -157,6 +190,7 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
 
     /**
      * @param $status
+     *
      * @return mixed|string
      */
     private function mapStatus($status)
@@ -170,11 +204,13 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
         if ($this->isRejectedStatus($status)) {
             return Order::STATE_CANCELED;
         }
+
         return $status;
     }
 
     /**
      * @param $status
+     *
      * @return bool
      */
     private function isRejectedStatus($status): bool
@@ -184,6 +220,7 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
 
     /**
      * @param $status
+     *
      * @return bool
      */
     private function isNewStatus($status): bool
@@ -193,28 +230,11 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
 
     /**
      * @param $status
+     *
      * @return bool
      */
     private function isCompletedStatus($status): bool
     {
         return $this->checkStatusGroup($status, ComfinoStatusManagement::COMPLETED_STATE);
-    }
-
-    /**
-     * Handle application save failure
-     * @param OrderInterface $order
-     * @throws AlreadyExistsException
-     * @throws InputException
-     * @throws NoSuchEntityException
-     */
-    public function applicationFailureStatus(OrderInterface $order): void
-    {
-        $status = Order::STATE_PENDING_PAYMENT;
-        $order->setStatus($status)->setState($status);
-        $order->addStatusToHistory(
-            $order->getStatus(),
-            __('Unsuccessful attempt to open the application. Communication error with Comfino API.')
-        );
-        $this->orderRepository->save($order);
     }
 }
