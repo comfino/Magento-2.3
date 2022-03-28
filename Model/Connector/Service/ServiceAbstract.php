@@ -85,12 +85,23 @@ abstract class ServiceAbstract
     }
 
     /**
-     * Get Api Url depending on sandbox activation state
+     * Returns API URL depending on sandbox activation state.
+     *
      * @return string
      */
     protected function getApiUrl(): string
     {
         return $this->helper->isSandboxEnabled() ? $this->helper->getSandboxUrl() : $this->helper->getProdUrl();
+    }
+
+    /**
+     * Returns API key depending on sandbox activation state.
+     *
+     * @return string
+     */
+    protected function getApiKey(): string
+    {
+        return $this->helper->isSandboxEnabled() ? $this->helper->getSandboxApiKey() : $this->helper->getApiKey();
     }
 
     /**
@@ -170,7 +181,7 @@ abstract class ServiceAbstract
     private function prepareHeaders(): void
     {
         $this->curl->addHeader('Content-Type', 'application/json');
-        $this->curl->addHeader('Api-Key', $this->helper->getApiKey());
+        $this->curl->addHeader('Api-Key', $this->getApiKey());
         $this->curl->addHeader('User-Agent', $this->getUserAgent());
     }
 

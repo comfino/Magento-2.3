@@ -149,6 +149,7 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
     {
         $application = $this->comfinoApplicationFactory->create();
         $this->applicationResource->load($application, $id, 'external_id');
+
         return $application;
     }
 

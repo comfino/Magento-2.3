@@ -26,7 +26,7 @@
 "API key","Klucz API"
 "Use test environment","Użyj środowiska testowego"
 "Tax ID","NIP firmy"
-"Minimal amount in cart","Minimalna kwota w koszyku"
+"Minimal order value","Minimalna wartość zamówienia"
 "Widget is active?","Widget włączony?"
 "Widget key","Klucz widgetu"
 "Widget price element selector","Selektor elementu ceny widgetu"
@@ -42,3 +42,4 @@
 "Widget initialization code","Kod inicjalizacji widgetu"
 "For developers","Dla developerów"
 "Use test environment","Użyj środowiska testowego"
+"Test environment API key","Klucz API środowiska testowego"

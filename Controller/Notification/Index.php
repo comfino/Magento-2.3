@@ -8,6 +8,8 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\Result\Json;
+use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Serialize\SerializerInterface;
 
@@ -26,6 +28,11 @@ class Index extends Action
     private $serializer;
 
     /**
+     * @var JsonFactory
+     */
+    private $resultJsonFactory;
+
+    /**
      * @var Data
      */
     private $helper;
@@ -41,6 +48,7 @@ class Index extends Action
      * @param Context $context
      * @param RequestInterface $request
      * @param SerializerInterface $serializer
+     * @param JsonFactory $resultJsonFactory
      * @param Data $helper
      * @param ComfinoStatusManagementInterface $comfinoStatusManagement
      */
@@ -48,11 +56,13 @@ class Index extends Action
         Context $context,
         RequestInterface $request,
         SerializerInterface $serializer,
+        JsonFactory $resultJsonFactory,
         Data $helper,
         ComfinoStatusManagementInterface $comfinoStatusManagement
     ) {
         $this->request = $request;
         $this->serializer = $serializer;
+        $this->resultJsonFactory = $resultJsonFactory;
         $this->helper = $helper;
         $this->statusManagement = $comfinoStatusManagement;
 
@@ -65,34 +75,31 @@ class Index extends Action
     public function execute()
     {
         $jsonContent = $this->request->getContent();
+
+        if (!$this->isValidSignature($jsonContent)) {
+            return $this->setResponse(400, __('Failed comparison of CR-Signature and shop hash.'));
+        }
+
         $content = $this->serializer->unserialize($jsonContent);
 
         if (!isset($content['externalId'])) {
-            $this->setResponse(404, __('Empty content.'));
-            return $this->_response;
-        }
-        if (!$this->isValidSignature($jsonContent)) {
-            $this->setResponse(400, __('Failed comparison of CR-Signature and shop hash.'));
-            return $this->_response;
+            return $this->setResponse(400, __('Empty content.'));
         }
 
         $this->statusManagement->changeApplicationAndOrderStatus($content['externalId'], $content['status']);
 
-        $this->setResponse(200, __('Application Status Changed'));
-
-        return $this->_response;
+        return $this->setResponse(200, 'OK');
     }
 
     /**
      * @param int $code
      * @param string $content
-     * @return void
+     *
+     * @return Json
      */
-    private function setResponse(int $code, string $content): void
+    private function setResponse(int $code, string $content): Json
     {
-        $this->getResponse()
-            ->setStatusCode($code)
-            ->setContent($content);
+        return $this->resultJsonFactory->create()->setHttpResponseCode($code)->setData(['status' => $content]);
     }
 
     /**

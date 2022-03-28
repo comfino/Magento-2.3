@@ -6,7 +6,7 @@ use Magento\Checkout\Model\ConfigProviderInterface;
 
 class ConfigProvider implements ConfigProviderInterface
 {
-    const CODE = 'comfino';
+    public const CODE = 'comfino';
 
     /**
      * @return array

@@ -81,14 +81,14 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
     }
 
     /**
-     * Creates Application in Comfino API and Db Model.
+     * Creates application in the Comfino API and db model.
      *
      * @return array
      * @throws AlreadyExistsException
      */
     public function save(): array
     {
-        // Connect to Comfino API and create new application/transaction
+        // Connect to the Comfino API and create new application/transaction
         $response = $this->createApplicationTransaction();
 
         if (!$response->isSuccessful()) {
@@ -116,7 +116,7 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
     }
 
     /**
-     * Sends POST request to Comfino API to create new application/transaction.
+     * Sends POST request to the Comfino API to create new application/transaction.
      *
      * @return ApplicationResponseInterface
      */
@@ -127,15 +127,27 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         return new ApplicationResponse($this->curl->getStatus(), $this->decode($this->curl->getBody()));
     }
 
+    /**
+     * Sends PUT request to the Comfino API to cancel application/transaction.
+     *
+     * @param string $orderId
+     *
+     * @return void
+     */
     public function cancelApplicationTransaction(string $orderId): void
     {
         $this->sendPutRequest($this->getApiUrl()."/v1/orders/$orderId/cancel");
     }
 
+    /**
+     * Returns widget key received from Comfino API.
+     *
+     * @return string
+     */
     public function getWidgetKey(): string
     {
         if ($this->sendGetRequest($this->getApiUrl()."/v1/widget-key", [])) {
-            return $this->curl->getBody();
+            return $this->decode($this->curl->getBody());
         }
 
         return '';

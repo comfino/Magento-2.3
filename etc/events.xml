@@ -4,6 +4,9 @@
         <observer name="comfino_gateway_data_assign" instance="Comfino\ComfinoGateway\Observer\DataAssignObserver"/>
     </event>
     <event name="admin_system_config_changed_section_payment">
-        <observer name="custom_admin_system_config_changed_section_payment" instance="Comfino\ComfinoGateway\Observer\ConfigObserver"/>
+        <observer name="comfino_gateway_config_changed" instance="Comfino\ComfinoGateway\Observer\ConfigObserver"/>
+    </event>
+    <event name="sales_order_save_after">
+        <observer name="comfino_gateway_order_save" instance="Comfino\ComfinoGateway\Observer\OrderObserver"/>
     </event>
 </config>

@@ -26,6 +26,7 @@ class Data extends AbstractHelper
     public const XML_PATH_WIDGET_EMBED_METHOD = 'payment/comfino/widget_embed_method';
     public const XML_PATH_WIDGET_CODE = 'payment/comfino/widget_code';
     public const XML_PATH_SANDBOX_ENABLED = 'payment/comfino/sandbox';
+    public const XML_PATH_SANDBOX_API_KEY = 'payment/comfino/sandbox_api_key';
 
     private const MODULE_NAME = 'Comfino_ComfinoGateway';
 
@@ -94,11 +95,21 @@ class Data extends AbstractHelper
     /**
      * Returns API key.
      *
-     * @return string|null
+     * @return string
      */
-    public function getApiKey(): ?string
+    public function getApiKey(): string
     {
-        return $this->getConfigValue(self::XML_PATH_API_KEY);
+        return $this->getConfigValue(self::XML_PATH_API_KEY) ?? '';
+    }
+
+    /**
+     * Returns API key for sandbox.
+     *
+     * @return string
+     */
+    public function getSandboxApiKey(): string
+    {
+        return $this->getConfigValue(self::XML_PATH_SANDBOX_API_KEY) ?? '';
     }
 
     /**
@@ -126,9 +137,9 @@ class Data extends AbstractHelper
      *
      * @return bool
      */
-    public function getWidgetIsActive(): bool
+    public function isWidgetActive(): bool
     {
-        return $this->getConfigValue(self::XML_PATH_WIDGET_ENABLED) === '1';
+        return $this->scopeConfig->isSetFlag(self::XML_PATH_WIDGET_ENABLED, ScopeInterface::SCOPE_STORE);
     }
 
     /**
