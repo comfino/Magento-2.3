@@ -176,13 +176,33 @@ class TransactionHelper extends AbstractHelper
                 'lastName' => $shippingAddress->getLastname(),
                 'ip' => $this->remoteAddress->getRemoteAddress(),
                 'email' => $order->getCustomerEmail(),
-                'phoneNumber' => $order->getShippingAddress()->getTelephone(),
+                'phoneNumber' => $shippingAddress->getTelephone(),
                 'logged' => $this->customerSession->isLoggedIn(),
                 'address' => [
                     'street' => implode(', ', $shippingAddress->getStreet()),
                     'postalCode' => $shippingAddress->getPostcode(),
                     'city' => $shippingAddress->getCity(),
                     'countryCode' => $shippingAddress->getCountryId(),
+                ],
+            ];
+        }
+
+        if ($order->getBillingAddress()) {
+            /** @var Address $billingAddress */
+            $billingAddress = $order->getBillingAddress();
+
+            return [
+                'firstName' => $billingAddress->getFirstname(),
+                'lastName' => $billingAddress->getLastname(),
+                'ip' => $this->remoteAddress->getRemoteAddress(),
+                'email' => $order->getCustomerEmail(),
+                'phoneNumber' => $order->getShippingAddress()->getTelephone(),
+                'logged' => $this->customerSession->isLoggedIn(),
+                'address' => [
+                    'street' => implode(', ', $billingAddress->getStreet()),
+                    'postalCode' => $billingAddress->getPostcode(),
+                    'city' => $billingAddress->getCity(),
+                    'countryCode' => $billingAddress->getCountryId(),
                 ],
             ];
         }
