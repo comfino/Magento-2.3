@@ -196,7 +196,7 @@ class TransactionHelper extends AbstractHelper
                 'lastName' => $billingAddress->getLastname(),
                 'ip' => $this->remoteAddress->getRemoteAddress(),
                 'email' => $order->getCustomerEmail(),
-                'phoneNumber' => $order->getShippingAddress()->getTelephone(),
+                'phoneNumber' => $billingAddress->getTelephone(),
                 'logged' => $this->customerSession->isLoggedIn(),
                 'address' => [
                     'street' => implode(', ', $billingAddress->getStreet()),
