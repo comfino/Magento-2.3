@@ -2,17 +2,41 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <payment>
-            <comperiapayment>
+            <comfino>
                 <active>1</active>
                 <title>Comfino</title>
                 <order_status>pending_payment</order_status>
                 <instructions>Instruction.</instructions>
-                <model>ComperiaFacade</model>
+                <model>ComfinoFacade</model>
                 <group>offline</group>
-                <produrl>https://api-ecommerce.comfino.pl</produrl>
-                <sandboxurl>https://api-ecommerce.ecraty.pl</sandboxurl>
                 <can_use_checkout>1</can_use_checkout>
-            </comperiapayment>
+                <min_order_total>30</min_order_total>
+                <widget_enabled>0</widget_enabled>
+                <widget_price_selector>span.price</widget_price_selector>
+                <widget_target_selector>div.product-add-form</widget_target_selector>
+                <widget_type>with-modal</widget_type>
+                <widget_offer_type>CONVENIENT_INSTALLMENTS</widget_offer_type>
+                <widget_embed_method>INSERT_INTO_LAST</widget_embed_method>
+                <widget_code>
+var script = document.createElement('script');
+script.onload = function () {
+    ComfinoProductWidget.init({
+        widgetKey: '{WIDGET_KEY}',
+        priceSelector: '{WIDGET_PRICE_SELECTOR}',
+        widgetTargetSelector: '{WIDGET_TARGET_SELECTOR}',
+        price: null,
+        type: '{WIDGET_TYPE}',
+        offerType: '{OFFER_TYPE}',
+        embedMethod: '{EMBED_METHOD}',
+        callbackBefore: function () {},
+        callbackAfter: function () {}
+    });
+};
+script.src = '{WIDGET_SCRIPT_URL}';
+script.async = true;
+document.getElementsByTagName('head')[0].appendChild(script);
+                </widget_code>
+            </comfino>
         </payment>
     </default>
 </config>

@@ -11,12 +11,12 @@ Magento 2.3.5+
 
 After downloading the comfino.zip archive and unpacking, move the contents of the *comfino* directory to the Magento modules directory.
 
-Target location: *magento/app/code/Comperia/ComperiaGateway*
+Target location: *magento/app/code/Comfino/ComfinoGateway*
 
 where:
 
 * *magento* - the name of the base directory of the store (may be different than in the above example)
-* *Comperia*, *ComperiaGateway* - subdirectories that should be created in the directory *app/code*
+* *Comfino*, *ComfinoGateway* - subdirectories that should be created in the directory *app/code*
 
 ![Installation](images/dir_structure1.png "Installation")
 ![Installation](images/dir_structure2.png "Installation")
@@ -29,13 +29,13 @@ The executed command should return a response similar to the following:
 
 ![Installation](images/magento_console1.png "Installation")
 
-The *Comperia_ComperiaGateway* module should be present on the list of inactive modules.
+The *Comfino_ComfinoGateway* module should be present on the list of inactive modules.
 
 ![Installation](images/magento_console2.png "Installation")
 
 In order to activate the module, execute the following commands:
 
-* `./bin/magento module:enable Comperia_ComperiaGateway --clear-static-content`
+* `./bin/magento module:enable Comfino_ComfinoGateway --clear-static-content`
 * `./bin/magento setup:upgrade`
 * `./bin/magento setup:di:compile`
 * `./bin/magento setup:static-content:deploy -f`
@@ -52,7 +52,7 @@ To access the module settings, follow the steps below:
 ![Configuration](images/en/menu3.png "Configuration")
 ![Configuration](images/en/menu4.png "Configuration")
 
-The most important field that should be completed is: `"API KEY"`.
+The most important field that should be completed is: `"API key"`.
 
 ![Configuration](images/en/mod_config.png "Configuration")
 
@@ -60,7 +60,7 @@ The most important field that should be completed is: `"API KEY"`.
 
 In order to deactivate the module, run the following command in the console from the Magento root directory:
 
-`./bin/magento module:disable Comperia_ComperiaGateway`
+`./bin/magento module:disable Comfino_ComfinoGateway`
 
 ## REMARKS
 

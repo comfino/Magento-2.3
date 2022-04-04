@@ -1,5 +1,5 @@
 {
-    "comperia_application": {
+    "comfino_application": {
         "column": {
             "id": true,
             "status": true,
@@ -11,7 +11,7 @@
             "order_id": true
         },
         "index": {
-            "COMPERIA_APPLICATION_ID": true
+            "COMFINO_APPLICATION_ID": true
         },
         "constraint": {
             "PRIMARY": true

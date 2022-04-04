@@ -1,17 +1,25 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Model\Connector\Service;
+namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
-use Comperia\ComperiaGateway\Helper\Data;
+use Comfino\ComfinoGateway\Helper\Data;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Webapi\Rest\Request;
 use Psr\Log\LoggerInterface;
 use Magento\Checkout\Model\Session;
+use Symfony\Component\HttpFoundation\Response;
 
 abstract class ServiceAbstract
 {
+    private const POSITIVE_HTTP_CODES = [
+        Response::HTTP_ACCEPTED,
+        Response::HTTP_OK,
+        Response::HTTP_CONTINUE,
+        Response::HTTP_CREATED
+    ];
+
     /**
      * @var Curl
      */
@@ -77,7 +85,8 @@ abstract class ServiceAbstract
     }
 
     /**
-     * Get Api Url depending on sandbox activation state
+     * Returns API URL depending on sandbox activation state.
+     *
      * @return string
      */
     protected function getApiUrl(): string
@@ -86,26 +95,44 @@ abstract class ServiceAbstract
     }
 
     /**
-     * Send Post Request
-     * @param $url
-     * @param $body
-     * @return void
+     * Returns API key depending on sandbox activation state.
+     *
+     * @return string
      */
-    protected function sendPostRequest($url, $body): void
+    protected function getApiKey(): string
     {
-        $this->logger->info('REQUEST', ['url' => $url, 'transaction' => $body]);
-        $this->prepareHeaders();
-        $this->curl->post($url, $body);
-        $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
+        return $this->helper->isSandboxEnabled() ? $this->helper->getSandboxApiKey() : $this->helper->getApiKey();
     }
 
     /**
-     * Send Get Request
-     * @param $url
-     * @param $params
-     * @return void
+     * Sends POST request.
+     *
+     * @param string $url
+     * @param mixed $body
+     *
+     * @return bool
      */
-    protected function sendGetRequest($url, $params): void
+    protected function sendPostRequest(string $url, $body): bool
+    {
+        $this->logger->info('REQUEST', ['url' => $url, 'transaction' => $body]);
+
+        $this->prepareHeaders();
+        $this->curl->post($url, $body);
+
+        $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
+
+        return $this->isSuccessful();
+    }
+
+    /**
+     * Sends GET request.
+     *
+     * @param string $url
+     * @param array $params
+     *
+     * @return bool
+     */
+    protected function sendGetRequest(string $url, array $params = []): bool
     {
         $this->logger->info(
             'REQUEST',
@@ -116,34 +143,69 @@ abstract class ServiceAbstract
                 'body' => ''
             ]
         );
+
         $this->prepareHeaders();
         $this->curl->get($url.'?'.http_build_query($params));
+
         $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
+
+        return $this->isSuccessful();
     }
 
     /**
-     * Prepare Headers for CURL request
+     * Sends PUT request.
+     *
+     * @param string $url
+     * @param mixed $body
+     *
+     * @return bool
+     */
+    protected function sendPutRequest(string $url, $body = null): bool
+    {
+        $this->logger->info('REQUEST', ['url' => $url, 'transaction' => $body]);
+
+        $this->prepareHeaders();
+        $this->curl->setOption(CURLOPT_CUSTOMREQUEST, 'PUT');
+        $this->curl->post($url, $body);
+
+        $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
+
+        return $this->isSuccessful();
+    }
+
+    /**
+     * Prepares headers for CURL request.
+     *
      * @return void
      */
     private function prepareHeaders(): void
     {
         $this->curl->addHeader('Content-Type', 'application/json');
-        $this->curl->addHeader('Api-Key', $this->helper->getApiKey());
+        $this->curl->addHeader('Api-Key', $this->getApiKey());
         $this->curl->addHeader('User-Agent', $this->getUserAgent());
     }
 
     /**
-     * Get User Agent  from ProductMetaData (name and version)
+     * Returns User Agent from ProductMetaData (name and version).
+     *
      * @return string
      */
     private function getUserAgent(): string
     {
-        return $this->productMetaData->getName().' '.$this->productMetaData->getVersion();
+        return sprintf(
+            'Magento Comfino [%s, %s], Magento [%s], PHP [%s]',
+            $this->helper->getModuleVersion(),
+            $this->helper->getSetupVersion(),
+            $this->productMetaData->getVersion(),
+            PHP_VERSION
+        );
     }
 
     /**
-     * Decode json
+     * Decodes JSON.
+     *
      * @param $json
+     *
      * @return array|bool|float|int|string
      */
     protected function decode($json)
@@ -152,8 +214,10 @@ abstract class ServiceAbstract
     }
 
     /**
-     * Encode array to json
+     * Encodes array to JSON.
+     *
      * @param $json
+     *
      * @return bool|string
      */
     protected function encode($json)
@@ -172,5 +236,13 @@ abstract class ServiceAbstract
         $hash = hash('sha3-256', $this->helper->getApiKey().$jsonData);
 
         return $crSignature === $hash;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isSuccessful(): bool
+    {
+        return in_array($this->curl->getStatus(), self::POSITIVE_HTTP_CODES, true);
     }
 }

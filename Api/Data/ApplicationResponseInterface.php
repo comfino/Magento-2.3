@@ -1,6 +1,6 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Api\Data;
+namespace Comfino\ComfinoGateway\Api\Data;
 
 interface ApplicationResponseInterface
 {

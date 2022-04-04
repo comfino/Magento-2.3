@@ -1,8 +1,8 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Helper;
+namespace Comfino\ComfinoGateway\Helper;
 
-use Comperia\ComperiaGateway\Api\Data\ApplicationResponseInterface;
+use Comfino\ComfinoGateway\Api\Data\ApplicationResponseInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Checkout\Model\Session;
@@ -10,7 +10,7 @@ use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Catalog\Helper\Image;
 use Magento\Catalog\Model\Product;
-use Comperia\ComperiaGateway\Controller\Notification\Index as NotificationController;
+use Comfino\ComfinoGateway\Controller\Notification\Index as NotificationController;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Sales\Model\Order;
@@ -39,17 +39,23 @@ class TransactionHelper extends AbstractHelper
     private $remoteAddress;
 
     /**
-     * @var UrlInterface
-     */
-    private $urlBuilder;
-
-    /**
      * @var SerializerInterface
      */
     private $serializer;
 
     /**
+     * @var UrlInterface
+     */
+    private $urlBuilder;
+
+    /**
+     * @var Data
+     */
+    private $helper;
+
+    /**
      * TransactionHelper constructor.
+     *
      * @param Context $context
      * @param Image $imageHelper
      * @param Session $session
@@ -57,6 +63,7 @@ class TransactionHelper extends AbstractHelper
      * @param RemoteAddress $remoteAddress
      * @param SerializerInterface $serializer
      * @param UrlInterface $urlBuilder
+     * @param Data $helper
      */
     public function __construct(
         Context $context,
@@ -65,7 +72,8 @@ class TransactionHelper extends AbstractHelper
         CustomerSession $customerSession,
         RemoteAddress $remoteAddress,
         SerializerInterface $serializer,
-        UrlInterface $urlBuilder
+        UrlInterface $urlBuilder,
+        Data $helper
     ) {
         $this->imageHelper = $imageHelper;
         $this->session = $session;
@@ -73,12 +81,14 @@ class TransactionHelper extends AbstractHelper
         $this->remoteAddress = $remoteAddress;
         $this->urlBuilder = $urlBuilder;
         $this->serializer = $serializer;
+        $this->helper = $helper;
 
         parent::__construct($context);
     }
 
     /**
-     * Get JSON with transaction data
+     * Get JSON with transaction data.
+     *
      * @return string
      */
     public function getTransactionData(): string
@@ -87,7 +97,8 @@ class TransactionHelper extends AbstractHelper
     }
 
     /**
-     * Get Transaction Data for Comperia API request
+     * Returns transaction data for Comfino API request.
+     *
      * @return array
      */
     private function createTransactionData(): array
@@ -112,7 +123,9 @@ class TransactionHelper extends AbstractHelper
                 'products' => $this->buildProductsList($order),
             ],
             'customer' => $this->buildCustomer($order),
-            'logged' => $this->customerSession->isLoggedIn(),
+            'seller' => [
+                'taxId' => $this->helper->getTaxId()
+            ]
         ];
     }
 
@@ -146,8 +159,10 @@ class TransactionHelper extends AbstractHelper
     }
 
     /**
-     * Build Customer Info
+     * Build Customer Info.
+     *
      * @param Order $order
+     *
      * @return array
      */
     private function buildCustomer(Order $order): array
@@ -161,7 +176,8 @@ class TransactionHelper extends AbstractHelper
                 'lastName' => $shippingAddress->getLastname(),
                 'ip' => $this->remoteAddress->getRemoteAddress(),
                 'email' => $order->getCustomerEmail(),
-                'phoneNumber' => $order->getShippingAddress()->getTelephone(),
+                'phoneNumber' => $shippingAddress->getTelephone(),
+                'logged' => $this->customerSession->isLoggedIn(),
                 'address' => [
                     'street' => implode(', ', $shippingAddress->getStreet()),
                     'postalCode' => $shippingAddress->getPostcode(),
@@ -171,12 +187,34 @@ class TransactionHelper extends AbstractHelper
             ];
         }
 
+        if ($order->getBillingAddress()) {
+            /** @var Address $billingAddress */
+            $billingAddress = $order->getBillingAddress();
+
+            return [
+                'firstName' => $billingAddress->getFirstname(),
+                'lastName' => $billingAddress->getLastname(),
+                'ip' => $this->remoteAddress->getRemoteAddress(),
+                'email' => $order->getCustomerEmail(),
+                'phoneNumber' => $billingAddress->getTelephone(),
+                'logged' => $this->customerSession->isLoggedIn(),
+                'address' => [
+                    'street' => implode(', ', $billingAddress->getStreet()),
+                    'postalCode' => $billingAddress->getPostcode(),
+                    'city' => $billingAddress->getCity(),
+                    'countryCode' => $billingAddress->getCountryId(),
+                ],
+            ];
+        }
+
         return [];
     }
 
     /**
-     * Parse data to Transaction model
+     * Parse data to Transaction model.
+     *
      * @param ApplicationResponseInterface $model
+     *
      * @return array
      */
     public function parseModel(ApplicationResponseInterface $model): array
@@ -184,6 +222,7 @@ class TransactionHelper extends AbstractHelper
         $data = $model->getData();
         $order = $this->session->getLastRealOrder();
         $data[ApplicationResponseInterface::ORDER_ID] = $order->getEntityId();
+
         return $data;
     }
 }

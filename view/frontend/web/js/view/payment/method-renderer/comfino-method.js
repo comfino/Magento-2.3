@@ -18,7 +18,7 @@ define(
             redirectAfterPlaceOrder: false,
             redirectUrl: '',
             defaults: {
-                template: 'Comperia_ComperiaGateway/payment/ComperiaGateway',
+                template: 'Comfino_ComfinoGateway/payment/ComfinoGateway',
                 loanType: null,
                 loanTerm: null,
                 isAvailable: ko.observable(false)
@@ -54,7 +54,7 @@ define(
             afterPlaceOrder: function () {
                 let self = this;
 
-                fetch(url.build('rest/V1/comperia-gateway/application/save'), { method: 'POST' })
+                fetch(url.build('rest/V1/comfino-gateway/application/save'), { method: 'POST' })
                     .then(response => response.json())
                     .then(function (data) {
                         fullScreenLoader.stopLoader();
@@ -218,7 +218,7 @@ define(
 
                 self.isAvailable(true);
 
-                fetch(url.build('rest/V1/comperia-gateway/offers'))
+                fetch(url.build('rest/V1/comfino-gateway/offers'))
                     .then(response => response.json())
                     .then(function (data) {
                         if (data === null || data.length === 0) {
@@ -256,6 +256,11 @@ define(
                         });
 
                         document.getElementById('modal-repr-example').querySelector('button.comfino-modal-exit').addEventListener('click', function (event) {
+                            event.preventDefault();
+                            document.getElementById('modal-repr-example').classList.remove('open');
+                        });
+
+                        document.getElementById('modal-repr-example').querySelector('div.comfino-modal-exit').addEventListener('click', function (event) {
                             event.preventDefault();
                             document.getElementById('modal-repr-example').classList.remove('open');
                         });

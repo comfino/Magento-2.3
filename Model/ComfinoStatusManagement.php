@@ -1,27 +1,29 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Model;
+namespace Comfino\ComfinoGateway\Model;
 
-use Comperia\ComperiaGateway\Api\ComperiaStatusManagementInterface;
-use Comperia\ComperiaGateway\Exception\InvalidExternalIdException;
-use Comperia\ComperiaGateway\Model\ResourceModel\ComperiaApplication as ApplicationResource;
+use Comfino\ComfinoGateway\Api\ComfinoStatusManagementInterface;
+use Comfino\ComfinoGateway\Exception\InvalidExternalIdException;
+use Comfino\ComfinoGateway\Model\ResourceModel\ComfinoApplication as ApplicationResource;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderRepository;
+use Psr\Log\LoggerInterface;
 
-class ComperiaStatusManagement implements ComperiaStatusManagementInterface
+class ComfinoStatusManagement implements ComfinoStatusManagementInterface
 {
     public const CREATED_STATUS = 'CREATED';
-    public const WAITING_FOR_FILLING_STATUS = "WAITING_FOR_FILLING";
-    public const WAITING_FOR_CONFIRMATION_STATUS = "WAITING_FOR_CONFIRMATION";
-    public const WAITING_FOR_PAYMENT_STATUS = "WAITING_FOR_PAYMENT";
-    public const ACCEPTED_STATUS = "ACCEPTED";
-    public const REJECTED_STATUS = "REJECTED";
-    public const CANCELLED_STATUS = "CANCELLED";
-    public const PAID_STATUS = "PAID";
+    public const WAITING_FOR_FILLING_STATUS = 'WAITING_FOR_FILLING';
+    public const WAITING_FOR_CONFIRMATION_STATUS = 'WAITING_FOR_CONFIRMATION';
+    public const WAITING_FOR_PAYMENT_STATUS = 'WAITING_FOR_PAYMENT';
+    public const ACCEPTED_STATUS = 'ACCEPTED';
+    public const REJECTED_STATUS = 'REJECTED';
+    public const CANCELLED_BY_SHOP_STATUS = 'CANCELLED_BY_SHOP';
+    public const CANCELLED_STATUS = 'CANCELLED';
+    public const PAID_STATUS = 'PAID';
 
     public const NEW_STATE = [
         self::CREATED_STATUS,
@@ -31,6 +33,7 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
 
     public const REJECTED_STATE = [
         self::REJECTED_STATUS,
+        self::CANCELLED_BY_SHOP_STATUS,
         self::CANCELLED_STATUS,
     ];
 
@@ -39,39 +42,53 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
         self::PAID_STATUS,
         self::WAITING_FOR_PAYMENT_STATUS,
     ];
+
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
     /**
      * @var OrderRepository
      */
     private $orderRepository;
+
     /**
-     * @var ComperiaApplicationFactory
+     * @var ComfinoApplicationFactory
      */
-    private $comperiaApplicationFactory;
+    private $comfinoApplicationFactory;
+
     /**
      * @var ApplicationResource
      */
     private $applicationResource;
 
     /**
-     * ComperiaStatusManagement constructor.
+     * ComfinoStatusManagement constructor.
+     *
+     * @param LoggerInterface $logger
      * @param OrderRepository $orderRepository
-     * @param ComperiaApplicationFactory $comperiaApplicationFactory
+     * @param ComfinoApplicationFactory $comfinoApplicationFactory
      * @param ApplicationResource $applicationResource
      */
     public function __construct(
+        LoggerInterface $logger,
         OrderRepository $orderRepository,
-        ComperiaApplicationFactory $comperiaApplicationFactory,
+        ComfinoApplicationFactory $comfinoApplicationFactory,
         ApplicationResource $applicationResource
     ) {
-        $this->comperiaApplicationFactory = $comperiaApplicationFactory;
+        $this->logger = $logger;
+        $this->comfinoApplicationFactory = $comfinoApplicationFactory;
         $this->applicationResource = $applicationResource;
         $this->orderRepository = $orderRepository;
     }
 
     /**
-     * Change status for application and related order
+     * Change status for application and related order.
+     *
      * @param int $applicationId
      * @param string $orderStatus
+     *
      * @throws AlreadyExistsException
      * @throws InputException
      * @throws InvalidExternalIdException
@@ -84,37 +101,34 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
         if (!$application->getId()) {
             throw new InvalidExternalIdException(__('Invalid external ID!'));
         }
-        $this->changeApplicationStatus($application, $orderStatus);
 
+        $this->changeApplicationStatus($application, $orderStatus);
         $this->changeOrderStatus($application->getOrderId(), $orderStatus);
     }
 
     /**
-     * Get application by id
-     * @param int $id
-     * @return ComperiaApplication
-     */
-    private function getApplication(int $id): ComperiaApplication
-    {
-        $application = $this->comperiaApplicationFactory->create();
-        $this->applicationResource->load($application, $id, 'external_id');
-        return $application;
-    }
-
-    /**
-     * Change comperia application status
-     * @param ComperiaApplication $application
-     * @param string $status
+     * Handle application save failure.
+     *
+     * @param OrderInterface $order
+     *
      * @throws AlreadyExistsException
+     * @throws InputException
+     * @throws NoSuchEntityException
      */
-    private function changeApplicationStatus(ComperiaApplication $application, string $status): void
+    public function applicationFailureStatus(OrderInterface $order): void
     {
-        $application->setStatus($status);
-        $this->applicationResource->save($application);
+        $status = Order::STATE_PENDING_PAYMENT;
+        $order->setStatus($status)->setState($status);
+        $order->addStatusToHistory(
+            $order->getStatus(),
+            __('Unsuccessful attempt to open the application. Communication error with Comfino API.')
+        );
+        $this->orderRepository->save($order);
     }
 
     /**
-     * Change Status for Order and add status to history
+     * Change status for order and add status to history.
+     *
      * @throws NoSuchEntityException
      * @throws AlreadyExistsException
      * @throws InputException
@@ -123,20 +137,57 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
     {
         $order = $this->orderRepository->get($orderId);
         $origStatus = $order->getStatus();
+
         $this->setOrderStatus($order, $status);
+
         if ($origStatus !== Order::STATE_PROCESSING && $this->isCompletedStatus($status)) {
-            $amount = $order->getGrandTotal();
+            $amount = $order->getBaseTotalDue();
             $payment = $order->getPayment();
-            $payment->registerAuthorizationNotification($amount);
-            $payment->registerCaptureNotification($amount);
+
+            if ($payment !== null) {
+                $payment->registerAuthorizationNotification($amount);
+                $payment->registerCaptureNotification($amount);
+            } else {
+                $this->logger->warning("Comfino payment not found for order $orderId.", ['orderId' => $orderId]);
+            }
         }
 
         $this->orderRepository->save($order);
     }
 
     /**
+     * Get application by id.
+     *
+     * @param int $id
+     *
+     * @return ComfinoApplication
+     */
+    private function getApplication(int $id): ComfinoApplication
+    {
+        $application = $this->comfinoApplicationFactory->create();
+        $this->applicationResource->load($application, $id, 'external_id');
+
+        return $application;
+    }
+
+    /**
+     * Change Comfino application status.
+     *
+     * @param ComfinoApplication $application
+     * @param string $status
+     *
+     * @throws AlreadyExistsException
+     */
+    private function changeApplicationStatus(ComfinoApplication $application, string $status): void
+    {
+        $application->setStatus($status);
+        $this->applicationResource->save($application);
+    }
+
+    /**
      * @param $status
      * @param $group
+     *
      * @return bool
      */
     private function checkStatusGroup($status, $group): bool
@@ -157,6 +208,7 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
 
     /**
      * @param $status
+     *
      * @return mixed|string
      */
     private function mapStatus($status)
@@ -170,51 +222,37 @@ class ComperiaStatusManagement implements ComperiaStatusManagementInterface
         if ($this->isRejectedStatus($status)) {
             return Order::STATE_CANCELED;
         }
+
         return $status;
     }
 
     /**
      * @param $status
+     *
      * @return bool
      */
     private function isRejectedStatus($status): bool
     {
-        return $this->checkStatusGroup($status, ComperiaStatusManagement::REJECTED_STATE);
+        return $this->checkStatusGroup($status, ComfinoStatusManagement::REJECTED_STATE);
     }
 
     /**
      * @param $status
+     *
      * @return bool
      */
     private function isNewStatus($status): bool
     {
-        return $this->checkStatusGroup($status, ComperiaStatusManagement::NEW_STATE);
+        return $this->checkStatusGroup($status, ComfinoStatusManagement::NEW_STATE);
     }
 
     /**
      * @param $status
+     *
      * @return bool
      */
     private function isCompletedStatus($status): bool
     {
-        return $this->checkStatusGroup($status, ComperiaStatusManagement::COMPLETED_STATE);
-    }
-
-    /**
-     * Handle application save failure
-     * @param OrderInterface $order
-     * @throws AlreadyExistsException
-     * @throws InputException
-     * @throws NoSuchEntityException
-     */
-    public function applicationFailureStatus(OrderInterface $order): void
-    {
-        $status = Order::STATE_PENDING_PAYMENT;
-        $order->setStatus($status)->setState($status);
-        $order->addStatusToHistory(
-            $order->getStatus(),
-            __('Unsuccessful attempt to open the application. Communication error with Comperia API.')
-        );
-        $this->orderRepository->save($order);
+        return $this->checkStatusGroup($status, ComfinoStatusManagement::COMPLETED_STATE);
     }
 }

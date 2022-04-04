@@ -1,6 +1,6 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Api;
+namespace Comfino\ComfinoGateway\Api;
 
 interface OfferServiceInterface
 {

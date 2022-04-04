@@ -1,6 +1,6 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Controller\Result;
+namespace Comfino\ComfinoGateway\Controller\Result;
 
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\View\Result\PageFactory;
@@ -26,7 +26,7 @@ class Index implements HttpGetActionInterface
     /**
      * @return Page
      */
-    public function execute()
+    public function execute(): Page
     {
         return $this->pageFactory->create();
     }

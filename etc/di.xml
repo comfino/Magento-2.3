@@ -1,50 +1,49 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <preference for="Comperia\ComperiaGateway\Api\Data\ApplicationResponseInterface"
-                type="Comperia\ComperiaGateway\Model\Connector\Transaction\Response\ApplicationResponse"/>
-    <preference for="Comperia\ComperiaGateway\Api\ApplicationServiceInterface"
-                type="Comperia\ComperiaGateway\Model\Connector\Service\ApplicationService"/>
-    <preference for="Comperia\ComperiaGateway\Api\OfferServiceInterface"
-                type="Comperia\ComperiaGateway\Model\Connector\Service\OfferService"/>
-    <preference for="Comperia\ComperiaGateway\Api\ComperiaStatusManagementInterface"
-                type="Comperia\ComperiaGateway\Model\ComperiaStatusManagement"/>
-    <virtualType name="ComperiaFacade" type="Magento\Payment\Model\Method\Adapter">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Comfino\ComfinoGateway\Api\Data\ApplicationResponseInterface"
+                type="Comfino\ComfinoGateway\Model\Connector\Transaction\Response\ApplicationResponse"/>
+    <preference for="Comfino\ComfinoGateway\Api\ApplicationServiceInterface"
+                type="Comfino\ComfinoGateway\Model\Connector\Service\ApplicationService"/>
+    <preference for="Comfino\ComfinoGateway\Api\OfferServiceInterface"
+                type="Comfino\ComfinoGateway\Model\Connector\Service\OfferService"/>
+    <preference for="Comfino\ComfinoGateway\Api\ComfinoStatusManagementInterface"
+                type="Comfino\ComfinoGateway\Model\ComfinoStatusManagement"/>
+    <virtualType name="ComfinoFacade" type="Magento\Payment\Model\Method\Adapter">
         <arguments>
-            <argument name="code" xsi:type="const">Comperia\ComperiaGateway\Model\Ui\ConfigProvider::CODE</argument>
+            <argument name="code" xsi:type="const">Comfino\ComfinoGateway\Model\Ui\ConfigProvider::CODE</argument>
             <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
             <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\Info</argument>
-            <argument name="valueHandlerPool" xsi:type="object">ComperiaValueHandlerPool</argument>
-            <argument name="validatorPool" xsi:type="object">ComperiaValidatorPool</argument>
+            <argument name="valueHandlerPool" xsi:type="object">ComfinoValueHandlerPool</argument>
+            <argument name="validatorPool" xsi:type="object">ComfinoValidatorPool</argument>
         </arguments>
     </virtualType>
-    <virtualType name="ComperiaValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+    <virtualType name="ComfinoValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
         <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="default" xsi:type="string">ComperiaConfigValueHandler</item>
+                <item name="default" xsi:type="string">ComfinoConfigValueHandler</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="ComperiaConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+    <virtualType name="ComfinoConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
-            <argument name="configInterface" xsi:type="object">ComperiaConfig</argument>
+            <argument name="configInterface" xsi:type="object">ComfinoConfig</argument>
         </arguments>
     </virtualType>
-    <virtualType name="ComperiaConfig" type="Magento\Payment\Gateway\Config\Config">
+    <virtualType name="ComfinoConfig" type="Magento\Payment\Gateway\Config\Config">
         <arguments>
-            <argument name="methodCode" xsi:type="const">Comperia\ComperiaGateway\Model\Ui\ConfigProvider::CODE</argument>
+            <argument name="methodCode" xsi:type="const">Comfino\ComfinoGateway\Model\Ui\ConfigProvider::CODE</argument>
         </arguments>
     </virtualType>
-    <virtualType name="ComperiaValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+    <virtualType name="ComfinoValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
         <arguments>
             <argument name="validators" xsi:type="array">
-                <item name="country" xsi:type="string">ComperiaCountryValidator</item>
+                <item name="country" xsi:type="string">ComfinoCountryValidator</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="ComperiaCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+    <virtualType name="ComfinoCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
         <arguments>
-            <argument name="config" xsi:type="object">ComperiaConfig</argument>
+            <argument name="config" xsi:type="object">ComfinoConfig</argument>
         </arguments>
     </virtualType>
 </config>

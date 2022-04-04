@@ -1,6 +1,6 @@
 <?php
 
-namespace Comperia\ComperiaGateway\Observer;
+namespace Comfino\ComfinoGateway\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Payment\Observer\AbstractDataAssignObserver;
@@ -8,8 +8,8 @@ use Magento\Quote\Api\Data\PaymentInterface;
 
 class DataAssignObserver extends AbstractDataAssignObserver
 {
-    const PAYMENT_LOAN_TYPE = 'type';
-    const PAYMENT_LOAN_TERM = 'term';
+    public const PAYMENT_LOAN_TYPE = 'type';
+    public const PAYMENT_LOAN_TERM = 'term';
 
     /**
      * @var array
@@ -22,11 +22,10 @@ class DataAssignObserver extends AbstractDataAssignObserver
     /**
      * @param Observer $observer
      */
-    public function execute(Observer $observer)
+    public function execute(Observer $observer): void
     {
-        $data = $this->readDataArgument($observer);
+        $additionalData = $this->readDataArgument($observer)->getData(PaymentInterface::KEY_ADDITIONAL_DATA);
 
-        $additionalData = $data->getData(PaymentInterface::KEY_ADDITIONAL_DATA);
         if (!is_array($additionalData)) {
             return;
         }

@@ -16,8 +16,8 @@ define(
         'use strict';
         rendererList.push(
             {
-                type: 'comperiapayment',
-                component: 'Comperia_ComperiaGateway/js/view/payment/method-renderer/comperiapayment-method'
+                type: 'comfino',
+                component: 'Comfino_ComfinoGateway/js/view/payment/method-renderer/comfino-method'
             }
         );
         /** Add view logic here if needed */
