@@ -144,7 +144,7 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
             $amount = $order->getBaseTotalDue();
             $payment = $order->getPayment();
 
-            if ($payment !== null) {
+            if ($payment !== null && $amount > 0) {
                 $payment->registerAuthorizationNotification($amount);
                 $payment->registerCaptureNotification($amount);
             } else {
