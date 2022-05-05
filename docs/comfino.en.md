@@ -51,10 +51,15 @@ To access the module settings, follow the steps below:
 ![Configuration](images/en/menu2.png "Configuration")
 ![Configuration](images/en/menu3.png "Configuration")
 ![Configuration](images/en/menu4.png "Configuration")
+![Configuration](images/en/mod_config1.png "Configuration")
+
+## CONFIGURATION SECTIONS
 
 The most important field that should be completed is: `"API key"`.
 
-![Configuration](images/en/mod_config.png "Configuration")
+![Configuration](images/en/mod_config2.png "Configuration")
+![Configuration](images/en/mod_config3.png "Configuration")
+![Configuration](images/en/mod_config4.png "Configuration")
 
 ## DEACTIVATION
 

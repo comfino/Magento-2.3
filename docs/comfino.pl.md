@@ -51,10 +51,16 @@ Aby uzyskać dostęp do ustawień modułu, wykonaj poniższe kroki:
 ![Konfiguracja](images/pl/menu2.png "Konfiguracja")
 ![Konfiguracja](images/pl/menu3.png "Konfiguracja")
 ![Konfiguracja](images/pl/menu4.png "Konfiguracja")
+![Konfiguracja](images/pl/mod_config1.png "Konfiguracja")
+
+## SEKCJE KONFIGURACJI
 
 Pole które jest najbardziej istotne i należy je wypełnić to: `"Klucz API"`.
 
-![Konfiguracja](images/pl/mod_config.png "Konfiguracja")
+![Konfiguracja](images/pl/mod_config2.png "Konfiguracja")
+![Konfiguracja](images/pl/mod_config3.png "Konfiguracja")
+![Konfiguracja](images/pl/mod_config4.png "Konfiguracja")
+
 
 ## DEAKTYWACJA
 
