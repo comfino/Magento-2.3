@@ -4,15 +4,29 @@
         <section id="payment">
             <group id="comfino" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Comfino</label>
-                <group id="comfino_payment_methods" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                </field>
+                <field id="min_order_total" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Minimal order value</label>
+                    <config_path>payment/comfino/min_order_total</config_path>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="allowspecific" translate="label" type="allowspecific" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Restrict payment method to specific countries</label>
+                    <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+                </field>
+                <field id="specificcountry" translate="label" type="multiselect" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Payment method allowed in countries</label>
+                    <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+                    <can_be_empty>1</can_be_empty>
+                </field>
+                <group id="comfino_payment_methods" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Payment settings</label>
-                    <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Enabled</label>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    </field>
-                    <field id="title" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Title</label>
-                    </field>
                     <field id="api_key" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>API key</label>
                         <config_path>payment/comfino/api_key</config_path>
@@ -21,22 +35,8 @@
                         <label>Tax ID</label>
                         <config_path>payment/comfino/tax_id</config_path>
                     </field>
-                    <field id="min_order_total" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Minimal order value</label>
-                        <config_path>payment/comfino/min_order_total</config_path>
-                        <validate>validate-number validate-zero-or-greater</validate>
-                    </field>
-                    <field id="allowspecific" translate="label" type="allowspecific" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Restrict payment method to specific countries</label>
-                        <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
-                    </field>
-                    <field id="specificcountry" translate="label" type="multiselect" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Payment method allowed in countries</label>
-                        <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
-                        <can_be_empty>1</can_be_empty>
-                    </field>
                 </group>
-                <group id="comfino_widget" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                <group id="comfino_widget" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Widget</label>
                     <field id="widget_enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Widget is active?</label>
@@ -75,7 +75,7 @@
                         <config_path>payment/comfino/widget_code</config_path>
                     </field>
                 </group>
-                <group id="comfino_developers" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <group id="comfino_developers" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>For developers</label>
                     <field id="sandbox" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Use test environment</label>
