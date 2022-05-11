@@ -99,6 +99,16 @@ class Data extends AbstractHelper
      */
     public function getApiKey(): string
     {
+        return $this->isSandboxEnabled() ? $this->getSandboxApiKey() : $this->getProductionApiKey();
+    }
+
+    /**
+     * Returns API key for production.
+     *
+     * @return string
+     */
+    public function getProductionApiKey(): string
+    {
         return $this->getConfigValue(self::XML_PATH_API_KEY) ?? '';
     }
 
