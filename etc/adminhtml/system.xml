@@ -24,6 +24,7 @@
                     <label>Payment method allowed in countries</label>
                     <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
                     <can_be_empty>1</can_be_empty>
+                    <comment><![CDATA[Do you want to ask about something? Write to us at <a href="mailto:pomoc@comfino.pl?subject=Magento - question&body=Magento">pomoc@comfino.pl</a> or contact us by phone. We are waiting on the number: 887-106-027. We will answer all your questions!]]></comment>
                 </field>
                 <group id="comfino_payment_methods" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Payment settings</label>
