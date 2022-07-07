@@ -27,7 +27,6 @@ class Data extends AbstractHelper
     public const XML_PATH_WIDGET_CODE = 'payment/comfino/widget_code';
     public const XML_PATH_SANDBOX_ENABLED = 'payment/comfino/sandbox';
     public const XML_PATH_SANDBOX_API_KEY = 'payment/comfino/sandbox_api_key';
-    public const XML_PATH_ERRORS_LOG = 'payment/comfino/errors_log';
 
     private const MODULE_NAME = 'Comfino_ComfinoGateway';
 
