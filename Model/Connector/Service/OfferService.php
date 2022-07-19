@@ -12,7 +12,7 @@ use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Webapi\Rest\Request;
 use Psr\Log\LoggerInterface;
-use \Magento\Framework\Pricing\Helper\Data as PriceHelper;
+use Magento\Framework\Pricing\Helper\Data as PriceHelper;
 
 class OfferService extends ServiceAbstract implements OfferServiceInterface
 {

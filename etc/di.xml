@@ -46,4 +46,18 @@
             <argument name="config" xsi:type="object">ComfinoConfig</argument>
         </arguments>
     </virtualType>
+    <virtualType name="ComfinoLogger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="debug" xsi:type="object">Comfino\ComfinoGateway\Logger\Handler\DebugHandler</item>
+                <item name="info" xsi:type="object">Comfino\ComfinoGateway\Logger\Handler\InfoHandler</item>
+                <item name="error" xsi:type="object">Comfino\ComfinoGateway\Logger\Handler\ErrorHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Comfino\ComfinoGateway\Model\Connector\Service\ServiceAbstract">
+        <arguments>
+            <argument name="logger" xsi:type="object">ComfinoLogger</argument>
+        </arguments>
+    </type>
 </config>

@@ -3,6 +3,7 @@
 namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
 use Comfino\ComfinoGateway\Helper\Data;
+use Exception;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\SerializerInterface;
@@ -105,26 +106,6 @@ abstract class ServiceAbstract
     }
 
     /**
-     * Sends POST request.
-     *
-     * @param string $url
-     * @param mixed $body
-     *
-     * @return bool
-     */
-    protected function sendPostRequest(string $url, $body): bool
-    {
-        $this->logger->info('REQUEST', ['url' => $url, 'transaction' => $body]);
-
-        $this->prepareHeaders();
-        $this->curl->post($url, $body);
-
-        $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
-
-        return $this->isSuccessful();
-    }
-
-    /**
      * Sends GET request.
      *
      * @param string $url
@@ -134,20 +115,75 @@ abstract class ServiceAbstract
      */
     protected function sendGetRequest(string $url, array $params = []): bool
     {
+        $requestParams = http_build_query($params);
+        $requestUrl = "$url?$requestParams";
+
         $this->logger->info(
             'REQUEST',
             [
                 'url' => $url,
                 'method' => 'GET',
-                'params' => http_build_query($params),
+                'params' => $requestParams,
                 'body' => ''
             ]
         );
 
         $this->prepareHeaders();
-        $this->curl->get($url.'?'.http_build_query($params));
 
-        $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
+        try {
+            $this->curl->get($requestUrl);
+        } catch (Exception $e) {
+            $this->logger->error(
+                'Communication error',
+                [
+                    'errorMessage' => $e->getMessage(),
+                    'httpStatus' => $this->curl->getStatus(),
+                    'url' => $requestUrl,
+                    'method' => 'GET',
+                    'response' => $this->curl->getBody()
+                ]
+            );
+        }
+
+        return $this->isSuccessful();
+    }
+
+    /**
+     * Sends POST request.
+     *
+     * @param string $url
+     * @param mixed $body
+     *
+     * @return bool
+     */
+    protected function sendPostRequest(string $url, $body): bool
+    {
+        $this->logger->info(
+            'REQUEST',
+            [
+                'url' => $url,
+                'method' => 'POST',
+                'params' => '',
+                'body' => $body
+            ]
+        );
+
+        $this->prepareHeaders();
+
+        try {
+            $this->curl->post($url, $body);
+        } catch (Exception $e) {
+            $this->logger->error(
+                'Communication error',
+                [
+                    'errorMessage' => $e->getMessage(),
+                    'httpStatus' => $this->curl->getStatus(),
+                    'url' => $url,
+                    'method' => 'POST',
+                    'response' => $this->curl->getBody()
+                ]
+            );
+        }
 
         return $this->isSuccessful();
     }
@@ -162,13 +198,33 @@ abstract class ServiceAbstract
      */
     protected function sendPutRequest(string $url, $body = null): bool
     {
-        $this->logger->info('REQUEST', ['url' => $url, 'transaction' => $body]);
+        $this->logger->info(
+            'REQUEST',
+            [
+                'url' => $url,
+                'method' => 'PUT',
+                'params' => '',
+                'body' => $body
+            ]
+        );
 
         $this->prepareHeaders();
         $this->curl->setOption(CURLOPT_CUSTOMREQUEST, 'PUT');
-        $this->curl->post($url, $body);
 
-        $this->logger->info('RESPONSE', ['response' => $this->curl->getBody()]);
+        try {
+            $this->curl->post($url, $body);
+        } catch (Exception $e) {
+            $this->logger->error(
+                'Communication error',
+                [
+                    'errorMessage' => $e->getMessage(),
+                    'httpStatus' => $this->curl->getStatus(),
+                    'url' => $url,
+                    'method' => 'PUT',
+                    'response' => $this->curl->getBody()
+                ]
+            );
+        }
 
         return $this->isSuccessful();
     }
