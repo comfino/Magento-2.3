@@ -52,6 +52,15 @@
                         <label>Widget anchor element selector</label>
                         <config_path>payment/comfino/widget_target_selector</config_path>
                     </field>
+                    <field id="widget_target_selector" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Price change detection - container selector</label>
+                        <config_path>payment/comfino/widget_price_observer_selector</config_path>
+                    </field>
+                    <field id="widget_target_selector" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Price change detection - container hierarchy level</label>
+                        <config_path>payment/comfino/widget_price_observer_level</config_path>
+                        <validate>validate-number validate-zero-or-greater</validate>
+                    </field>
                     <field id="widget_type" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Widget type</label>
                         <config_path>payment/comfino/widget_type</config_path>

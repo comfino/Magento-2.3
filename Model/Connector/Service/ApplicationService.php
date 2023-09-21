@@ -129,6 +129,15 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         return '';
     }
 
+    public function getProductTypes(): ?array
+    {
+        if ($this->sendGetRequest($this->helper->getApiHost() . '/v1/product-types') && strpos($this->curl->getBody(), 'errors') === false) {
+            return $this->decode($this->curl->getBody());
+        }
+
+        return null;
+    }
+
     /**
      * Changes status for application and related order.
      *
