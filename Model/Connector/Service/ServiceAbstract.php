@@ -4,7 +4,6 @@ namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
 use Comfino\ComfinoGateway\Helper\Data;
 use Exception;
-use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Webapi\Rest\Request;
@@ -47,62 +46,18 @@ abstract class ServiceAbstract
     protected $session;
 
     /**
-     * @var ProductMetadataInterface
-     */
-    private $productMetaData;
-
-    /**
      * @var Request
      */
     protected $request;
 
-    /**
-     * ApiConnector constructor.
-     *
-     * @param Curl $curl
-     * @param LoggerInterface $logger
-     * @param SerializerInterface $serializer
-     * @param Data $helper
-     * @param Session $session
-     * @param ProductMetadataInterface $productMetadata
-     * @param Request $request
-     */
-    public function __construct(
-        Curl $curl,
-        LoggerInterface $logger,
-        SerializerInterface $serializer,
-        Data $helper,
-        Session $session,
-        ProductMetadataInterface $productMetadata,
-        Request $request
-    ) {
+    public function __construct(Curl $curl, LoggerInterface $logger, SerializerInterface $serializer, Data $helper, Session $session, Request $request)
+    {
         $this->curl = $curl;
         $this->logger = $logger;
         $this->serializer = $serializer;
         $this->helper = $helper;
         $this->session = $session;
-        $this->productMetaData = $productMetadata;
         $this->request = $request;
-    }
-
-    /**
-     * Returns API URL depending on sandbox activation state.
-     *
-     * @return string
-     */
-    protected function getApiUrl(): string
-    {
-        return $this->helper->isSandboxEnabled() ? $this->helper->getSandboxUrl() : $this->helper->getProdUrl();
-    }
-
-    /**
-     * Returns API key depending on sandbox activation state.
-     *
-     * @return string
-     */
-    protected function getApiKey(): string
-    {
-        return $this->helper->isSandboxEnabled() ? $this->helper->getSandboxApiKey() : $this->helper->getApiKey();
     }
 
     /**
@@ -230,34 +185,6 @@ abstract class ServiceAbstract
     }
 
     /**
-     * Prepares headers for CURL request.
-     *
-     * @return void
-     */
-    private function prepareHeaders(): void
-    {
-        $this->curl->addHeader('Content-Type', 'application/json');
-        $this->curl->addHeader('Api-Key', $this->getApiKey());
-        $this->curl->addHeader('User-Agent', $this->getUserAgent());
-    }
-
-    /**
-     * Returns User Agent from ProductMetaData (name and version).
-     *
-     * @return string
-     */
-    private function getUserAgent(): string
-    {
-        return sprintf(
-            'Magento Comfino [%s, %s], Magento [%s], PHP [%s]',
-            $this->helper->getModuleVersion(),
-            $this->helper->getSetupVersion(),
-            $this->productMetaData->getVersion(),
-            PHP_VERSION
-        );
-    }
-
-    /**
      * Decodes JSON.
      *
      * @param $json
@@ -272,8 +199,6 @@ abstract class ServiceAbstract
     /**
      * Encodes array to JSON.
      *
-     * @param $json
-     *
      * @return bool|string
      */
     protected function encode($json)
@@ -282,21 +207,31 @@ abstract class ServiceAbstract
     }
 
     /**
-     * @param string $jsonData
-     *
-     * @return bool
+     * Prepares headers for CURL request.
      */
-    protected function isValidSignature(string $jsonData): bool
+    private function prepareHeaders(): void
     {
-        $crSignature = $this->request->getHeader('CR-Signature');
-        $hash = hash('sha3-256', $this->helper->getApiKey().$jsonData);
-
-        return $crSignature === $hash;
+        $this->curl->addHeader('Content-Type', 'application/json');
+        $this->curl->addHeader('Api-Key', $this->helper->getApiKey());
+        $this->curl->addHeader('Api-Language', $this->helper->getShopLanguage());
+        $this->curl->addHeader('User-Agent', $this->getUserAgent());
     }
 
     /**
-     * @return bool
+     * Returns User Agent from ProductMetaData (name and version).
      */
+    private function getUserAgent(): string
+    {
+        return sprintf(
+            'Magento Comfino [%s, %s], Magento [%s], PHP [%s], %s',
+            $this->helper->getModuleVersion(),
+            $this->helper->getSetupVersion(),
+            $this->helper->getShopVersion(),
+            PHP_VERSION,
+            $this->helper->getShopDomain()
+        );
+    }
+
     private function isSuccessful(): bool
     {
         return in_array($this->curl->getStatus(), self::POSITIVE_HTTP_CODES, true);

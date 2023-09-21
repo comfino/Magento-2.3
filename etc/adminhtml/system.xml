@@ -32,10 +32,6 @@
                         <label>API key</label>
                         <config_path>payment/comfino/api_key</config_path>
                     </field>
-                    <field id="tax_id" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Tax ID</label>
-                        <config_path>payment/comfino/tax_id</config_path>
-                    </field>
                 </group>
                 <group id="comfino_widget" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Widget</label>

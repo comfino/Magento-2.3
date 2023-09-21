@@ -42,31 +42,15 @@ class Index extends Action
      */
     private $statusManagement;
 
-    /**
-     * Index constructor.
-     *
-     * @param Context $context
-     * @param RequestInterface $request
-     * @param SerializerInterface $serializer
-     * @param JsonFactory $resultJsonFactory
-     * @param Data $helper
-     * @param ComfinoStatusManagementInterface $comfinoStatusManagement
-     */
-    public function __construct(
-        Context $context,
-        RequestInterface $request,
-        SerializerInterface $serializer,
-        JsonFactory $resultJsonFactory,
-        Data $helper,
-        ComfinoStatusManagementInterface $comfinoStatusManagement
-    ) {
+    public function __construct(Context $context, RequestInterface $request, SerializerInterface $serializer, JsonFactory $resultJsonFactory, Data $helper, ComfinoStatusManagementInterface $comfinoStatusManagement)
+    {
+        parent::__construct($context);
+
         $this->request = $request;
         $this->serializer = $serializer;
         $this->resultJsonFactory = $resultJsonFactory;
         $this->helper = $helper;
         $this->statusManagement = $comfinoStatusManagement;
-
-        parent::__construct($context);
     }
 
     /**
@@ -76,7 +60,7 @@ class Index extends Action
     {
         $jsonContent = $this->request->getContent();
 
-        if (!$this->isValidSignature($jsonContent)) {
+        if (!$this->helper->isValidSignature($this->request->getHeader('CR-Signature'), $jsonContent)) {
             return $this->setResponse(400, __('Failed comparison of CR-Signature and shop hash.'));
         }
 
@@ -91,27 +75,8 @@ class Index extends Action
         return $this->setResponse(200, 'OK');
     }
 
-    /**
-     * @param int $code
-     * @param string $content
-     *
-     * @return Json
-     */
     private function setResponse(int $code, string $content): Json
     {
         return $this->resultJsonFactory->create()->setHttpResponseCode($code)->setData(['status' => $content]);
-    }
-
-    /**
-     * @param string $jsonData
-     *
-     * @return bool
-     */
-    private function isValidSignature(string $jsonData): bool
-    {
-        $crSignature = $this->request->getHeader('CR-Signature');
-        $hash = hash('sha3-256', $this->helper->getApiKey().$jsonData);
-
-        return $crSignature === $hash;
     }
 }

@@ -45,21 +45,23 @@ class Index extends Action
                         '{WIDGET_KEY}',
                         '{WIDGET_PRICE_SELECTOR}',
                         '{WIDGET_TARGET_SELECTOR}',
+                        '{WIDGET_PRICE_OBSERVER_SELECTOR}',
+                        '{WIDGET_PRICE_OBSERVER_LEVEL}',
                         '{WIDGET_TYPE}',
                         '{OFFER_TYPE}',
                         '{EMBED_METHOD}',
-                        '{WIDGET_SCRIPT_URL}'
+                        '{WIDGET_SCRIPT_URL}',
                     ],
                     [
                         $this->helper->getWidgetKey(),
                         $this->helper->getWidgetPriceSelector(),
                         $this->helper->getWidgetTargetSelector(),
+                        $this->helper->getPriceObserverSelector(),
+                        $this->helper->getPriceObserverLevel(),
                         $this->helper->getWidgetType(),
                         $this->helper->getWidgetOfferType(),
                         $this->helper->getWidgetEmbedMethod(),
-                        $this->helper->isSandboxEnabled()
-                            ? $this->helper->getSandboxWidgetScriptUrl()
-                            : $this->helper->getProdWidgetScriptUrl()
+                        $this->helper->getWidgetScriptUrl(),
                     ],
                     $this->helper->getWidgetCode()
                 )

@@ -11,7 +11,6 @@ use Comfino\ComfinoGateway\Helper\Data;
 use Comfino\ComfinoGateway\Helper\TransactionHelper;
 use Comfino\ComfinoGateway\Api\Data\ApplicationResponseInterface;
 use Comfino\ComfinoGateway\Model\ResourceModel\ComfinoApplication as ApplicationResource;
-use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\HTTP\Client\Curl;
@@ -22,8 +21,6 @@ use Magento\Checkout\Model\Session;
 
 class ApplicationService extends ServiceAbstract implements ApplicationServiceInterface
 {
-    public const NOTIFICATION_URL = 'rest/V1/comfino-gateway/application/status';
-
     /**
      * @var TransactionHelper
      */
@@ -52,27 +49,15 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
      * @param SerializerInterface $serializer
      * @param Data $helper
      * @param Session $session
-     * @param ProductMetadataInterface $productMetadata
      * @param TransactionHelper $transactionHelper
      * @param ComfinoApplicationFactory $comfinoApplicationFactory
      * @param ApplicationResource $applicationResource
      * @param Request $request
      * @param ComfinoStatusManagementInterface $statusManagement
      */
-    public function __construct(
-        Curl $curl,
-        LoggerInterface $logger,
-        SerializerInterface $serializer,
-        Data $helper,
-        Session $session,
-        ProductMetadataInterface $productMetadata,
-        TransactionHelper $transactionHelper,
-        ComfinoApplicationFactory $comfinoApplicationFactory,
-        ApplicationResource $applicationResource,
-        Request $request,
-        ComfinoStatusManagementInterface $statusManagement
-    ) {
-        parent::__construct($curl, $logger, $serializer, $helper, $session, $productMetadata, $request);
+    public function __construct(Curl $curl, LoggerInterface $logger, SerializerInterface $serializer, Data $helper, Session $session, TransactionHelper $transactionHelper, ComfinoApplicationFactory $comfinoApplicationFactory, ApplicationResource $applicationResource, Request $request, ComfinoStatusManagementInterface $statusManagement)
+    {
+        parent::__construct($curl, $logger, $serializer, $helper, $session, $request);
 
         $this->transactionHelper = $transactionHelper;
         $this->comfinoApplicationFactory = $comfinoApplicationFactory;
@@ -83,7 +68,6 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
     /**
      * Creates application in the Comfino API and db model.
      *
-     * @return array
      * @throws AlreadyExistsException
      */
     public function save(): array
@@ -117,36 +101,28 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
 
     /**
      * Sends POST request to the Comfino API to create new application/transaction.
-     *
-     * @return ApplicationResponseInterface
      */
     public function createApplicationTransaction(): ApplicationResponseInterface
     {
-        $this->sendPostRequest($this->getApiUrl().'/v1/orders', $this->transactionHelper->getTransactionData());
+        $this->sendPostRequest($this->helper->getApiHost() . '/v1/orders', $this->transactionHelper->getTransactionData());
 
         return new ApplicationResponse($this->curl->getStatus(), $this->decode($this->curl->getBody()));
     }
 
     /**
      * Sends PUT request to the Comfino API to cancel application/transaction.
-     *
-     * @param string $orderId
-     *
-     * @return void
      */
     public function cancelApplicationTransaction(string $orderId): void
     {
-        $this->sendPutRequest($this->getApiUrl()."/v1/orders/$orderId/cancel");
+        $this->sendPutRequest($this->helper->getApiHost() . "/v1/orders/$orderId/cancel");
     }
 
     /**
      * Returns widget key received from Comfino API.
-     *
-     * @return string
      */
     public function getWidgetKey(): string
     {
-        if ($this->sendGetRequest($this->getApiUrl()."/v1/widget-key", [])) {
+        if ($this->sendGetRequest($this->helper->getApiHost() . '/v1/widget-key')) {
             return $this->decode($this->curl->getBody());
         }
 
@@ -156,7 +132,6 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
     /**
      * Changes status for application and related order.
      *
-     * @return void
      * @throws InvalidSignatureException
      * @throws ValidatorException
      */
@@ -167,7 +142,7 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         if (!isset($params['externalId'])) {
             throw new ValidatorException(__('Empty content.'));
         }
-        if (!$this->isValidSignature($this->encode($params))) {
+        if (!$this->helper->isValidSignature($this->request->getHeader('CR-Signature'), $this->encode($params))) {
             throw new InvalidSignatureException(__('Failed comparison of CR-Signature and shop hash.'));
         }
 

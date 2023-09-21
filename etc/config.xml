@@ -14,6 +14,8 @@
                 <widget_enabled>0</widget_enabled>
                 <widget_price_selector>span.price</widget_price_selector>
                 <widget_target_selector>div.product-add-form</widget_target_selector>
+                <widget_price_observer_selector />
+                <widget_price_observer_level>0</widget_price_observer_level>
                 <widget_type>with-modal</widget_type>
                 <widget_offer_type>CONVENIENT_INSTALLMENTS</widget_offer_type>
                 <widget_embed_method>INSERT_INTO_LAST</widget_embed_method>
@@ -24,12 +26,18 @@ script.onload = function () {
         widgetKey: '{WIDGET_KEY}',
         priceSelector: '{WIDGET_PRICE_SELECTOR}',
         widgetTargetSelector: '{WIDGET_TARGET_SELECTOR}',
-        price: null,
+        priceObserverSelector: '{WIDGET_PRICE_OBSERVER_SELECTOR}',
+        priceObserverLevel: {WIDGET_PRICE_OBSERVER_LEVEL},
         type: '{WIDGET_TYPE}',
         offerType: '{OFFER_TYPE}',
         embedMethod: '{EMBED_METHOD}',
+        numOfInstallments: 0,
+        price: null,
         callbackBefore: function () {},
-        callbackAfter: function () {}
+        callbackAfter: function () {},
+        onOfferRendered: function (jsonResponse, widgetTarget, widgetNode) { },
+        onGetPriceElement: function (priceSelector, priceObserverSelector) { return null; },
+        debugMode: window.location.hash &amp;&amp; window.location.hash.substring(1) === 'comfino_debug'
     });
 };
 script.src = '{WIDGET_SCRIPT_URL}';

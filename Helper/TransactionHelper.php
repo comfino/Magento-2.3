@@ -48,40 +48,14 @@ class TransactionHelper extends AbstractHelper
      */
     private $urlBuilder;
 
-    /**
-     * @var Data
-     */
-    private $helper;
-
-    /**
-     * TransactionHelper constructor.
-     *
-     * @param Context $context
-     * @param Image $imageHelper
-     * @param Session $session
-     * @param CustomerSession $customerSession
-     * @param RemoteAddress $remoteAddress
-     * @param SerializerInterface $serializer
-     * @param UrlInterface $urlBuilder
-     * @param Data $helper
-     */
-    public function __construct(
-        Context $context,
-        Image $imageHelper,
-        Session $session,
-        CustomerSession $customerSession,
-        RemoteAddress $remoteAddress,
-        SerializerInterface $serializer,
-        UrlInterface $urlBuilder,
-        Data $helper
-    ) {
+    public function __construct(Context $context, Image $imageHelper, Session $session, CustomerSession $customerSession, RemoteAddress $remoteAddress, SerializerInterface $serializer, UrlInterface $urlBuilder)
+    {
         $this->imageHelper = $imageHelper;
         $this->session = $session;
         $this->customerSession = $customerSession;
         $this->remoteAddress = $remoteAddress;
         $this->urlBuilder = $urlBuilder;
         $this->serializer = $serializer;
-        $this->helper = $helper;
 
         parent::__construct($context);
     }
@@ -123,9 +97,6 @@ class TransactionHelper extends AbstractHelper
                 'products' => $this->buildProductsList($order),
             ],
             'customer' => $this->buildCustomer($order),
-            'seller' => [
-                'taxId' => $this->helper->getTaxId()
-            ]
         ];
     }
 
@@ -212,17 +183,9 @@ class TransactionHelper extends AbstractHelper
 
     /**
      * Parse data to Transaction model.
-     *
-     * @param ApplicationResponseInterface $model
-     *
-     * @return array
      */
     public function parseModel(ApplicationResponseInterface $model): array
     {
-        $data = $model->getData();
-        $order = $this->session->getLastRealOrder();
-        $data[ApplicationResponseInterface::ORDER_ID] = $order->getEntityId();
-
-        return $data;
+        return array_merge($model->getData(), [ApplicationResponseInterface::ORDER_ID => $this->session->getLastRealOrder()->getEntityId()]);
     }
 }

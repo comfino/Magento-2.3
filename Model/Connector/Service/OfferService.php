@@ -5,7 +5,6 @@ namespace Comfino\ComfinoGateway\Model\Connector\Service;
 use Comfino\ComfinoGateway\Api\OfferServiceInterface;
 use Comfino\ComfinoGateway\Helper\Data;
 use Magento\Checkout\Model\Session;
-use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\HTTP\Client\Curl;
@@ -21,36 +20,16 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
      */
     private $priceHelper;
 
-    /**
-     * OfferService constructor.
-     * @param Curl $curl
-     * @param LoggerInterface $logger
-     * @param SerializerInterface $serializer
-     * @param Data $helper
-     * @param Session $session
-     * @param ProductMetadataInterface $productMetadata
-     * @param Request $request
-     * @param PriceHelper $priceHelper
-     */
-    public function __construct(
-        Curl $curl,
-        LoggerInterface
-        $logger,
-        SerializerInterface $serializer,
-        Data $helper,
-        Session $session,
-        ProductMetadataInterface $productMetadata,
-        Request $request,
-        PriceHelper $priceHelper
-    ) {
-        parent::__construct($curl, $logger, $serializer, $helper, $session, $productMetadata, $request);
+    public function __construct(Curl $curl, LoggerInterface $logger, SerializerInterface $serializer, Data $helper, Session $session, Request $request, PriceHelper $priceHelper)
+    {
+        parent::__construct($curl, $logger, $serializer, $helper, $session, $request);
+
         $this->priceHelper = $priceHelper;
     }
 
     /**
      * Retrieves offers from Comfino API.
      *
-     * @return array
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
@@ -58,7 +37,7 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
     {
         $loanAmount = $this->session->getQuote()->getGrandTotal() * 100;
 
-        if ($this->sendGetRequest($this->getApiUrl()."/v1/financial-products", ['loanAmount' => $loanAmount])) {
+        if ($this->sendGetRequest($this->helper->getApiHost() . '/v1/financial-products', ['loanAmount' => $loanAmount])) {
             return $this->getOffersResponse($loanAmount);
         }
 
@@ -67,10 +46,6 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
 
     /**
      * Processes offer data from API response.
-     *
-     * @param float $total
-     *
-     * @return array
      */
     private function getOffersResponse(float $total): array
     {
