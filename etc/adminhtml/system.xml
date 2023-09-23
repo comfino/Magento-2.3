@@ -52,31 +52,31 @@
                         <label>Widget anchor element selector</label>
                         <config_path>payment/comfino/widget_target_selector</config_path>
                     </field>
-                    <field id="widget_target_selector" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_price_observer_selector" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Price change detection - container selector</label>
                         <config_path>payment/comfino/widget_price_observer_selector</config_path>
                     </field>
-                    <field id="widget_target_selector" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_price_observer_level" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Price change detection - container hierarchy level</label>
                         <config_path>payment/comfino/widget_price_observer_level</config_path>
                         <validate>validate-number validate-zero-or-greater</validate>
                     </field>
-                    <field id="widget_type" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_type" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Widget type</label>
                         <config_path>payment/comfino/widget_type</config_path>
                         <source_model>Comfino\ComfinoGateway\Model\Adminhtml\System\Config\Source\WidgetType</source_model>
                     </field>
-                    <field id="widget_offer_type" translate="label" type="select" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_offer_type" translate="label" type="select" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Offer type</label>
                         <config_path>payment/comfino/widget_offer_type</config_path>
                         <source_model>Comfino\ComfinoGateway\Model\Adminhtml\System\Config\Source\WidgetOfferType</source_model>
                     </field>
-                    <field id="widget_embed_method" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_embed_method" translate="label" type="select" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Embedding method</label>
                         <config_path>payment/comfino/widget_embed_method</config_path>
                         <source_model>Comfino\ComfinoGateway\Model\Adminhtml\System\Config\Source\WidgetEmbedMethod</source_model>
                     </field>
-                    <field id="widget_code" translate="label" type="textarea" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_code" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Widget initialization code</label>
                         <config_path>payment/comfino/widget_code</config_path>
                     </field>

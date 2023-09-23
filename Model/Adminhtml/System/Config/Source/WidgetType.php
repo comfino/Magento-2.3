@@ -2,7 +2,9 @@
 
 namespace Comfino\ComfinoGateway\Model\Adminhtml\System\Config\Source;
 
-class WidgetType implements \Magento\Framework\Option\ArrayInterface
+use Magento\Framework\Data\OptionSourceInterface;
+
+class WidgetType implements OptionSourceInterface
 {
     public function toOptionArray(): array
     {
