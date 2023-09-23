@@ -37,8 +37,8 @@ class Data extends AbstractHelper
     private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
     private const COMFINO_FRONTEND_JS_SANDBOX = 'https://widget.craty.pl/comfino-frontend.min.js';
     private const COMFINO_FRONTEND_JS_PRODUCTION = 'https://widget.comfino.pl/comfino-frontend.min.js';
-    private const COMFINO_WIDGET_JS_SANDBOX = 'https//widget.craty.pl/comfino.min.js';
-    private const COMFINO_WIDGET_JS_PRODUCTION = 'https//widget.comfino.pl/comfino.min.js';
+    private const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
+    private const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
 
     /**
      * @var SerializerInterface
