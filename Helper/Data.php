@@ -8,6 +8,7 @@ use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Component\ComponentRegistrar;
 use Magento\Framework\Component\ComponentRegistrarInterface;
 use Magento\Framework\Filesystem\Directory\ReadFactory;
+use Magento\Framework\Locale\Resolver;
 use Magento\Framework\Module\ModuleListInterface;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\UrlInterface;
@@ -70,7 +71,12 @@ class Data extends AbstractHelper
      */
     private $storeManager;
 
-    public function __construct(Context $context, SerializerInterface $serializer, ModuleListInterface $moduleList, ComponentRegistrarInterface $componentRegistrar, ReadFactory $readFactory, ProductMetadataInterface $productMetadata, StoreManagerInterface $storeManager)
+    /**
+     * @var Resolver
+     */
+    private $localeResolver;
+
+    public function __construct(Context $context, SerializerInterface $serializer, ModuleListInterface $moduleList, ComponentRegistrarInterface $componentRegistrar, ReadFactory $readFactory, ProductMetadataInterface $productMetadata, StoreManagerInterface $storeManager, Resolver $localeResolver)
     {
         $this->serializer = $serializer;
         $this->moduleList = $moduleList;
@@ -78,6 +84,7 @@ class Data extends AbstractHelper
         $this->readFactory = $readFactory;
         $this->productMetaData = $productMetadata;
         $this->storeManager = $storeManager;
+        $this->localeResolver = $localeResolver;
 
         parent::__construct($context);
     }
@@ -164,7 +171,7 @@ class Data extends AbstractHelper
     public function getWidgetScriptUrl(): ?string
     {
         if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL') &&
-            getenv('COMFINO_DEV') === 'MG_' . $this->getShopVersion() . '_' . $this->getShopDomain()
+            getenv('COMFINO_DEV') === 'MG_' . $this->getShopVersion() . '_' . $this->getShopUrl()
         ) {
             return getenv('COMFINO_DEV_WIDGET_SCRIPT_URL');
         }
@@ -295,7 +302,7 @@ class Data extends AbstractHelper
 
     public function getShopLanguage(): string
     {
-        return substr($this->storeManager->getStore()->getLocaleCode(), 0, 2);
+        return substr($this->localeResolver->getLocale(), 0, 2);
     }
 
     public function isValidSignature(string $crSignature, string $jsonData): bool
