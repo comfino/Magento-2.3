@@ -14,6 +14,7 @@ define(
         rendererList
     ) {
         'use strict';
+
         rendererList.push(
             {
                 type: 'comfino',

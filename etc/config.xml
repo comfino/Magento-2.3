@@ -20,8 +20,7 @@
                 <widget_offer_type>CONVENIENT_INSTALLMENTS</widget_offer_type>
                 <widget_embed_method>INSERT_INTO_LAST</widget_embed_method>
                 <widget_code>
-var script = document.createElement('script');
-script.onload = function () {
+define(['{WIDGET_SCRIPT_URL}'], function (ComfinoProductWidget) {
     ComfinoProductWidget.init({
         widgetKey: '{WIDGET_KEY}',
         priceSelector: '{WIDGET_PRICE_SELECTOR}',
@@ -39,10 +38,7 @@ script.onload = function () {
         onGetPriceElement: function (priceSelector, priceObserverSelector) { return null; },
         debugMode: window.location.hash &amp;&amp; window.location.hash.substring(1) === 'comfino_debug'
     });
-};
-script.src = '{WIDGET_SCRIPT_URL}';
-script.async = true;
-document.getElementsByTagName('head')[0].appendChild(script);
+});
                 </widget_code>
             </comfino>
         </payment>

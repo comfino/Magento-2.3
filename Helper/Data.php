@@ -128,7 +128,7 @@ class Data extends AbstractHelper
      */
     public function getApiHost($frontendHost = false): string
     {
-        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV') === 'MG_' . $this->getShopVersion() . '_' . $this->getShopDomain()) {
+        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV') === 'MG_' . $this->getShopVersion() . '_' . $this->getShopUrl()) {
             if ($frontendHost) {
                 if (getenv('COMFINO_DEV_API_HOST_FRONTEND')) {
                     return getenv('COMFINO_DEV_API_HOST_FRONTEND');
@@ -157,7 +157,7 @@ class Data extends AbstractHelper
     public function getFrontendScriptUrl(): string
     {
         if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_FRONTEND_SCRIPT_URL') &&
-            getenv('COMFINO_DEV') === 'MG_' . $this->getShopVersion() . '_' . $this->getShopDomain()
+            getenv('COMFINO_DEV') === 'MG_' . $this->getShopVersion() . '_' . $this->getShopUrl()
         ) {
             return getenv('COMFINO_DEV_FRONTEND_SCRIPT_URL');
         }
