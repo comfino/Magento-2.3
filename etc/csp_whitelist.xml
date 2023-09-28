@@ -12,5 +12,27 @@
                 <value id="comfino-dev-widget-js" type="host">widget-comfino.test:8080</value>
             </values>
         </policy>
+        <policy id="style-src">
+            <values>
+                <value id="comfino-prod-widget-js" type="host">widget.comfino.pl</value>
+            </values>
+            <values>
+                <value id="comfino-sandbox-widget-js" type="host">widget.craty.pl</value>
+            </values>
+            <values>
+                <value id="comfino-dev-widget-js" type="host">widget-comfino.test:8080</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="comfino-prod-widget-js" type="host">widget.comfino.pl</value>
+            </values>
+            <values>
+                <value id="comfino-sandbox-widget-js" type="host">widget.craty.pl</value>
+            </values>
+            <values>
+                <value id="comfino-dev-widget-js" type="host">widget-comfino.test:8080</value>
+            </values>
+        </policy>
     </policies>
 </csp_whitelist>
