@@ -70,6 +70,7 @@ define(
             {
                 let self = this;
                 let options = window.checkoutConfig.Comfino.frontendRendererOptions;
+                options.cartTotal = parseFloat(options.cartTotal);
                 options.frontendInitElement = document.getElementById('comfino');
                 options.frontendTargetElement = document.getElementById('comfino-offers');
                 options.onOfferLoadSuccess = (data) => { self.isAvailable(true); }

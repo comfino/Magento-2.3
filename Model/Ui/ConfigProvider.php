@@ -4,6 +4,7 @@ namespace Comfino\ComfinoGateway\Model\Ui;
 
 use Comfino\ComfinoGateway\Helper\Data;
 use Magento\Checkout\Model\ConfigProviderInterface;
+use Magento\Checkout\Model\Session;
 
 class ConfigProvider implements ConfigProviderInterface
 {
@@ -14,9 +15,15 @@ class ConfigProvider implements ConfigProviderInterface
      */
     protected $helper;
 
-    public function __construct(Data $helper)
+    /**
+     * @var Session
+     */
+    protected $session;
+
+    public function __construct(Data $helper, Session $session)
     {
         $this->helper = $helper;
+        $this->session = $session;
     }
 
     public function getConfig(): array
@@ -31,9 +38,9 @@ class ConfigProvider implements ConfigProviderInterface
                     'pluginVersion' => $this->helper->getModuleVersion(),
                     'offersURL' => $this->helper->getOffersUrl(),
                     'language' => $this->helper->getShopLanguage(),
-                    'currency' => 'PLN',
-                    'cartTotal' => 0.0,
-                    'cartTotalFormatted' => '',
+                    'currency' => $this->session->getQuote()->getQuoteCurrencyCode(),
+                    'cartTotal' => $this->session->getQuote()->getGrandTotal(),
+                    'cartTotalFormatted' => $this->helper->formatPrice($this->session->getQuote()->getGrandTotal()),
                 ]
             ]
         ];

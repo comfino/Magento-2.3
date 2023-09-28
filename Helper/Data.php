@@ -10,6 +10,7 @@ use Magento\Framework\Component\ComponentRegistrarInterface;
 use Magento\Framework\Filesystem\Directory\ReadFactory;
 use Magento\Framework\Locale\Resolver;
 use Magento\Framework\Module\ModuleListInterface;
+use Magento\Framework\Pricing\Helper\Data as PriceHelper;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Store\Model\ScopeInterface;
@@ -81,6 +82,11 @@ class Data extends AbstractHelper
      */
     private $localeResolver;
 
+    /**
+     * @var PriceHelper
+     */
+    private $priceHelper;
+
     public function __construct(
         Context $context,
         SerializerInterface $serializer,
@@ -90,7 +96,8 @@ class Data extends AbstractHelper
         ProductMetadataInterface $productMetadata,
         StoreManagerInterface $storeManager,
         UrlInterface $urlBuilder,
-        Resolver $localeResolver
+        Resolver $localeResolver,
+        PriceHelper $priceHelper
     ) {
         $this->serializer = $serializer;
         $this->moduleList = $moduleList;
@@ -100,6 +107,7 @@ class Data extends AbstractHelper
         $this->storeManager = $storeManager;
         $this->urlBuilder = $urlBuilder;
         $this->localeResolver = $localeResolver;
+        $this->priceHelper = $priceHelper;
 
         parent::__construct($context);
     }
@@ -328,5 +336,10 @@ class Data extends AbstractHelper
     public function isValidSignature(string $crSignature, string $jsonData): bool
     {
         return hash_equals(hash('sha3-256', $this->getApiKey() . $jsonData), $crSignature);
+    }
+
+    public function formatPrice(float $price): string
+    {
+        return $this->priceHelper->currency($price, true, false);
     }
 }
