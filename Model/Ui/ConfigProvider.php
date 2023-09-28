@@ -29,7 +29,7 @@ class ConfigProvider implements ConfigProviderInterface
                     'platformVersion' => $this->helper->getShopVersion(),
                     'platformDomain' => $this->helper->getShopDomain(),
                     'pluginVersion' => $this->helper->getModuleVersion(),
-                    'offersURL' => '',
+                    'offersURL' => $this->helper->getOffersUrl(),
                     'language' => $this->helper->getShopLanguage(),
                     'currency' => 'PLN',
                     'cartTotal' => 0.0,

@@ -72,18 +72,33 @@ class Data extends AbstractHelper
     private $storeManager;
 
     /**
+     * @var UrlInterface
+     */
+    private $urlBuilder;
+
+    /**
      * @var Resolver
      */
     private $localeResolver;
 
-    public function __construct(Context $context, SerializerInterface $serializer, ModuleListInterface $moduleList, ComponentRegistrarInterface $componentRegistrar, ReadFactory $readFactory, ProductMetadataInterface $productMetadata, StoreManagerInterface $storeManager, Resolver $localeResolver)
-    {
+    public function __construct(
+        Context $context,
+        SerializerInterface $serializer,
+        ModuleListInterface $moduleList,
+        ComponentRegistrarInterface $componentRegistrar,
+        ReadFactory $readFactory,
+        ProductMetadataInterface $productMetadata,
+        StoreManagerInterface $storeManager,
+        UrlInterface $urlBuilder,
+        Resolver $localeResolver
+    ) {
         $this->serializer = $serializer;
         $this->moduleList = $moduleList;
         $this->componentRegistrar = $componentRegistrar;
         $this->readFactory = $readFactory;
         $this->productMetaData = $productMetadata;
         $this->storeManager = $storeManager;
+        $this->urlBuilder = $urlBuilder;
         $this->localeResolver = $localeResolver;
 
         parent::__construct($context);
@@ -177,6 +192,11 @@ class Data extends AbstractHelper
         }
 
         return $this->isSandboxEnabled() ? self::COMFINO_WIDGET_JS_SANDBOX : self::COMFINO_WIDGET_JS_PRODUCTION;
+    }
+
+    public function getOffersUrl(): string
+    {
+        return $this->urlBuilder->getUrl('rest/V1/comfino-gateway/offers');
     }
 
     /**

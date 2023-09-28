@@ -79,81 +79,10 @@ define(
                     return true;
                 };
 
+                window.ComfinoFrontendRenderer = ComfinoFrontendRenderer;
+
                 ComfinoFrontendRenderer.init(options);
-
-                /*
-                                self.isAvailable(true);
-
-                                if (self.initialized) {
-                                    ComfinoFrontendRenderer.init(window.checkoutConfig.Comfino.frontendRendererOptions);
-
-                                    return;
-                                }
-
-                                let script = document.createElement('script');
-
-                                script.onload = () => ComfinoFrontendRenderer.init(window.checkoutConfig.Comfino.frontendRendererOptions);
-                                script.src = frontendScriptURL;
-                                script.async = true;
-
-                                document.getElementsByTagName('head')[0].appendChild(script);
-
-                                self.initialized = true;
-                */
             }
-
-            /*fetch(url.build('rest/V1/comfino-gateway/offers'))
-                .then(response => response.json())
-                .then(function (data) {
-                    if (data === null || data.length === 0) {
-                        self.isAvailable(false);
-
-                        return;
-                    }
-
-                    let loanTermBox = document.getElementById('comfino-quantity-select');
-
-                    offerWrapper.innerHTML = '';
-                    self.offerList = self.putDataIntoSection(data);
-
-                    self.selectTerm(loanTermBox, loanTermBox.querySelector('div > div[data-term="' + self.offerList.data[self.selectedOffer].loanTerm + '"]'));
-
-                    self.offerList.elements.forEach(function (item, index) {
-                        item.querySelector('label').addEventListener('click', function () {
-                            self.selectedOffer = index;
-
-                            self.fetchProductDetails(self.offerList.data[self.selectedOffer]);
-
-                            self.offerList.elements.forEach(function () {
-                                item.classList.remove('selected');
-                            });
-
-                            item.classList.add('selected');
-
-                            self.selectCurrentTerm(loanTermBox, self.offerList.elements[self.selectedOffer].dataset.term);
-                        });
-                    });
-
-                    document.getElementById('comfino-repr-example-link').addEventListener('click', function (event) {
-                        event.preventDefault();
-                        document.getElementById('modal-repr-example').classList.add('open');
-                    });
-
-                    document.getElementById('modal-repr-example').querySelector('button.comfino-modal-exit').addEventListener('click', function (event) {
-                        event.preventDefault();
-                        document.getElementById('modal-repr-example').classList.remove('open');
-                    });
-
-                    document.getElementById('modal-repr-example').querySelector('div.comfino-modal-exit').addEventListener('click', function (event) {
-                        event.preventDefault();
-                        document.getElementById('modal-repr-example').classList.remove('open');
-                    });
-                }).catch(function (error) {
-                    offerWrapper.innerHTML = `<div class="message message-error error">` +  translator.__('There was an error while performing this operation') + ': ' + error + `</div>`;
-
-                    errorProcessor.process(error, this.messageContainer);
-                });
-        }*/
         });
     }
 );
