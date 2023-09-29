@@ -73,11 +73,6 @@ class Data extends AbstractHelper
     private $storeManager;
 
     /**
-     * @var UrlInterface
-     */
-    private $urlBuilder;
-
-    /**
      * @var Resolver
      */
     private $localeResolver;
@@ -95,7 +90,6 @@ class Data extends AbstractHelper
         ReadFactory $readFactory,
         ProductMetadataInterface $productMetadata,
         StoreManagerInterface $storeManager,
-        UrlInterface $urlBuilder,
         Resolver $localeResolver,
         PriceHelper $priceHelper
     ) {
@@ -105,7 +99,6 @@ class Data extends AbstractHelper
         $this->readFactory = $readFactory;
         $this->productMetaData = $productMetadata;
         $this->storeManager = $storeManager;
-        $this->urlBuilder = $urlBuilder;
         $this->localeResolver = $localeResolver;
         $this->priceHelper = $priceHelper;
 
@@ -202,9 +195,9 @@ class Data extends AbstractHelper
         return $this->isSandboxEnabled() ? self::COMFINO_WIDGET_JS_SANDBOX : self::COMFINO_WIDGET_JS_PRODUCTION;
     }
 
-    public function getOffersUrl(): string
+    public function getOffersUrl(float $total): string
     {
-        return $this->urlBuilder->getUrl('rest/V1/comfino-gateway/offers');
+        return $this->storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_WEB) . "rest/V1/comfino-gateway/offers?total=$total";
     }
 
     /**

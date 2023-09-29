@@ -36,7 +36,7 @@ class ConfigProvider implements ConfigProviderInterface
                     'platformVersion' => $this->helper->getShopVersion(),
                     'platformDomain' => $this->helper->getShopDomain(),
                     'pluginVersion' => $this->helper->getModuleVersion(),
-                    'offersURL' => $this->helper->getOffersUrl(),
+                    'offersURL' => $this->helper->getOffersUrl($this->session->getQuote()->getGrandTotal()),
                     'language' => $this->helper->getShopLanguage(),
                     'currency' => $this->session->getQuote()->getQuoteCurrencyCode(),
                     'cartTotal' => $this->session->getQuote()->getGrandTotal(),

@@ -5,8 +5,7 @@ namespace Comfino\ComfinoGateway\Model\Connector\Service;
 use Comfino\ComfinoGateway\Api\OfferServiceInterface;
 use Comfino\ComfinoGateway\Helper\Data;
 use Magento\Checkout\Model\Session;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Webapi\Rest\Request;
@@ -30,12 +29,17 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
     /**
      * Retrieves offers from Comfino API.
      *
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
+     * @throws ValidatorException
      */
     public function getList(): array
     {
-        $loanAmount = $this->session->getQuote()->getGrandTotal() * 100;
+        $total = $this->request->getParam('total');
+
+        if ($total === null) {
+            throw new ValidatorException(__('Empty content.'));
+        }
+
+        $loanAmount = (float) $total * 100;
 
         if ($this->sendGetRequest($this->helper->getApiHost() . '/v1/financial-products', ['loanAmount' => $loanAmount])) {
             return $this->getOffersResponse($loanAmount);
