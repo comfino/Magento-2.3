@@ -205,7 +205,7 @@ class Data extends AbstractHelper
      */
     public function getMinimalCartAmount(): float
     {
-        return (float)$this->getConfigValue(self::XML_PATH_MINIMAL_CART_AMOUNT);
+        return (float) $this->getConfigValue(self::XML_PATH_MINIMAL_CART_AMOUNT);
     }
 
     /**
