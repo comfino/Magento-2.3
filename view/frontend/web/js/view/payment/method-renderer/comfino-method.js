@@ -31,17 +31,10 @@ define(
                 return {
                     'method': this.getCode(),
                     'additional_data': {
-                        'type': this.loanType
+                        'type': this.loanType,
+                        'term': this.loanTerm
                     }
                 };
-            },
-
-            setLoanType: function (type) {
-                this.loanType = type;
-            },
-
-            setLoanTerm: function (term) {
-                this.loanTerm = term;
             },
 
             isMethodAvailable: function () {
@@ -82,6 +75,12 @@ define(
 
                     return true;
                 };
+                options.onUpdateOrderPaymentState = (loanParams) => {
+                    self.loanType = loanParams.type;
+                    self.loanTerm = loanParams.term;
+
+                    return true;
+                }
 
                 self.isAvailable(true);
 

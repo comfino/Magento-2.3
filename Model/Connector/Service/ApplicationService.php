@@ -128,6 +128,9 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         return '';
     }
 
+    /**
+     * Returns list of available product types (offer types) for Comfino widget.
+     */
     public function getProductTypes(): ?array
     {
         if ($this->sendGetRequest($this->helper->getApiHost() . '/v1/product-types') && strpos($this->curl->getBody(), 'errors') === false) {

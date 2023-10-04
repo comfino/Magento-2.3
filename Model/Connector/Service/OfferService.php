@@ -104,6 +104,6 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
      */
     private function getFormattedAmount($amount): string
     {
-        return $this->priceHelper->currency($amount / 100, false, false);
+        return $this->priceHelper->currency($amount, true, false);
     }
 }
