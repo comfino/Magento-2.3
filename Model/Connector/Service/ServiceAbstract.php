@@ -223,9 +223,8 @@ abstract class ServiceAbstract
     private function getUserAgent(): string
     {
         return sprintf(
-            'Magento Comfino [%s, %s], Magento [%s], PHP [%s], %s',
+            'MG Comfino [%s], MG [%s], PHP [%s], %s',
             $this->helper->getModuleVersion(),
-            $this->helper->getSetupVersion(),
             $this->helper->getShopVersion(),
             PHP_VERSION,
             $this->helper->getShopDomain()

@@ -77,23 +77,22 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
 
         if (!$response->isSuccessful()) {
             $this->statusManagement->applicationFailureStatus($this->session->getLastRealOrder());
+
             $this->logger->emergency(
                 __('Unsuccessful attempt to open the application. Communication error with Comfino API.'),
-                [
-                    'body' => $response->getData(),
-                    'code' => $response->getCode(),
-                ]
+                ['body' => $response->getBody(), 'code' => $response->getCode()]
             );
             $this->logger->info('Redirect url: ' . $response->getRedirectUri());
 
             return [[
                 'redirectUrl' => 'onepage/failure',
-                'error' => __('Unsuccessful attempt to open the application. Please try again later.')
+                'error' => __('Unsuccessful attempt to open the application. Please try again later.'),
             ]];
         }
 
         $data = $this->transactionHelper->parseModel($response);
         $model = $this->comfinoApplicationFactory->create()->addData($data);
+
         $this->applicationResource->save($model);
 
         return [['redirectUrl' => $response->getRedirectUri()]];
@@ -106,7 +105,7 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
     {
         $this->sendPostRequest($this->helper->getApiHost() . '/v1/orders', $this->transactionHelper->getTransactionData());
 
-        return new ApplicationResponse($this->curl->getStatus(), $this->decode($this->curl->getBody()));
+        return new ApplicationResponse($this->curl->getStatus(), $this->decode($this->curl->getBody()), $this->curl->getBody());
     }
 
     /**

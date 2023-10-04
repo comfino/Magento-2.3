@@ -63,15 +63,17 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
                 'description' => $offer['description'],
                 'icon' => str_ireplace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']),
                 'type' => $offer['type'],
-                'sumAmount' => $total / 100,
-                'sumAmountFormatted' => $this->getFormattedAmount($total / 100),
                 'representativeExample' => $offer['representativeExample'],
-                'rrso' => ((float)$offer['rrso']) * 100,
                 'loanTerm' => $offer['loanTerm'],
                 'instalmentAmount' => ((float)$offer['instalmentAmount']) / 100,
                 'instalmentAmountFormatted' => $this->getFormattedAmount(((float)$offer['instalmentAmount']) / 100),
+                'sumAmount' => $total / 100,
+                'sumAmountFormatted' => $this->getFormattedAmount($total / 100),
                 'toPay' => ((float)$offer['toPay']) / 100,
                 'toPayFormatted' => $this->getFormattedAmount(((float)$offer['toPay']) / 100),
+                'commission' => ((int) $offer['toPay'] - $total) / 100,
+                'commissionFormatted' => $this->getFormattedAmount(((int) $offer['toPay'] - $total) / 100),
+                'rrso' => ((float)$offer['rrso']) * 100,
                 'loanParameters' => array_map(function ($loanParams) use ($total) {
                     return [
                         'loanTerm' => $loanParams['loanTerm'],
@@ -79,10 +81,12 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
                         'instalmentAmountFormatted' => $this->getFormattedAmount(
                             ((float)$loanParams['instalmentAmount']) / 100
                         ),
-                        'toPay' => ((float)$loanParams['toPay']) / 100,
-                        'toPayFormatted' => $this->getFormattedAmount(((float)$loanParams['toPay']) / 100),
                         'sumAmount' => $total / 100,
                         'sumAmountFormatted' => $this->getFormattedAmount($total / 100),
+                        'toPay' => ((float)$loanParams['toPay']) / 100,
+                        'toPayFormatted' => $this->getFormattedAmount(((float)$loanParams['toPay']) / 100),
+                        'commission' => ((int) $loanParams['toPay'] - $total) / 100,
+                        'commissionFormatted' => $this->getFormattedAmount(((int) $loanParams['toPay'] - $total) / 100),
                         'rrso' => ((float)$loanParams['rrso']) * 100,
                     ];
                 }, $offer['loanParameters'])

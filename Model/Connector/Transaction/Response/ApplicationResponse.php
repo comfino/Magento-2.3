@@ -12,7 +12,7 @@ class ApplicationResponse extends DataObject implements ApplicationResponseInter
         Response::HTTP_ACCEPTED,
         Response::HTTP_OK,
         Response::HTTP_CONTINUE,
-        Response::HTTP_CREATED
+        Response::HTTP_CREATED,
     ];
 
     /**
@@ -21,73 +21,60 @@ class ApplicationResponse extends DataObject implements ApplicationResponseInter
     private $code;
 
     /**
-     * ApplicationResponse constructor.
-     *
-     * @param int $code
-     * @param array $body
+     * @var string
      */
-    public function __construct(int $code, array $body)
+    private $body;
+
+    public function __construct(int $code, array $data, string $body)
     {
-        $data = [];
+        $result = [];
         $this->code = $code;
+        $this->body = $body;
 
         if ($this->isSuccessful()) {
-            $data = [
-                ApplicationResponseInterface::STATUS => $body['status'],
-                ApplicationResponseInterface::EXTERNAL_ID => $body['externalId'],
-                ApplicationResponseInterface::REDIRECT_URI => $body['applicationUrl'],
-                ApplicationResponseInterface::HREF => $body['_links']['self']['href']
+            $result = [
+                ApplicationResponseInterface::STATUS => $data['status'],
+                ApplicationResponseInterface::EXTERNAL_ID => $data['externalId'],
+                ApplicationResponseInterface::REDIRECT_URI => $data['applicationUrl'],
+                ApplicationResponseInterface::HREF => $data['_links']['self']['href']
             ];
         }
 
-        parent::__construct($data);
+        parent::__construct($result);
     }
 
-    /**
-     * @return int
-     */
     public function getCode(): int
     {
         return $this->code;
     }
 
-    /**
-     * @return string
-     */
-    public function getStatus(): string
+    public function getBody(): string
+    {
+        return $this->body;
+    }
+
+    public function getStatus(): ?string
     {
         return $this->getData(self::STATUS);
     }
 
-    /**
-     * @return string
-     */
-    public function getExternalId(): string
+    public function getExternalId(): ?string
     {
         return $this->getData(self::EXTERNAL_ID);
     }
 
-    /**
-     * @return string
-     */
-    public function getRedirectUri(): string
+    public function getRedirectUri(): ?string
     {
         return $this->getData(self::REDIRECT_URI);
     }
 
-    /**
-     * @return string
-     */
-    public function getHref(): string
+    public function getHref(): ?string
     {
         return $this->getData(self::HREF);
     }
 
-    /**
-     * @return bool
-     */
     public function isSuccessful(): bool
     {
-        return in_array($this->code, self::POSITIVE_HTTP_CODES);
+        return in_array($this->code, self::POSITIVE_HTTP_CODES, true);
     }
 }
