@@ -4,6 +4,9 @@
         <section id="payment">
             <group id="comfino" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Comfino</label>
+                <field id="comfino_logo" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <frontend_model>Comfino\ComfinoGateway\Block\ComfinoLogo</frontend_model>
+                </field>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -35,7 +38,7 @@
                 </group>
                 <group id="comfino_widget" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Widget</label>
-                    <field id="widget_enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Widget is active?</label>
                         <config_path>payment/comfino/widget_enabled</config_path>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -44,46 +47,46 @@
                         <label>Widget key</label>
                         <config_path>payment/comfino/widget_key</config_path>
                     </field>
-                    <field id="widget_price_selector" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_price_selector" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Widget price element selector</label>
                         <config_path>payment/comfino/widget_price_selector</config_path>
                     </field>
-                    <field id="widget_target_selector" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_target_selector" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Widget anchor element selector</label>
                         <config_path>payment/comfino/widget_target_selector</config_path>
                     </field>
-                    <field id="widget_price_observer_selector" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_price_observer_selector" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Price change detection - container selector</label>
                         <config_path>payment/comfino/widget_price_observer_selector</config_path>
                     </field>
-                    <field id="widget_price_observer_level" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_price_observer_level" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Price change detection - container hierarchy level</label>
                         <config_path>payment/comfino/widget_price_observer_level</config_path>
                         <validate>validate-number validate-zero-or-greater</validate>
                     </field>
-                    <field id="widget_type" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_type" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Widget type</label>
                         <config_path>payment/comfino/widget_type</config_path>
                         <source_model>Comfino\ComfinoGateway\Model\Adminhtml\System\Config\Source\WidgetType</source_model>
                     </field>
-                    <field id="widget_offer_type" translate="label" type="select" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_offer_type" translate="label" type="select" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Offer type</label>
                         <config_path>payment/comfino/widget_offer_type</config_path>
                         <source_model>Comfino\ComfinoGateway\Model\Adminhtml\System\Config\Source\WidgetOfferType</source_model>
                     </field>
-                    <field id="widget_embed_method" translate="label" type="select" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_embed_method" translate="label" type="select" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Embedding method</label>
                         <config_path>payment/comfino/widget_embed_method</config_path>
                         <source_model>Comfino\ComfinoGateway\Model\Adminhtml\System\Config\Source\WidgetEmbedMethod</source_model>
                     </field>
-                    <field id="widget_code" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="widget_code" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Widget initialization code</label>
                         <config_path>payment/comfino/widget_code</config_path>
                     </field>
                 </group>
                 <group id="comfino_developers" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>For developers</label>
-                    <field id="sandbox" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="sandbox" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Use test environment</label>
                         <config_path>payment/comfino/sandbox</config_path>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

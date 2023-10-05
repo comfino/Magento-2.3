@@ -17,7 +17,7 @@ abstract class ServiceAbstract
         Response::HTTP_ACCEPTED,
         Response::HTTP_OK,
         Response::HTTP_CONTINUE,
-        Response::HTTP_CREATED
+        Response::HTTP_CREATED,
     ];
 
     /**
@@ -60,28 +60,18 @@ abstract class ServiceAbstract
         $this->request = $request;
     }
 
-    /**
-     * Sends GET request.
-     *
-     * @param string $url
-     * @param array $params
-     *
-     * @return bool
-     */
     protected function sendGetRequest(string $url, array $params = []): bool
     {
-        $requestParams = http_build_query($params);
-        $requestUrl = "$url?$requestParams";
+        $requestUrl = $url;
 
-        $this->logger->info(
-            'REQUEST',
-            [
-                'url' => $url,
-                'method' => 'GET',
-                'params' => $requestParams,
-                'body' => ''
-            ]
-        );
+        if (count($params)) {
+            $requestParams = http_build_query($params);
+            $requestUrl .= "?$requestParams";
+        } else {
+            $requestParams = '';
+        }
+
+        $this->logger->info('REQUEST', ['url' => $url, 'method' => 'GET', 'params' => $requestParams, 'body' => '']);
 
         $this->prepareHeaders();
 
@@ -95,7 +85,7 @@ abstract class ServiceAbstract
                     'httpStatus' => $this->curl->getStatus(),
                     'url' => $requestUrl,
                     'method' => 'GET',
-                    'response' => $this->curl->getBody()
+                    'response' => $this->curl->getBody(),
                 ]
             );
         }
@@ -103,25 +93,9 @@ abstract class ServiceAbstract
         return $this->isSuccessful();
     }
 
-    /**
-     * Sends POST request.
-     *
-     * @param string $url
-     * @param mixed $body
-     *
-     * @return bool
-     */
     protected function sendPostRequest(string $url, $body): bool
     {
-        $this->logger->info(
-            'REQUEST',
-            [
-                'url' => $url,
-                'method' => 'POST',
-                'params' => '',
-                'body' => $body
-            ]
-        );
+        $this->logger->info('REQUEST', ['url' => $url, 'method' => 'POST', 'params' => '', 'body' => $body]);
 
         $this->prepareHeaders();
 
@@ -143,14 +117,6 @@ abstract class ServiceAbstract
         return $this->isSuccessful();
     }
 
-    /**
-     * Sends PUT request.
-     *
-     * @param string $url
-     * @param mixed $body
-     *
-     * @return bool
-     */
     protected function sendPutRequest(string $url, $body = null): bool
     {
         $this->logger->info(
@@ -184,30 +150,18 @@ abstract class ServiceAbstract
         return $this->isSuccessful();
     }
 
-    /**
-     * Decodes JSON.
-     *
-     * @param $json
-     *
-     * @return array|bool|float|int|string
-     */
     protected function decode($json)
     {
         return $this->serializer->unserialize($json) ?? [];
     }
 
-    /**
-     * Encodes array to JSON.
-     *
-     * @return bool|string
-     */
     protected function encode($json)
     {
         return $this->serializer->serialize($json);
     }
 
     /**
-     * Prepares headers for CURL request.
+     * Prepares headers for cURL request.
      */
     private function prepareHeaders(): void
     {
@@ -218,7 +172,7 @@ abstract class ServiceAbstract
     }
 
     /**
-     * Returns User Agent from ProductMetaData (name and version).
+     * Returns User-Agent header from ProductMetaData (name and version).
      */
     private function getUserAgent(): string
     {

@@ -140,6 +140,11 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         return null;
     }
 
+    public function getLogoUrl(): string
+    {
+        return $this->helper->getApiHost(true) . '/v1/get-logo-url';
+    }
+
     /**
      * Changes status for application and related order.
      *
