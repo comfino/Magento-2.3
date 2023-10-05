@@ -34,5 +34,16 @@
                 <value id="comfino-dev-widget-js" type="host">widget-comfino.test:8080</value>
             </values>
         </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="comfino-prod-api" type="host">api-ecommerce.comfino.pl</value>
+            </values>
+            <values>
+                <value id="comfino-sandbox-api" type="host">api-ecommerce.ecraty.pl</value>
+            </values>
+            <values>
+                <value id="comfino-dev-api" type="host">api-ecommerce.comfino.test</value>
+            </values>
+        </policy>
     </policies>
 </csp_whitelist>
