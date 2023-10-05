@@ -47,3 +47,7 @@
 "Use test environment","Użyj środowiska testowego"
 "Test environment API key","Klucz API środowiska testowego"
 "Do you want to ask about something? Write to us at <a href=""mailto:pomoc@comfino.pl?subject=Magento - question&body=Magento"">pomoc@comfino.pl</a> or contact us by phone. We are waiting on the number: 887-106-027. We will answer all your questions!","Chcesz o coś zapytać? Napisz do nas na adres <a href=""mailto:pomoc@comfino.pl?subject=Magento - pytanie&body=Magento"">pomoc@comfino.pl</a> lub skontaktuj się telefonicznie. Czekamy pod numerem: 887-106-027. Odpowiemy na każde Twoje pytanie!"
+"Basic settings","Ustawienia podstawowe"
+"Advanced settings","Ustawienia zaawansowane"
+"Selector of observed parent element which contains price element.":"Selektor obserwowanego elementu nadrzędnego, który zawiera element ceny."
+"Hierarchy level of observed parent element relative to the price element.":"Poziom hierarchii obserwowanego elementu nadrzędnego względem elementu ceny."
