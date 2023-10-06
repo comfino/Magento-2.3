@@ -14,16 +14,16 @@
                 <field id="title" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Title</label>
                 </field>
-                <field id="min_order_total" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="min_order_total" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Minimal order value</label>
                     <config_path>payment/comfino/min_order_total</config_path>
                     <validate>validate-number validate-zero-or-greater</validate>
                 </field>
-                <field id="allowspecific" translate="label" type="allowspecific" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="allowspecific" translate="label" type="allowspecific" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Restrict payment method to specific countries</label>
                     <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
                 </field>
-                <field id="specificcountry" translate="label" type="multiselect" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="specificcountry" translate="label" type="multiselect" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Payment method allowed in countries</label>
                     <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
                     <can_be_empty>1</can_be_empty>
@@ -31,7 +31,7 @@
                 </field>
                 <group id="comfino_payment_methods" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Payment settings</label>
-                    <field id="api_key" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="api_key" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>API key</label>
                         <config_path>payment/comfino/api_key</config_path>
                     </field>
@@ -45,7 +45,7 @@
                             <config_path>payment/comfino/widget_enabled</config_path>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         </field>
-                        <field id="widget_key" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <field id="widget_key" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Widget key</label>
                             <config_path>payment/comfino/widget_key</config_path>
                         </field>
@@ -99,7 +99,7 @@
                         <config_path>payment/comfino/sandbox</config_path>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
-                    <field id="api_key" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="api_key" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Test environment API key</label>
                         <config_path>payment/comfino/sandbox_api_key</config_path>
                     </field>
