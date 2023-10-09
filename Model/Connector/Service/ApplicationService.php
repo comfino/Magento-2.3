@@ -55,8 +55,18 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
      * @param Request $request
      * @param ComfinoStatusManagementInterface $statusManagement
      */
-    public function __construct(Curl $curl, LoggerInterface $logger, SerializerInterface $serializer, Data $helper, Session $session, TransactionHelper $transactionHelper, ComfinoApplicationFactory $comfinoApplicationFactory, ApplicationResource $applicationResource, Request $request, ComfinoStatusManagementInterface $statusManagement)
-    {
+    public function __construct(
+        Curl $curl,
+        LoggerInterface $logger,
+        SerializerInterface $serializer,
+        Data $helper,
+        Session $session,
+        TransactionHelper $transactionHelper,
+        ComfinoApplicationFactory $comfinoApplicationFactory,
+        ApplicationResource $applicationResource,
+        Request $request,
+        ComfinoStatusManagementInterface $statusManagement
+    ) {
         parent::__construct($curl, $logger, $serializer, $helper, $session, $request);
 
         $this->transactionHelper = $transactionHelper;

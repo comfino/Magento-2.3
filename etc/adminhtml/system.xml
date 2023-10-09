@@ -104,6 +104,15 @@
                         <config_path>payment/comfino/sandbox_api_key</config_path>
                     </field>
                 </group>
+                <group id="comfino_plugin_diagnostics" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Plugin diagnostics</label>
+                    <field id="comfino_system_info" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <frontend_model>Comfino\ComfinoGateway\Block\SystemInfo</frontend_model>
+                    </field>
+                    <field id="comfino_errors_log" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <frontend_model>Comfino\ComfinoGateway\Block\ErrorLog</frontend_model>
+                    </field>
+                </group>
             </group>
             <!-- payment-group -->
         </section>

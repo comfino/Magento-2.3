@@ -51,3 +51,6 @@
 "Advanced settings","Ustawienia zaawansowane"
 "Selector of observed parent element which contains price element.","Selektor obserwowanego elementu nadrzędnego, który zawiera element ceny."
 "Hierarchy level of observed parent element relative to the price element.","Poziom hierarchii obserwowanego elementu nadrzędnego względem elementu ceny."
+"Plugin diagnostics","Diagnostyka wtyczki"
+"System information","Informacje o systemie"
+"Errors log","Log błędów"

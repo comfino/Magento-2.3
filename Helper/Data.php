@@ -7,6 +7,8 @@ use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Component\ComponentRegistrar;
 use Magento\Framework\Component\ComponentRegistrarInterface;
+use Magento\Framework\DB\Adapter\ConnectionException;
+use Magento\Framework\DB\Adapter\SqlVersionProvider;
 use Magento\Framework\Filesystem\Directory\ReadFactory;
 use Magento\Framework\Locale\Resolver;
 use Magento\Framework\Module\ModuleListInterface;
@@ -82,6 +84,11 @@ class Data extends AbstractHelper
      */
     private $priceHelper;
 
+    /**
+     * @var SqlVersionProvider
+     */
+    private $sqlVersionProvider;
+
     public function __construct(
         Context $context,
         SerializerInterface $serializer,
@@ -91,7 +98,8 @@ class Data extends AbstractHelper
         ProductMetadataInterface $productMetadata,
         StoreManagerInterface $storeManager,
         Resolver $localeResolver,
-        PriceHelper $priceHelper
+        PriceHelper $priceHelper,
+        SqlVersionProvider $sqlVersionProvider
     ) {
         $this->serializer = $serializer;
         $this->moduleList = $moduleList;
@@ -101,6 +109,7 @@ class Data extends AbstractHelper
         $this->storeManager = $storeManager;
         $this->localeResolver = $localeResolver;
         $this->priceHelper = $priceHelper;
+        $this->sqlVersionProvider = $sqlVersionProvider;
 
         parent::__construct($context);
     }
@@ -307,6 +316,28 @@ class Data extends AbstractHelper
     public function getShopVersion(): string
     {
         return $this->productMetaData->getVersion();
+    }
+
+    /**
+     * Returns DBMS engine version.
+     *
+     * @throws ConnectionException
+     */
+    public function getDatabaseVersion(): string
+    {
+        $dbVersion = 'n/a';
+
+        try {
+            $dbVersion = $this->sqlVersionProvider->getSqlVersion();
+        } catch (\Exception $e) {
+            $matches = [];
+
+            if (preg_match('/Used Version: (.+)\. Supported versions:/', $e->getMessage(), $matches)) {
+                $dbVersion = $matches[1];
+            }
+        }
+
+        return $dbVersion;
     }
 
     public function getShopUrl(): string
