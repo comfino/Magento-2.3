@@ -50,6 +50,11 @@ abstract class ServiceAbstract
      */
     protected $request;
 
+    /**
+     * @var string[]
+     */
+    protected $lastErrors = [];
+
     public function __construct(Curl $curl, LoggerInterface $logger, SerializerInterface $serializer, Data $helper, Session $session, Request $request)
     {
         $this->curl = $curl;
@@ -58,6 +63,16 @@ abstract class ServiceAbstract
         $this->helper = $helper;
         $this->session = $session;
         $this->request = $request;
+    }
+
+    public function getLastResponseCode(): int
+    {
+        return $this->curl->getStatus();
+    }
+
+    public function getLastErrors(): array
+    {
+        return $this->lastErrors;
     }
 
     protected function sendGetRequest(string $url, array $params = []): bool
@@ -78,6 +93,8 @@ abstract class ServiceAbstract
         try {
             $this->curl->get($requestUrl);
         } catch (Exception $e) {
+            $this->lastErrors[] = $e->getMessage();
+
             $this->logger->error(
                 'Communication error',
                 [
@@ -102,6 +119,8 @@ abstract class ServiceAbstract
         try {
             $this->curl->post($url, $body);
         } catch (Exception $e) {
+            $this->lastErrors[] = $e->getMessage();
+
             $this->logger->error(
                 'Communication error',
                 [
@@ -135,6 +154,8 @@ abstract class ServiceAbstract
         try {
             $this->curl->post($url, $body);
         } catch (Exception $e) {
+            $this->lastErrors[] = $e->getMessage();
+
             $this->logger->error(
                 'Communication error',
                 [
@@ -165,6 +186,8 @@ abstract class ServiceAbstract
      */
     private function prepareHeaders(): void
     {
+        $this->lastErrors = [];
+
         $this->curl->addHeader('Content-Type', 'application/json');
         $this->curl->addHeader('Api-Key', $this->helper->getApiKey());
         $this->curl->addHeader('Api-Language', $this->helper->getShopLanguage());

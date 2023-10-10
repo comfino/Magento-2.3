@@ -150,6 +150,19 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         return null;
     }
 
+    public function isShopAccountActive(): bool
+    {
+        $accountActive = false;
+
+        if (!empty($this->helper->getApiKey())) {
+            if ($this->sendGetRequest($this->helper->getApiHost() . '/v1/user/is-active')) {
+                $accountActive = $this->decode($this->curl->getBody());
+            }
+        }
+
+        return $accountActive;
+    }
+
     public function getLogoUrl(): string
     {
         return $this->helper->getApiHost(true) . '/v1/get-logo-url';
