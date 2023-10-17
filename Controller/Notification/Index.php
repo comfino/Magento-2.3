@@ -4,6 +4,7 @@ namespace Comfino\ComfinoGateway\Controller\Notification;
 
 use Comfino\ComfinoGateway\Api\ComfinoStatusManagementInterface;
 use Comfino\ComfinoGateway\Helper\Data;
+use Comfino\ComfinoGateway\Model\ComfinoStatusManagement;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
@@ -60,19 +61,42 @@ class Index extends Action
     {
         $jsonContent = $this->request->getContent();
 
-        if (!$this->helper->isValidSignature($this->request->getHeader('CR-Signature'), $jsonContent)) {
+        if (!$this->helper->isValidSignature($this->getSignature(), $jsonContent)) {
             return $this->setResponse(400, __('Failed comparison of CR-Signature and shop hash.'));
         }
 
-        $content = $this->serializer->unserialize($jsonContent);
+        $data = $this->serializer->unserialize($jsonContent);
 
-        if (!isset($content['externalId'])) {
-            return $this->setResponse(400, __('Empty content.'));
+        if (!isset($data['externalId'])) {
+            return $this->setResponse(400, 'External ID must be set.');
         }
 
-        $this->statusManagement->changeApplicationAndOrderStatus($content['externalId'], $content['status']);
+        if (!isset($data['status'])) {
+            return $this->setResponse(400, 'Status must be set.');
+        }
+
+        if ($data['status'] === ComfinoStatusManagement::CANCELLED_BY_SHOP) {
+            return $this->setResponse(400, 'Invalid status ' . ComfinoStatusManagement::CANCELLED_BY_SHOP . '.');
+        }
+
+        if (!$this->statusManagement->changeApplicationAndOrderStatus($data['externalId'], $data['status'])) {
+            return $this->setResponse(400, sprintf('Invalid status %s.', $data['status']));
+        }
 
         return $this->setResponse(200, 'OK');
+    }
+
+    private function getSignature(): string
+    {
+        $crSignature = $this->request->getHeader('CR-Signature');
+
+        if (!empty($crSignature)) {
+            return $crSignature;
+        }
+
+        $crSignature = $this->request->getHeader('X-CR-Signature');
+
+        return !empty($crSignature) ? $crSignature : '';
     }
 
     private function setResponse(int $code, string $content): Json
