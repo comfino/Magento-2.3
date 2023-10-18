@@ -4,6 +4,7 @@ namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
 use Comfino\ComfinoGateway\Api\OfferServiceInterface;
 use Comfino\ComfinoGateway\Helper\Data;
+use Comfino\ComfinoGateway\Logger\ErrorLogger;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\HTTP\Client\Curl;
@@ -44,6 +45,15 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
         if ($this->sendGetRequest($this->helper->getApiHost() . '/v1/financial-products', ['loanAmount' => $loanAmount])) {
             return $this->getOffersResponse($loanAmount);
         }
+
+        ErrorLogger::sendError(
+            'Communication error with Comfino API',
+            $this->curl->getStatus(),
+            'Financial products retrieving failed.',
+            $this->lastUrl,
+            null,
+            $this->curl->getBody()
+        );
 
         return [];
     }

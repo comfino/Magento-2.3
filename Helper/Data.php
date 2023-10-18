@@ -320,8 +320,6 @@ class Data extends AbstractHelper
 
     /**
      * Returns DBMS engine version.
-     *
-     * @throws ConnectionException
      */
     public function getDatabaseVersion(): string
     {

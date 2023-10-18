@@ -3,7 +3,7 @@
 namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
 use Comfino\ComfinoGateway\Api\ApplicationServiceInterface;
-use Comfino\ComfinoGateway\Exception\InvalidSignatureException;
+use Comfino\ComfinoGateway\Logger\ErrorLogger;
 use Comfino\ComfinoGateway\Model\ComfinoApplicationFactory;
 use Comfino\ComfinoGateway\Api\ComfinoStatusManagementInterface;
 use Comfino\ComfinoGateway\Model\ComfinoStatusManagement;
@@ -13,7 +13,6 @@ use Comfino\ComfinoGateway\Helper\TransactionHelper;
 use Comfino\ComfinoGateway\Api\Data\ApplicationResponseInterface;
 use Comfino\ComfinoGateway\Model\ResourceModel\ComfinoApplication as ApplicationResource;
 use Magento\Framework\Exception\AlreadyExistsException;
-use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Webapi\Rest\Request;
@@ -89,11 +88,14 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         if (!$response->isSuccessful()) {
             $this->statusManagement->applicationFailureStatus($this->session->getLastRealOrder());
 
-            $this->logger->emergency(
-                __('Unsuccessful attempt to open the application. Communication error with Comfino API.'),
-                ['body' => $response->getBody(), 'code' => $response->getCode()]
+            ErrorLogger::sendError(
+                'Communication error with Comfino API',
+                $response->getCode(),
+                $response->getStatus(),
+                $this->lastUrl,
+                null,
+                $response->getBody()
             );
-            $this->logger->info('Redirect url: ' . $response->getRedirectUri());
 
             return [[
                 'redirectUrl' => 'onepage/failure',
