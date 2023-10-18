@@ -10,7 +10,9 @@ interface ApplicationServiceInterface
     public function save(): array;
 
     /**
-     * @return void
+     * @param string $externalId
+     * @param string $status
+     * @return bool
      */
-    public function changeStatus(): void;
+    public function changeStatus(string $externalId, string $status): bool;
 }

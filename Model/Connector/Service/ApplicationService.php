@@ -6,6 +6,7 @@ use Comfino\ComfinoGateway\Api\ApplicationServiceInterface;
 use Comfino\ComfinoGateway\Exception\InvalidSignatureException;
 use Comfino\ComfinoGateway\Model\ComfinoApplicationFactory;
 use Comfino\ComfinoGateway\Api\ComfinoStatusManagementInterface;
+use Comfino\ComfinoGateway\Model\ComfinoStatusManagement;
 use Comfino\ComfinoGateway\Model\Connector\Transaction\Response\ApplicationResponse;
 use Comfino\ComfinoGateway\Helper\Data;
 use Comfino\ComfinoGateway\Helper\TransactionHelper;
@@ -82,7 +83,7 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
      */
     public function save(): array
     {
-        // Connect to the Comfino API and create new application/transaction
+        // Connect to the Comfino API and create new application/transaction.
         $response = $this->createApplicationTransaction();
 
         if (!$response->isSuccessful()) {
@@ -104,6 +105,7 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
         $model = $this->comfinoApplicationFactory->create()->addData($data);
 
         $this->applicationResource->save($model);
+        $this->changeStatus($response->getExternalId(), ComfinoStatusManagement::CREATED);
 
         return [['redirectUrl' => $response->getRedirectUri()]];
     }
@@ -170,21 +172,9 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
 
     /**
      * Changes status for application and related order.
-     *
-     * @throws InvalidSignatureException
-     * @throws ValidatorException
      */
-    public function changeStatus(): void
+    public function changeStatus(string $externalId, string $status): bool
     {
-        $params = $this->request->getBodyParams();
-
-        if (!isset($params['externalId'])) {
-            throw new ValidatorException(__('Empty content.'));
-        }
-        if (!$this->helper->isValidSignature($this->request->getHeader('CR-Signature'), $this->encode($params))) {
-            throw new InvalidSignatureException(__('Failed comparison of CR-Signature and shop hash.'));
-        }
-
-        $this->statusManagement->changeApplicationAndOrderStatus($params['externalId'], $params['status']);
+        return $this->statusManagement->changeApplicationAndOrderStatus($externalId, $status);
     }
 }
