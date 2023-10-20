@@ -10,7 +10,7 @@ interface ComfinoStatusManagementInterface
      * @param int $applicationId
      * @param string $orderStatus
      */
-    public function changeApplicationAndOrderStatus(int $applicationId, string $orderStatus): void;
+    public function changeApplicationAndOrderStatus(int $applicationId, string $orderStatus): bool;
 
     /**
      * @param OrderInterface $order

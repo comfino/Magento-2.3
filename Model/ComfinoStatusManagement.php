@@ -15,32 +15,85 @@ use Psr\Log\LoggerInterface;
 
 class ComfinoStatusManagement implements ComfinoStatusManagementInterface
 {
-    public const CREATED_STATUS = 'CREATED';
-    public const WAITING_FOR_FILLING_STATUS = 'WAITING_FOR_FILLING';
-    public const WAITING_FOR_CONFIRMATION_STATUS = 'WAITING_FOR_CONFIRMATION';
-    public const WAITING_FOR_PAYMENT_STATUS = 'WAITING_FOR_PAYMENT';
-    public const ACCEPTED_STATUS = 'ACCEPTED';
-    public const REJECTED_STATUS = 'REJECTED';
-    public const CANCELLED_BY_SHOP_STATUS = 'CANCELLED_BY_SHOP';
-    public const CANCELLED_STATUS = 'CANCELLED';
-    public const PAID_STATUS = 'PAID';
+    public const COMFINO_CREATED = 'COMFINO_CREATED';
+    public const COMFINO_WAITING_FOR_FILLING = 'COMFINO_WAITING_FOR_FILLING';
+    public const COMFINO_WAITING_FOR_CONFIRMATION = 'COMFINO_WAITING_FOR_CONFIRMATION';
+    public const COMFINO_WAITING_FOR_PAYMENT = 'COMFINO_WAITING_FOR_PAYMENT';
+    public const COMFINO_ACCEPTED = 'COMFINO_ACCEPTED';
+    public const COMFINO_PAID = 'COMFINO_PAID';
+    public const COMFINO_REJECTED = 'COMFINO_REJECTED';
+    public const COMFINO_RESIGN = 'COMFINO_RESIGN';
+    public const COMFINO_CANCELLED_BY_SHOP = 'COMFINO_CANCELLED_BY_SHOP';
+    public const COMFINO_CANCELLED = 'COMFINO_CANCELLED';
 
-    public const NEW_STATE = [
-        self::CREATED_STATUS,
-        self::WAITING_FOR_CONFIRMATION_STATUS,
-        self::WAITING_FOR_FILLING_STATUS,
+    public const CREATED = 'CREATED';
+    public const WAITING_FOR_FILLING = 'WAITING_FOR_FILLING';
+    public const WAITING_FOR_CONFIRMATION = 'WAITING_FOR_CONFIRMATION';
+    public const WAITING_FOR_PAYMENT = 'WAITING_FOR_PAYMENT';
+    public const ACCEPTED = 'ACCEPTED';
+    public const PAID = 'PAID';
+    public const REJECTED = 'REJECTED';
+    public const RESIGN = 'RESIGN';
+    public const CANCELLED_BY_SHOP = 'CANCELLED_BY_SHOP';
+    public const CANCELLED = 'CANCELLED';
+
+    public const CUSTOM_ORDER_STATUSES = [
+        ComfinoStatusManagement::COMFINO_CREATED => [
+            'name' => 'Order created - waiting for payment (Comfino)',
+            'name_pl' => 'Zamówienie utworzone - oczekiwanie na płatność (Comfino)',
+        ],
+        ComfinoStatusManagement::COMFINO_ACCEPTED => [
+            'name' => 'Credit granted (Comfino)',
+            'name_pl' => 'Kredyt udzielony (Comfino)',
+        ],
+        ComfinoStatusManagement::COMFINO_REJECTED => [
+            'name' => 'Credit rejected (Comfino)',
+            'name_pl' => 'Wniosek kredytowy odrzucony (Comfino)',
+        ],
+        ComfinoStatusManagement::COMFINO_RESIGN => [
+            'name' => 'Resigned (Comfino)',
+            'name_pl' => 'Odstąpiono (Comfino)',
+        ],
+        ComfinoStatusManagement::COMFINO_CANCELLED_BY_SHOP => [
+            'name' => 'Cancelled by shop (Comfino)',
+            'name_pl' => 'Anulowano przez sklep (Comfino)',
+        ],
+        ComfinoStatusManagement::COMFINO_CANCELLED => [
+            'name' => 'Cancelled (Comfino)',
+            'name_pl' => 'Anulowano (Comfino)',
+        ],
     ];
 
-    public const REJECTED_STATE = [
-        self::REJECTED_STATUS,
-        self::CANCELLED_BY_SHOP_STATUS,
-        self::CANCELLED_STATUS,
+    private const STATUSES = [
+        self::CREATED => self::COMFINO_CREATED,
+        self::WAITING_FOR_FILLING => self::COMFINO_WAITING_FOR_FILLING,
+        self::WAITING_FOR_CONFIRMATION => self::COMFINO_WAITING_FOR_CONFIRMATION,
+        self::WAITING_FOR_PAYMENT => self::COMFINO_WAITING_FOR_PAYMENT,
+        self::ACCEPTED => self::COMFINO_ACCEPTED,
+        self::REJECTED => self::COMFINO_REJECTED,
+        self::PAID => self::COMFINO_PAID,
+        self::RESIGN => self::COMFINO_RESIGN,
+        self::CANCELLED_BY_SHOP => self::COMFINO_CANCELLED_BY_SHOP,
+        self::CANCELLED => self::COMFINO_CANCELLED,
     ];
 
-    public const COMPLETED_STATE = [
-        self::ACCEPTED_STATUS,
-        self::PAID_STATUS,
-        self::WAITING_FOR_PAYMENT_STATUS,
+    /**
+     * After setting notification status we want some statuses to change to internal Magento statuses right away.
+     */
+    private const CHANGE_STATUS_MAP = [
+        self::CREATED => self::COMFINO_CREATED,
+        self::ACCEPTED => Order::STATE_PROCESSING,
+        self::CANCELLED => Order::STATE_CANCELED,
+        self::CANCELLED_BY_SHOP => Order::STATE_CANCELED,
+        self::REJECTED => Order::STATE_CANCELED,
+        self::RESIGN => Order::STATE_CANCELED,
+    ];
+
+    private const IGNORED_STATUSES = [
+        self::WAITING_FOR_FILLING,
+        self::WAITING_FOR_CONFIRMATION,
+        self::WAITING_FOR_PAYMENT,
+        self::PAID,
     ];
 
     /**
@@ -63,14 +116,6 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
      */
     private $applicationResource;
 
-    /**
-     * ComfinoStatusManagement constructor.
-     *
-     * @param LoggerInterface $logger
-     * @param OrderRepository $orderRepository
-     * @param ComfinoApplicationFactory $comfinoApplicationFactory
-     * @param ApplicationResource $applicationResource
-     */
     public function __construct(
         LoggerInterface $logger,
         OrderRepository $orderRepository,
@@ -86,30 +131,37 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
     /**
      * Change status for application and related order.
      *
-     * @param int $applicationId
-     * @param string $orderStatus
-     *
      * @throws AlreadyExistsException
      * @throws InputException
      * @throws InvalidExternalIdException
      * @throws NoSuchEntityException
      */
-    public function changeApplicationAndOrderStatus(int $applicationId, string $orderStatus): void
+    public function changeApplicationAndOrderStatus(int $applicationId, string $orderStatus): bool
     {
+        if (in_array($orderStatus, self::IGNORED_STATUSES, true)) {
+            return true;
+        }
+
         $application = $this->getApplication($applicationId);
 
         if (!$application->getId()) {
             throw new InvalidExternalIdException(__('Invalid external ID!'));
         }
 
+        $status = $this->getStatus($orderStatus);
+
+        if ($status === Order::STATE_HOLDED) {
+            return false;
+        }
+
         $this->changeApplicationStatus($application, $orderStatus);
         $this->changeOrderStatus($application->getOrderId(), $orderStatus);
+
+        return true;
     }
 
     /**
      * Handle application save failure.
-     *
-     * @param OrderInterface $order
      *
      * @throws AlreadyExistsException
      * @throws InputException
@@ -118,11 +170,13 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
     public function applicationFailureStatus(OrderInterface $order): void
     {
         $status = Order::STATE_PENDING_PAYMENT;
+
         $order->setStatus($status)->setState($status);
         $order->addStatusToHistory(
             $order->getStatus(),
             __('Unsuccessful attempt to open the application. Communication error with Comfino API.')
         );
+
         $this->orderRepository->save($order);
     }
 
@@ -136,11 +190,11 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
     protected function changeOrderStatus($orderId, $status): void
     {
         $order = $this->orderRepository->get($orderId);
-        $origStatus = $order->getStatus();
+        $currentStatus = $order->getStatus();
 
         $this->setOrderStatus($order, $status);
 
-        if ($origStatus !== Order::STATE_PROCESSING && $this->isCompletedStatus($status)) {
+        if ($currentStatus !== Order::STATE_PROCESSING && $status === self::ACCEPTED) {
             $amount = $order->getBaseTotalDue();
             $payment = $order->getPayment();
 
@@ -157,10 +211,6 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
 
     /**
      * Get application by id.
-     *
-     * @param int $id
-     *
-     * @return ComfinoApplication
      */
     private function getApplication(int $id): ComfinoApplication
     {
@@ -173,9 +223,6 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
     /**
      * Change Comfino application status.
      *
-     * @param ComfinoApplication $application
-     * @param string $status
-     *
      * @throws AlreadyExistsException
      */
     private function changeApplicationStatus(ComfinoApplication $application, string $status): void
@@ -184,75 +231,46 @@ class ComfinoStatusManagement implements ComfinoStatusManagementInterface
         $this->applicationResource->save($application);
     }
 
-    /**
-     * @param $status
-     * @param $group
-     *
-     * @return bool
-     */
-    private function checkStatusGroup($status, $group): bool
-    {
-        return in_array($status, $group, true);
-    }
-
-    /**
-     * @param OrderInterface $order
-     * @param string $status
-     */
-    private function setOrderStatus(OrderInterface $order, string $status)
+    private function setOrderStatus(OrderInterface $order, string $status): void
     {
         $newStatus = $this->mapStatus($status);
+        $statusDesc = $this->getStatusDescription($status);
+        $statusNote = __('Comfino status: %1', $status) . (!empty($statusDesc) ? ' [' . $statusDesc . ']' : '');
+
         $order->setStatus($newStatus)->setState($newStatus);
-        $order->addStatusToHistory($newStatus, __('Comfino status: %1', $status));
+        $order->addStatusToHistory($newStatus, $statusNote);
     }
 
-    /**
-     * @param $status
-     *
-     * @return mixed|string
-     */
-    private function mapStatus($status)
+    private function getStatusDescription(string $status): string
     {
-        if ($this->isCompletedStatus($status)) {
-            return Order::STATE_PROCESSING;
-        }
-        if ($this->isNewStatus($status)) {
-            return Order::STATE_PENDING_PAYMENT;
-        }
-        if ($this->isRejectedStatus($status)) {
-            return Order::STATE_CANCELED;
+        $comfinoStatus = $this->getStatus($status);
+
+        if (array_key_exists($comfinoStatus, self::CUSTOM_ORDER_STATUSES)) {
+            return __(self::CUSTOM_ORDER_STATUSES[$comfinoStatus]['name']);
         }
 
-        return $status;
+        return '';
     }
 
-    /**
-     * @param $status
-     *
-     * @return bool
-     */
-    private function isRejectedStatus($status): bool
+    private function getStatus(string $status): string
     {
-        return $this->checkStatusGroup($status, ComfinoStatusManagement::REJECTED_STATE);
+        $status = strtoupper($status);
+
+        if (array_key_exists($status, self::STATUSES)) {
+            return self::STATUSES[$status];
+        }
+
+        return Order::STATE_HOLDED;
     }
 
-    /**
-     * @param $status
-     *
-     * @return bool
-     */
-    private function isNewStatus($status): bool
+    private function mapStatus(string $status): string
     {
-        return $this->checkStatusGroup($status, ComfinoStatusManagement::NEW_STATE);
-    }
+        $status = strtoupper($status);
 
-    /**
-     * @param $status
-     *
-     * @return bool
-     */
-    private function isCompletedStatus($status): bool
-    {
-        return $this->checkStatusGroup($status, ComfinoStatusManagement::COMPLETED_STATE);
+        if (array_key_exists($status, self::CHANGE_STATUS_MAP)) {
+            return strtolower(self::CHANGE_STATUS_MAP[$status]);
+        }
+
+        return Order::STATE_HOLDED;
     }
 }

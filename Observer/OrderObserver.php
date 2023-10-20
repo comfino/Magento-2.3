@@ -22,14 +22,21 @@ class OrderObserver implements ObserverInterface
 
     public function execute(Observer $observer): void
     {
+        /** @var \Magento\Sales\Model\Order $order */
         $order = $observer->getEvent()->getOrder();
 
         if ($order instanceof AbstractModel) {
-            $curState = $order->getState();
-            $prevState = $order->getOrigData('state');
+            if (($payment = $order->getPayment()) === null) {
+                return;
+            }
 
-            if ($curState === Order::STATE_CANCELED && $prevState !== Order::STATE_CANCELED) {
-                $this->applicationService->cancelApplicationTransaction($order->getId());
+            if ($payment->getMethod() === 'comfino') {
+                $curState = $order->getState();
+                $prevState = $order->getOrigData('state');
+
+                if ($curState === Order::STATE_CANCELED && $prevState !== Order::STATE_CANCELED) {
+                    $this->applicationService->cancelApplicationTransaction($order->getId());
+                }
             }
         }
     }

@@ -3,8 +3,10 @@
 namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
 use Comfino\ComfinoGateway\Helper\Data;
+use Comfino\ComfinoGateway\Logger\ErrorLogger;
+use Comfino\ComfinoGateway\Model\ErrorLogger\ShopPluginError;
+use Comfino\ComfinoGateway\Model\ErrorLogger\ShopPluginErrorRequest;
 use Exception;
-use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Webapi\Rest\Request;
@@ -18,7 +20,7 @@ abstract class ServiceAbstract
         Response::HTTP_ACCEPTED,
         Response::HTTP_OK,
         Response::HTTP_CONTINUE,
-        Response::HTTP_CREATED
+        Response::HTTP_CREATED,
     ];
 
     /**
@@ -47,256 +49,191 @@ abstract class ServiceAbstract
     protected $session;
 
     /**
-     * @var ProductMetadataInterface
-     */
-    private $productMetaData;
-
-    /**
      * @var Request
      */
     protected $request;
 
     /**
-     * ApiConnector constructor.
-     *
-     * @param Curl $curl
-     * @param LoggerInterface $logger
-     * @param SerializerInterface $serializer
-     * @param Data $helper
-     * @param Session $session
-     * @param ProductMetadataInterface $productMetadata
-     * @param Request $request
+     * @var string
      */
-    public function __construct(
-        Curl $curl,
-        LoggerInterface $logger,
-        SerializerInterface $serializer,
-        Data $helper,
-        Session $session,
-        ProductMetadataInterface $productMetadata,
-        Request $request
-    ) {
+    protected $lastUrl;
+
+    /**
+     * @var string[]
+     */
+    protected $lastErrors = [];
+
+    public function __construct(Curl $curl, LoggerInterface $logger, SerializerInterface $serializer, Data $helper, Session $session, Request $request)
+    {
         $this->curl = $curl;
         $this->logger = $logger;
         $this->serializer = $serializer;
         $this->helper = $helper;
         $this->session = $session;
-        $this->productMetaData = $productMetadata;
         $this->request = $request;
+
+        ErrorLogger::init($this, $helper, $logger);
     }
 
-    /**
-     * Returns API URL depending on sandbox activation state.
-     *
-     * @return string
-     */
-    protected function getApiUrl(): string
+    public function getLastResponseCode(): int
     {
-        return $this->helper->isSandboxEnabled() ? $this->helper->getSandboxUrl() : $this->helper->getProdUrl();
+        return $this->curl->getStatus();
     }
 
-    /**
-     * Returns API key depending on sandbox activation state.
-     *
-     * @return string
-     */
-    protected function getApiKey(): string
+    public function getLastUrl(): ?string
     {
-        return $this->helper->isSandboxEnabled() ? $this->helper->getSandboxApiKey() : $this->helper->getApiKey();
+        return $this->lastUrl;
     }
 
-    /**
-     * Sends GET request.
-     *
-     * @param string $url
-     * @param array $params
-     *
-     * @return bool
-     */
+    public function getLastErrors(): array
+    {
+        return $this->lastErrors;
+    }
+
+    public function sendLoggedError(ShopPluginError $error): bool
+    {
+        $request = new ShopPluginErrorRequest();
+
+        if (!$request->prepareRequest($error, $this->getUserAgentHeader())) {
+            $this->logger->error('Error request preparation failed: ' . $error->errorMessage);
+
+            return false;
+        }
+
+        $data = ['error_details' => $request->errorDetails, 'hash' => $request->hash];
+        $response = $this->sendPostRequest($this->helper->getApiHost() . '/v1/log-plugin-error', $this->serializer->serialize($data), false);
+
+        return strpos($response, 'errors') === false;
+    }
+
     protected function sendGetRequest(string $url, array $params = []): bool
     {
-        $requestParams = http_build_query($params);
-        $requestUrl = "$url?$requestParams";
+        $requestUrl = $url;
 
-        $this->logger->info(
-            'REQUEST',
-            [
-                'url' => $url,
-                'method' => 'GET',
-                'params' => $requestParams,
-                'body' => ''
-            ]
-        );
+        if (count($params)) {
+            $requestParams = http_build_query($params);
+            $requestUrl .= "?$requestParams";
+        }
+
+        $this->lastUrl = $requestUrl;
 
         $this->prepareHeaders();
 
         try {
             $this->curl->get($requestUrl);
         } catch (Exception $e) {
-            $this->logger->error(
+            $this->lastErrors[] = $e->getMessage();
+
+            ErrorLogger::sendError(
                 'Communication error',
-                [
-                    'errorMessage' => $e->getMessage(),
-                    'httpStatus' => $this->curl->getStatus(),
-                    'url' => $requestUrl,
-                    'method' => 'GET',
-                    'response' => $this->curl->getBody()
-                ]
+                $this->curl->getStatus(),
+                $e->getMessage(),
+                $requestUrl,
+                null,
+                $this->curl->getBody(),
+                $e->getTraceAsString()
             );
+
+            return false;
         }
 
         return $this->isSuccessful();
     }
 
-    /**
-     * Sends POST request.
-     *
-     * @param string $url
-     * @param mixed $body
-     *
-     * @return bool
-     */
-    protected function sendPostRequest(string $url, $body): bool
+    protected function sendPostRequest(string $url, string $body, bool $logErrors = true): bool
     {
-        $this->logger->info(
-            'REQUEST',
-            [
-                'url' => $url,
-                'method' => 'POST',
-                'params' => '',
-                'body' => $body
-            ]
-        );
-
         $this->prepareHeaders();
+
+        $this->lastUrl = $url;
 
         try {
             $this->curl->post($url, $body);
         } catch (Exception $e) {
-            $this->logger->error(
-                'Communication error',
-                [
-                    'errorMessage' => $e->getMessage(),
-                    'httpStatus' => $this->curl->getStatus(),
-                    'url' => $url,
-                    'method' => 'POST',
-                    'response' => $this->curl->getBody()
-                ]
-            );
+            $this->lastErrors[] = $e->getMessage();
+
+            if ($logErrors) {
+                ErrorLogger::sendError(
+                    'Communication error',
+                    $this->curl->getStatus(),
+                    $e->getMessage(),
+                    $url,
+                    $body,
+                    $this->curl->getBody(),
+                    $e->getTraceAsString()
+                );
+            }
+
+            return false;
         }
 
         return $this->isSuccessful();
     }
 
-    /**
-     * Sends PUT request.
-     *
-     * @param string $url
-     * @param mixed $body
-     *
-     * @return bool
-     */
     protected function sendPutRequest(string $url, $body = null): bool
     {
-        $this->logger->info(
-            'REQUEST',
-            [
-                'url' => $url,
-                'method' => 'PUT',
-                'params' => '',
-                'body' => $body
-            ]
-        );
-
         $this->prepareHeaders();
         $this->curl->setOption(CURLOPT_CUSTOMREQUEST, 'PUT');
 
+        $this->lastUrl = $url;
+
         try {
             $this->curl->post($url, $body);
         } catch (Exception $e) {
-            $this->logger->error(
+            $this->lastErrors[] = $e->getMessage();
+
+            ErrorLogger::sendError(
                 'Communication error',
-                [
-                    'errorMessage' => $e->getMessage(),
-                    'httpStatus' => $this->curl->getStatus(),
-                    'url' => $url,
-                    'method' => 'PUT',
-                    'response' => $this->curl->getBody()
-                ]
+                $this->curl->getStatus(),
+                $e->getMessage(),
+                $url,
+                $body,
+                $this->curl->getBody(),
+                $e->getTraceAsString()
             );
+
+            return false;
         }
 
         return $this->isSuccessful();
     }
 
-    /**
-     * Prepares headers for CURL request.
-     *
-     * @return void
-     */
-    private function prepareHeaders(): void
-    {
-        $this->curl->addHeader('Content-Type', 'application/json');
-        $this->curl->addHeader('Api-Key', $this->getApiKey());
-        $this->curl->addHeader('User-Agent', $this->getUserAgent());
-    }
-
-    /**
-     * Returns User Agent from ProductMetaData (name and version).
-     *
-     * @return string
-     */
-    private function getUserAgent(): string
-    {
-        return sprintf(
-            'Magento Comfino [%s, %s], Magento [%s], PHP [%s]',
-            $this->helper->getModuleVersion(),
-            $this->helper->getSetupVersion(),
-            $this->productMetaData->getVersion(),
-            PHP_VERSION
-        );
-    }
-
-    /**
-     * Decodes JSON.
-     *
-     * @param $json
-     *
-     * @return array|bool|float|int|string
-     */
     protected function decode($json)
     {
         return $this->serializer->unserialize($json) ?? [];
     }
 
-    /**
-     * Encodes array to JSON.
-     *
-     * @param $json
-     *
-     * @return bool|string
-     */
     protected function encode($json)
     {
         return $this->serializer->serialize($json);
     }
 
     /**
-     * @param string $jsonData
-     *
-     * @return bool
+     * Returns User-Agent header from ProductMetaData (name and version).
      */
-    protected function isValidSignature(string $jsonData): bool
+    protected function getUserAgentHeader(): string
     {
-        $crSignature = $this->request->getHeader('CR-Signature');
-        $hash = hash('sha3-256', $this->helper->getApiKey().$jsonData);
-
-        return $crSignature === $hash;
+        return sprintf(
+            'MG Comfino [%s], MG [%s], PHP [%s], %s',
+            $this->helper->getModuleVersion(),
+            $this->helper->getShopVersion(),
+            PHP_VERSION,
+            $this->helper->getShopDomain()
+        );
     }
 
     /**
-     * @return bool
+     * Prepares headers for cURL request.
      */
+    private function prepareHeaders(): void
+    {
+        $this->lastErrors = [];
+
+        $this->curl->addHeader('Content-Type', 'application/json');
+        $this->curl->addHeader('Api-Key', $this->helper->getApiKey());
+        $this->curl->addHeader('Api-Language', $this->helper->getShopLanguage());
+        $this->curl->addHeader('User-Agent', $this->getUserAgentHeader());
+    }
+
     private function isSuccessful(): bool
     {
         return in_array($this->curl->getStatus(), self::POSITIVE_HTTP_CODES, true);

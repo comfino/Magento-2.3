@@ -4,10 +4,9 @@ namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
 use Comfino\ComfinoGateway\Api\OfferServiceInterface;
 use Comfino\ComfinoGateway\Helper\Data;
+use Comfino\ComfinoGateway\Logger\ErrorLogger;
 use Magento\Checkout\Model\Session;
-use Magento\Framework\App\ProductMetadataInterface;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Webapi\Rest\Request;
@@ -21,56 +20,46 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
      */
     private $priceHelper;
 
-    /**
-     * OfferService constructor.
-     * @param Curl $curl
-     * @param LoggerInterface $logger
-     * @param SerializerInterface $serializer
-     * @param Data $helper
-     * @param Session $session
-     * @param ProductMetadataInterface $productMetadata
-     * @param Request $request
-     * @param PriceHelper $priceHelper
-     */
-    public function __construct(
-        Curl $curl,
-        LoggerInterface
-        $logger,
-        SerializerInterface $serializer,
-        Data $helper,
-        Session $session,
-        ProductMetadataInterface $productMetadata,
-        Request $request,
-        PriceHelper $priceHelper
-    ) {
-        parent::__construct($curl, $logger, $serializer, $helper, $session, $productMetadata, $request);
+    public function __construct(Curl $curl, LoggerInterface $logger, SerializerInterface $serializer, Data $helper, Session $session, Request $request, PriceHelper $priceHelper)
+    {
+        parent::__construct($curl, $logger, $serializer, $helper, $session, $request);
+
         $this->priceHelper = $priceHelper;
     }
 
     /**
      * Retrieves offers from Comfino API.
      *
-     * @return array
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
+     * @throws ValidatorException
      */
     public function getList(): array
     {
-        $loanAmount = $this->session->getQuote()->getGrandTotal() * 100;
+        $total = $this->request->getParam('total');
 
-        if ($this->sendGetRequest($this->getApiUrl()."/v1/financial-products", ['loanAmount' => $loanAmount])) {
+        if ($total === null) {
+            throw new ValidatorException(__('Empty content.'));
+        }
+
+        $loanAmount = (float) $total * 100;
+
+        if ($this->sendGetRequest($this->helper->getApiHost() . '/v1/financial-products', ['loanAmount' => $loanAmount])) {
             return $this->getOffersResponse($loanAmount);
         }
+
+        ErrorLogger::sendError(
+            'Communication error with Comfino API',
+            $this->curl->getStatus(),
+            'Financial products retrieving failed.',
+            $this->lastUrl,
+            null,
+            $this->curl->getBody()
+        );
 
         return [];
     }
 
     /**
      * Processes offer data from API response.
-     *
-     * @param float $total
-     *
-     * @return array
      */
     private function getOffersResponse(float $total): array
     {
@@ -84,27 +73,31 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
                 'description' => $offer['description'],
                 'icon' => str_ireplace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']),
                 'type' => $offer['type'],
+                'representativeExample' => $offer['representativeExample'],
+                'loanTerm' => $offer['loanTerm'],
+                'instalmentAmount' => ((float) $offer['instalmentAmount']) / 100,
+                'instalmentAmountFormatted' => $this->getFormattedAmount(((float) $offer['instalmentAmount']) / 100),
                 'sumAmount' => $total / 100,
                 'sumAmountFormatted' => $this->getFormattedAmount($total / 100),
-                'representativeExample' => $offer['representativeExample'],
-                'rrso' => ((float)$offer['rrso']) * 100,
-                'loanTerm' => $offer['loanTerm'],
-                'instalmentAmount' => ((float)$offer['instalmentAmount']) / 100,
-                'instalmentAmountFormatted' => $this->getFormattedAmount(((float)$offer['instalmentAmount']) / 100),
-                'toPay' => ((float)$offer['toPay']) / 100,
-                'toPayFormatted' => $this->getFormattedAmount(((float)$offer['toPay']) / 100),
+                'toPay' => ((float) $offer['toPay']) / 100,
+                'toPayFormatted' => $this->getFormattedAmount(((float) $offer['toPay']) / 100),
+                'commission' => ((int) $offer['toPay'] - $total) / 100,
+                'commissionFormatted' => $this->getFormattedAmount(((int) $offer['toPay'] - $total) / 100),
+                'rrso' => ((float) $offer['rrso']) * 100,
                 'loanParameters' => array_map(function ($loanParams) use ($total) {
                     return [
                         'loanTerm' => $loanParams['loanTerm'],
-                        'instalmentAmount' => ((float)$loanParams['instalmentAmount']) / 100,
+                        'instalmentAmount' => ((float) $loanParams['instalmentAmount']) / 100,
                         'instalmentAmountFormatted' => $this->getFormattedAmount(
-                            ((float)$loanParams['instalmentAmount']) / 100
+                            ((float) $loanParams['instalmentAmount']) / 100
                         ),
-                        'toPay' => ((float)$loanParams['toPay']) / 100,
-                        'toPayFormatted' => $this->getFormattedAmount(((float)$loanParams['toPay']) / 100),
                         'sumAmount' => $total / 100,
                         'sumAmountFormatted' => $this->getFormattedAmount($total / 100),
-                        'rrso' => ((float)$loanParams['rrso']) * 100,
+                        'toPay' => ((float) $loanParams['toPay']) / 100,
+                        'toPayFormatted' => $this->getFormattedAmount(((float) $loanParams['toPay']) / 100),
+                        'commission' => ((int) $loanParams['toPay'] - $total) / 100,
+                        'commissionFormatted' => $this->getFormattedAmount(((int) $loanParams['toPay'] - $total) / 100),
+                        'rrso' => ((float) $loanParams['rrso']) * 100,
                     ];
                 }, $offer['loanParameters'])
             ];
@@ -121,6 +114,6 @@ class OfferService extends ServiceAbstract implements OfferServiceInterface
      */
     private function getFormattedAmount($amount): string
     {
-        return $this->priceHelper->currency($amount / 100, false, false);
+        return $this->priceHelper->currency($amount, true, false);
     }
 }

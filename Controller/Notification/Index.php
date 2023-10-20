@@ -4,6 +4,7 @@ namespace Comfino\ComfinoGateway\Controller\Notification;
 
 use Comfino\ComfinoGateway\Api\ComfinoStatusManagementInterface;
 use Comfino\ComfinoGateway\Helper\Data;
+use Comfino\ComfinoGateway\Model\ComfinoStatusManagement;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
@@ -42,31 +43,15 @@ class Index extends Action
      */
     private $statusManagement;
 
-    /**
-     * Index constructor.
-     *
-     * @param Context $context
-     * @param RequestInterface $request
-     * @param SerializerInterface $serializer
-     * @param JsonFactory $resultJsonFactory
-     * @param Data $helper
-     * @param ComfinoStatusManagementInterface $comfinoStatusManagement
-     */
-    public function __construct(
-        Context $context,
-        RequestInterface $request,
-        SerializerInterface $serializer,
-        JsonFactory $resultJsonFactory,
-        Data $helper,
-        ComfinoStatusManagementInterface $comfinoStatusManagement
-    ) {
+    public function __construct(Context $context, RequestInterface $request, SerializerInterface $serializer, JsonFactory $resultJsonFactory, Data $helper, ComfinoStatusManagementInterface $comfinoStatusManagement)
+    {
+        parent::__construct($context);
+
         $this->request = $request;
         $this->serializer = $serializer;
         $this->resultJsonFactory = $resultJsonFactory;
         $this->helper = $helper;
         $this->statusManagement = $comfinoStatusManagement;
-
-        parent::__construct($context);
     }
 
     /**
@@ -76,42 +61,46 @@ class Index extends Action
     {
         $jsonContent = $this->request->getContent();
 
-        if (!$this->isValidSignature($jsonContent)) {
+        if (!$this->helper->isValidSignature($this->getSignature(), $jsonContent)) {
             return $this->setResponse(400, __('Failed comparison of CR-Signature and shop hash.'));
         }
 
-        $content = $this->serializer->unserialize($jsonContent);
+        $data = $this->serializer->unserialize($jsonContent);
 
-        if (!isset($content['externalId'])) {
-            return $this->setResponse(400, __('Empty content.'));
+        if (!isset($data['externalId'])) {
+            return $this->setResponse(400, 'External ID must be set.');
         }
 
-        $this->statusManagement->changeApplicationAndOrderStatus($content['externalId'], $content['status']);
+        if (!isset($data['status'])) {
+            return $this->setResponse(400, 'Status must be set.');
+        }
+
+        if ($data['status'] === ComfinoStatusManagement::CANCELLED_BY_SHOP) {
+            return $this->setResponse(400, 'Invalid status ' . ComfinoStatusManagement::CANCELLED_BY_SHOP . '.');
+        }
+
+        if (!$this->statusManagement->changeApplicationAndOrderStatus($data['externalId'], $data['status'])) {
+            return $this->setResponse(400, sprintf('Invalid status %s.', $data['status']));
+        }
 
         return $this->setResponse(200, 'OK');
     }
 
-    /**
-     * @param int $code
-     * @param string $content
-     *
-     * @return Json
-     */
+    private function getSignature(): string
+    {
+        $crSignature = $this->request->getHeader('CR-Signature');
+
+        if (!empty($crSignature)) {
+            return $crSignature;
+        }
+
+        $crSignature = $this->request->getHeader('X-CR-Signature');
+
+        return !empty($crSignature) ? $crSignature : '';
+    }
+
     private function setResponse(int $code, string $content): Json
     {
         return $this->resultJsonFactory->create()->setHttpResponseCode($code)->setData(['status' => $content]);
-    }
-
-    /**
-     * @param string $jsonData
-     *
-     * @return bool
-     */
-    private function isValidSignature(string $jsonData): bool
-    {
-        $crSignature = $this->request->getHeader('CR-Signature');
-        $hash = hash('sha3-256', $this->helper->getApiKey().$jsonData);
-
-        return $crSignature === $hash;
     }
 }
