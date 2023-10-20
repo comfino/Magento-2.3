@@ -173,7 +173,7 @@ class Data extends AbstractHelper
      */
     public function getApiKey(): string
     {
-        return $this->isSandboxEnabled() ? $this->getSandboxApiKey() : $this->getProductionApiKey()();
+        return $this->isSandboxEnabled() ? $this->getSandboxApiKey() : $this->getProductionApiKey();
     }
 
     /**
