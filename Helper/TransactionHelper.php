@@ -123,9 +123,6 @@ class TransactionHelper extends AbstractHelper
                 'products' => $this->buildProductsList($order),
             ],
             'customer' => $this->buildCustomer($order),
-            'seller' => [
-                'taxId' => $this->helper->getTaxId()
-            ]
         ];
     }
 
