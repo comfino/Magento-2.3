@@ -52,33 +52,33 @@ class ApplicationResponse extends DataObject implements ApplicationResponseInter
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getStatus(): string
+    public function getStatus(): ?string
     {
         return $this->getData(self::STATUS);
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getExternalId(): string
+    public function getExternalId(): ?string
     {
         return $this->getData(self::EXTERNAL_ID);
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getRedirectUri(): string
+    public function getRedirectUri(): ?string
     {
         return $this->getData(self::REDIRECT_URI);
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getHref(): string
+    public function getHref(): ?string
     {
         return $this->getData(self::HREF);
     }
