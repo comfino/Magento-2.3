@@ -100,7 +100,10 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
                     'code' => $response->getCode(),
                 ]
             );
-            $this->logger->info('Redirect url: '.$response->getRedirectUri());
+
+            if (!empty($response->getRedirectUri())) {
+                $this->logger->info('Redirect URL: '.$response->getRedirectUri());
+            }
 
             return [[
                 'redirectUrl' => 'onepage/failure',
