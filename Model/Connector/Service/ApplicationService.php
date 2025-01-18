@@ -97,6 +97,10 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
                 $response->getBody()
             );
 
+            if (!empty($response->getRedirectUri())) {
+                $this->logger->info('Redirect URL: '.$response->getRedirectUri());
+            }
+
             return [[
                 'redirectUrl' => 'onepage/failure',
                 'error' => __('Unsuccessful attempt to open the application. Please try again later.'),
