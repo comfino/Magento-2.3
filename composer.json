@@ -1,14 +1,21 @@
 {
-  "name": "comfino/comfino-payments",
-  "description": "Comfino payment module.",
-  "version": "2.0.6",
-  "type": "magento2-module",
-  "autoload": {
-    "files": [
-      "registration.php"
-    ],
-    "psr-4": {
-      "Comfino\\ComfinoGateway\\": ""
+    "name": "comfino/magento",
+    "type": "magento2-module",
+    "description": "Magento 2 payment module for Comfino deferred payments gateway.",
+    "homepage": "https://github.com/comfino/Magento-2.3",
+    "license": "OSL-3.0",
+    "version": "4.0.0",
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Comfino\\ComfinoGateway\\": ""
+        }
+    },
+    "require": {
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-zlib": "*"
     }
-  }
 }
