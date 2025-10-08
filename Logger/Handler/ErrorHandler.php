@@ -4,6 +4,7 @@ namespace Comfino\ComfinoGateway\Logger\Handler;
 
 use Magento\Framework\Logger\Handler\Base as BaseHandler;
 use Monolog\Logger as MonologLogger;
+use Monolog\LogRecord;
 
 class ErrorHandler extends BaseHandler
 {
@@ -17,9 +18,18 @@ class ErrorHandler extends BaseHandler
      */
     protected $fileName = '/var/log/comfino_payment_error.log';
 
-    public function write(array $record): void
+    /**
+     * Write log record
+     *
+     * @param array|LogRecord $record
+     * @return void
+     */
+    public function write($record): void
     {
-        if ($record['level'] === $this->loggerType) {
+        // Handle both Monolog 2 (array) and Monolog 3 (LogRecord object).
+        $level = is_array($record) ? $record['level'] : $record->level->value;
+
+        if ($level === $this->loggerType) {
             parent::write($record);
         }
     }
