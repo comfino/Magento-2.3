@@ -16,7 +16,7 @@ use Magento\Framework\App\ObjectManager;
  */
 final class ErrorLogger
 {
-    private static ?Common\Backend\ErrorLogger $errorLogger;
+    private static ?Common\Backend\ErrorLogger $errorLogger = null;
 
     public static function init(): void
     {

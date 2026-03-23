@@ -16,7 +16,7 @@ use Magento\Framework\App\ObjectManager;
  */
 final class ApiClient
 {
-    private static ?\Comfino\Common\Api\Client $apiClient;
+    private static ?\Comfino\Common\Api\Client $apiClient = null;
 
     public static function getInstance(?bool $sandboxMode = null, ?string $apiKey = null): \Comfino\Common\Api\Client
     {

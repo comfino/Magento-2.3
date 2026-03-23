@@ -109,9 +109,9 @@ final class ConfigManager
         'COMFINO_INITIAL_ORDER_STATUS',
     ];
 
-    private static ConfigurationManager $configurationManager;
-    /** @var int[] */
-    private static array $availConfigOptions;
+    private static ?ConfigurationManager $configurationManager = null;
+    /** @var int[]|null */
+    private static ?array $availConfigOptions = null;
 
     public static function getInstance(): ConfigurationManager
     {

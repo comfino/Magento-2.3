@@ -2,9 +2,34 @@
 
 namespace Comfino\ComfinoGateway\Setup\Patch\Data;
 
+use Comfino\Common\Shop\Order\StatusManager;
+use Comfino\Common\Shop\OrderStatusAdapterInterface;
 use Comfino\Order\ShopStatusManager;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
+
+// When the module lives under app/code/, Magento's autoloader does not honour the
+// "Comfino\": "src/" PSR-4 mapping from the module's own composer.json.
+// Manually load the required class files so they are available regardless of how
+// the module is deployed (app/code/ copy vs. Composer vendor/ install).
+// class_exists() guards prevent fatal "cannot redeclare" errors when Composer's
+// autoloader has already resolved the class from vendor/.
+(static function (): void {
+    $moduleRoot = dirname(__DIR__, 3);
+    $sharedLibRoot = $moduleRoot . '/vendor/comfino/shop-plugins-shared/src/Common/Shop';
+
+    if (!interface_exists(OrderStatusAdapterInterface::class, false)) {
+        require_once $sharedLibRoot . '/OrderStatusAdapterInterface.php';
+    }
+
+    if (!class_exists(StatusManager::class, false)) {
+        require_once $sharedLibRoot . '/Order/StatusManager.php';
+    }
+
+    if (!class_exists(ShopStatusManager::class, false)) {
+        require_once $moduleRoot . '/src/Order/ShopStatusManager.php';
+    }
+})();
 
 class AddComfinoOrderStatuses implements DataPatchInterface
 {

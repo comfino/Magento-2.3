@@ -52,7 +52,7 @@ class Data extends AbstractHelper
     public const XML_PATH_PROD_CAT_CACHE_TTL = 'payment/comfino/prod_cat_cache_ttl';
     public const XML_PATH_INITIAL_ORDER_STATUS = 'payment/comfino/initial_order_status';
 
-    public const BUILD_TS = 1774013906;
+    public const BUILD_TS = 1774268543;
 
     private const MODULE_NAME = 'Comfino_ComfinoGateway';
 

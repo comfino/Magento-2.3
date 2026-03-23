@@ -12,7 +12,7 @@ use Magento\Framework\Exception\LocalizedException;
 
 class BuildStrategy implements BuildStrategyInterface
 {
-    private ?Descriptor $descriptor;
+    private ?Descriptor $descriptor = null;
 
     public function build(): Descriptor
     {

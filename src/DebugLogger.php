@@ -11,7 +11,7 @@ use Comfino\Configuration\ConfigManager;
  */
 final class DebugLogger
 {
-    private static ?Common\Backend\DebugLogger $debugLogger;
+    private static ?Common\Backend\DebugLogger $debugLogger = null;
 
     public static function getLoggerInstance(): Common\Backend\DebugLogger
     {

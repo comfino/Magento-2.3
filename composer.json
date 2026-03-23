@@ -94,6 +94,12 @@
         "phpunit/phpunit": "^5.7",
         "webmozart/assert": "<1.10"
     },
+    "scripts": {
+        "post-autoload-dump": [
+            "sed -i '/registration\\.php/d' vendor/composer/autoload_files.php",
+            "sed -i '/registration\\.php/d' vendor/composer/autoload_static.php"
+        ]
+    },
     "repositories": [
         {
             "type": "vcs",

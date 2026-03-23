@@ -2,10 +2,31 @@
 
 namespace Comfino\ComfinoGateway\Setup;
 
+use Comfino\Common\Shop\Order\StatusManager;
+use Comfino\Common\Shop\OrderStatusAdapterInterface;
 use Comfino\Order\ShopStatusManager;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
 use Magento\Framework\Setup\UninstallInterface;
+
+// Same autoloader workaround as in Setup\Patch\Data\AddComfinoOrderStatuses —
+// app/code/ installs bypass the module's PSR-4 mappings for the Comfino\ bridge namespace.
+(static function (): void {
+    $moduleRoot = dirname(__DIR__);
+    $sharedLibRoot = $moduleRoot . '/vendor/comfino/shop-plugins-shared/src/Common/Shop';
+
+    if (!interface_exists(OrderStatusAdapterInterface::class, false)) {
+        require_once $sharedLibRoot . '/OrderStatusAdapterInterface.php';
+    }
+
+    if (!class_exists(StatusManager::class, false)) {
+        require_once $sharedLibRoot . '/Order/StatusManager.php';
+    }
+
+    if (!class_exists(ShopStatusManager::class, false)) {
+        require_once $moduleRoot . '/src/Order/ShopStatusManager.php';
+    }
+})();
 
 class Uninstall implements UninstallInterface
 {
