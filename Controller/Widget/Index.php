@@ -2,7 +2,10 @@
 
 namespace Comfino\ComfinoGateway\Controller\Widget;
 
-use Comfino\ComfinoGateway\Helper\Data;
+use Comfino\Common\Frontend\WidgetInitScriptHelper;
+use Comfino\Configuration\ConfigManager;
+use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\Raw;
@@ -10,63 +13,79 @@ use Magento\Framework\Controller\Result\RawFactory;
 
 class Index extends Action
 {
-    /**
-     * @var RawFactory
-     */
-    private $resultRawFactory;
+    private RawFactory $resultRawFactory;
 
-    /**
-     * @var Data
-     */
-    private $helper;
-
-    public function __construct(Context $context, RawFactory $resultRawFactory, Data $helper)
+    public function __construct(Context $context, RawFactory $resultRawFactory)
     {
         $this->resultRawFactory = $resultRawFactory;
-        $this->helper = $helper;
 
         parent::__construct($context);
     }
 
     /**
      * Returns widget initialization code.
-     *
-     * @return Raw
      */
     public function execute(): Raw
     {
+        ErrorLogger::init();
+
         $result = $this->resultRawFactory->create();
         $result->setHeader('Content-Type', 'application/javascript');
 
-        if ($this->helper->isWidgetActive()) {
-            $result->setContents(
-                str_replace(
-                    [
-                        '{WIDGET_KEY}',
-                        '{WIDGET_PRICE_SELECTOR}',
-                        '{WIDGET_TARGET_SELECTOR}',
-                        '{WIDGET_PRICE_OBSERVER_SELECTOR}',
-                        '{WIDGET_PRICE_OBSERVER_LEVEL}',
-                        '{WIDGET_TYPE}',
-                        '{OFFER_TYPE}',
-                        '{EMBED_METHOD}',
-                        '{WIDGET_SCRIPT_URL}',
-                    ],
-                    [
-                        $this->helper->getWidgetKey(),
-                        $this->helper->getWidgetPriceSelector(),
-                        $this->helper->getWidgetTargetSelector(),
-                        $this->helper->getPriceObserverSelector(),
-                        $this->helper->getPriceObserverLevel(),
-                        $this->helper->getWidgetType(),
-                        $this->helper->getWidgetOfferType(),
-                        $this->helper->getWidgetEmbedMethod(),
-                        $this->helper->getWidgetScriptUrl(),
-                    ],
-                    $this->helper->getWidgetCode()
-                )
-            );
+        if (ConfigManager::isWidgetEnabled() && ConfigManager::getWidgetKey() !== '') {
+            if (($productId = $this->getRequest()->getParam('product_id')) !== null) {
+                $productId = (int) $productId;
+            }
+
+            $serializer = new JsonSerializer();
+
+            try {
+                $response = WidgetInitScriptHelper::renderWidgetInitScript(
+                    ConfigManager::getCurrentWidgetCode($productId),
+                    array_combine(
+                        WidgetInitScriptHelper::WIDGET_INIT_PARAMS,
+                        array_map(
+                            static function ($optionValue) use ($serializer) {
+                                return is_array($optionValue) ? $serializer->serialize($optionValue) : $optionValue;
+                            },
+                            ConfigManager::getConfigurationValues(
+                                'widget_settings',
+                                [
+                                    'COMFINO_WIDGET_KEY',
+                                    'COMFINO_WIDGET_PRICE_SELECTOR',
+                                    'COMFINO_WIDGET_TARGET_SELECTOR',
+                                    'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR',
+                                    'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL',
+                                    'COMFINO_WIDGET_TYPE',
+                                    'COMFINO_WIDGET_OFFER_TYPES',
+                                    'COMFINO_WIDGET_EMBED_METHOD',
+                                    'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS',
+                                    'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL',
+                                    'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL',
+                                ]
+                            )
+                        )
+                    ),
+                    ConfigManager::getWidgetVariables($productId)
+                );
+            } catch (\Throwable $e) {
+                ErrorLogger::sendError(
+                    $e,
+                    'Widget script endpoint',
+                    (string) $e->getCode(),
+                    $e->getMessage(),
+                    null,
+                    null,
+                    null,
+                    $e->getTraceAsString()
+                );
+                $response = '';
+            }
+        } else {
+            $response = '';
         }
+
+        $result->setContents($response);
 
         return $result;
     }

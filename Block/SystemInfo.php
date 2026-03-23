@@ -10,15 +10,8 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 
 class SystemInfo extends Field
 {
-    /**
-     * @var ApplicationService
-     */
-    private $applicationService;
-
-    /**
-     * @var Data
-     */
-    private $helper;
+    private ApplicationService $applicationService;
+    private Data $helper;
 
     public function __construct(ApplicationService $applicationService, Data $helper, Context $context, array $data = [])
     {

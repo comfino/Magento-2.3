@@ -3,42 +3,33 @@
 namespace Comfino\ComfinoGateway\Block;
 
 use Comfino\ComfinoGateway\Helper\Data;
-use Comfino\ComfinoGateway\Model\Connector\Service\ApplicationService;
+use Comfino\Configuration\ConfigManager;
 use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 
 class ComfinoLogo extends Field
 {
-    /**
-     * @var ApplicationService
-     */
-    private $applicationService;
+    private Data $helper;
 
-    /**
-     * @var Data
-     */
-    private $helper;
-
-    public function __construct(ApplicationService $applicationService, Data $helper, Context $context, array $data = [])
+    public function __construct(Data $helper, Context $context, array $data = [])
     {
         parent::__construct($context, $data);
 
-        $this->applicationService = $applicationService;
         $this->helper = $helper;
     }
 
     public function render(AbstractElement $element): string
     {
-        $logoUrl = $this->applicationService->getLogoUrl();
+        $logoUrl = ConfigManager::getLogoUrl();
 
-        if ($logoUrl !== '') {
-            $blockHtml = '<img style="width: 300px" src="' . $logoUrl . '" alt="Comfino logo"> ';
-        } else {
-            $blockHtml = '';
-        }
+        $blockHtml = $logoUrl !== ''
+            ? '<img style="width: 300px" src="' . htmlspecialchars($logoUrl, ENT_QUOTES) . '" alt="Comfino logo"> '
+            : '';
 
-        $blockHtml .= '<span style="font-weight: bold; font-size: 16px; vertical-align: bottom">' . $this->helper->getModuleVersion() . '</span>';
+        $blockHtml .= '<span style="font-weight: bold; font-size: 16px; vertical-align: bottom">'
+            . htmlspecialchars($this->helper->getModuleVersion(), ENT_QUOTES)
+            . '</span>';
 
         return $blockHtml;
     }

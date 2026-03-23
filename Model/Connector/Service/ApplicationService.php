@@ -2,104 +2,71 @@
 
 namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
+use Comfino\Api\ApiClient;
+use Comfino\Api\Dto\Payment\LoanTypeEnum;
+use Comfino\Api\Response\CreateOrder;
 use Comfino\ComfinoGateway\Api\ApplicationServiceInterface;
-use Comfino\ComfinoGateway\Logger\ErrorLogger;
-use Comfino\ComfinoGateway\Model\ComfinoApplicationFactory;
-use Comfino\ComfinoGateway\Api\ComfinoStatusManagementInterface;
-use Comfino\ComfinoGateway\Model\ComfinoStatusManagement;
-use Comfino\ComfinoGateway\Model\Connector\Transaction\Response\ApplicationResponse;
 use Comfino\ComfinoGateway\Helper\Data;
-use Comfino\ComfinoGateway\Helper\TransactionHelper;
-use Comfino\ComfinoGateway\Api\Data\ApplicationResponseInterface;
-use Comfino\ComfinoGateway\Model\ResourceModel\ComfinoApplication as ApplicationResource;
-use Magento\Framework\Exception\AlreadyExistsException;
-use Magento\Framework\HTTP\Client\Curl;
-use Magento\Framework\Serialize\SerializerInterface;
-use Magento\Framework\Webapi\Rest\Request;
-use Psr\Log\LoggerInterface;
+use Comfino\Common\Backend\Factory\OrderFactory;
+use Comfino\Configuration\ConfigManager;
+use Comfino\DebugLogger;
+use Comfino\ErrorLogger;
+use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Order\OrderManager;
+use Comfino\Order\ShopStatusManager;
+use Comfino\Shop\Order\Cart\CartItem;
+use Comfino\Shop\Order\Cart\Product;
 use Magento\Checkout\Model\Session;
+use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\App\ObjectManager;
+use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Framework\UrlInterface;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\OrderRepository;
 
-class ApplicationService extends ServiceAbstract implements ApplicationServiceInterface
+class ApplicationService implements ApplicationServiceInterface
 {
-    /**
-     * @var TransactionHelper
-     */
-    private $transactionHelper;
+    private Session $session;
+    private OrderRepository $orderRepository;
+    private UrlInterface $urlBuilder;
+    private RemoteAddress $remoteAddress;
+    private CustomerSession $customerSession;
 
-    /**
-     * @var ComfinoApplicationFactory
-     */
-    private $comfinoApplicationFactory;
-
-    /**
-     * @var ApplicationResource
-     */
-    private $applicationResource;
-
-    /**
-     * @var ComfinoStatusManagementInterface
-     */
-    private $statusManagement;
-
-    /**
-     * ApplicationService constructor.
-     *
-     * @param Curl $curl
-     * @param LoggerInterface $logger
-     * @param SerializerInterface $serializer
-     * @param Data $helper
-     * @param Session $session
-     * @param TransactionHelper $transactionHelper
-     * @param ComfinoApplicationFactory $comfinoApplicationFactory
-     * @param ApplicationResource $applicationResource
-     * @param Request $request
-     * @param ComfinoStatusManagementInterface $statusManagement
-     */
     public function __construct(
-        Curl $curl,
-        LoggerInterface $logger,
-        SerializerInterface $serializer,
-        Data $helper,
         Session $session,
-        TransactionHelper $transactionHelper,
-        ComfinoApplicationFactory $comfinoApplicationFactory,
-        ApplicationResource $applicationResource,
-        Request $request,
-        ComfinoStatusManagementInterface $statusManagement
+        OrderRepository $orderRepository,
+        UrlInterface $urlBuilder,
+        RemoteAddress $remoteAddress,
+        CustomerSession $customerSession
     ) {
-        parent::__construct($curl, $logger, $serializer, $helper, $session, $request);
+        $this->session = $session;
+        $this->orderRepository = $orderRepository;
+        $this->urlBuilder = $urlBuilder;
+        $this->remoteAddress = $remoteAddress;
+        $this->customerSession = $customerSession;
 
-        $this->transactionHelper = $transactionHelper;
-        $this->comfinoApplicationFactory = $comfinoApplicationFactory;
-        $this->applicationResource = $applicationResource;
-        $this->statusManagement = $statusManagement;
+        ErrorLogger::init();
     }
 
     /**
-     * Creates application in the Comfino API and db model.
-     *
-     * @throws AlreadyExistsException
+     * Creates application in the Comfino API and returns the redirect URL.
      */
     public function save(): array
     {
-        // Connect to the Comfino API and create new application/transaction.
-        $response = $this->createApplicationTransaction();
+        try {
+            $response = $this->createApplicationTransaction();
+        } catch (\InvalidArgumentException $e) {
+            // Local or API validation failure - set failure status but do not report to Comfino error tracker.
+            $this->setOrderFailureStatus();
 
-        if (!$response->isSuccessful()) {
-            $this->statusManagement->applicationFailureStatus($this->session->getLastRealOrder());
+            return [[
+                'redirectUrl' => 'onepage/failure',
+                'error' => $e->getMessage(),
+            ]];
+        } catch (\Throwable $e) {
+            $this->setOrderFailureStatus();
 
-            ErrorLogger::sendError(
-                'Communication error with Comfino API',
-                $response->getCode(),
-                $response->getStatus(),
-                $this->lastUrl,
-                null,
-                $response->getBody()
-            );
-
-            if (!empty($response->getRedirectUri())) {
-                $this->logger->info('Redirect URL: '.$response->getRedirectUri());
-            }
+            ApiClient::processApiError('Communication error with Comfino API', $e);
 
             return [[
                 'redirectUrl' => 'onepage/failure',
@@ -107,31 +74,26 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
             ]];
         }
 
-        $data = $this->transactionHelper->parseModel($response);
-        $model = $this->comfinoApplicationFactory->create()->addData($data);
+        DebugLogger::logEvent('ApplicationService', 'Redirect URL: ' . $response->applicationUrl);
 
-        $this->applicationResource->save($model);
-        $this->changeStatus($response->getExternalId(), ComfinoStatusManagement::CREATED);
-
-        return [['redirectUrl' => $response->getRedirectUri()]];
+        return [['redirectUrl' => $response->applicationUrl]];
     }
 
     /**
-     * Sends POST request to the Comfino API to create new application/transaction.
-     */
-    public function createApplicationTransaction(): ApplicationResponseInterface
-    {
-        $this->sendPostRequest($this->helper->getApiHost() . '/v1/orders', $this->transactionHelper->getTransactionData());
-
-        return new ApplicationResponse($this->curl->getStatus(), $this->decode($this->curl->getBody()), $this->curl->getBody());
-    }
-
-    /**
-     * Sends PUT request to the Comfino API to cancel application/transaction.
+     * Sends a cancellation request to the Comfino API.
      */
     public function cancelApplicationTransaction(string $orderId): void
     {
-        $this->sendPutRequest($this->helper->getApiHost() . "/v1/orders/$orderId/cancel");
+        DebugLogger::logEvent('[APPLICATION_SERVICE]', "cancelApplicationTransaction: Cancelling order $orderId.");
+
+        try {
+            // Send notification about canceled order paid by Comfino.
+            ApiClient::getInstance()->cancelOrder($orderId);
+
+            DebugLogger::logEvent('[APPLICATION_SERVICE]', "cancelApplicationTransaction: Order $orderId cancelled successfully.");
+        } catch (\Throwable $e) {
+            ApiClient::processApiError('Cancel order error', $e);
+        }
     }
 
     /**
@@ -139,48 +101,270 @@ class ApplicationService extends ServiceAbstract implements ApplicationServiceIn
      */
     public function getWidgetKey(): string
     {
-        if ($this->sendGetRequest($this->helper->getApiHost() . '/v1/widget-key')) {
-            return $this->decode($this->curl->getBody());
-        }
+        try {
+            return ApiClient::getInstance()->getWidgetKey();
+        } catch (\Throwable $e) {
+            ApiClient::processApiError('Get widget key error', $e);
 
-        return '';
+            return '';
+        }
     }
 
     /**
-     * Returns list of available product types (offer types) for Comfino widget.
+     * Returns list of available product types for Comfino widget.
      */
     public function getProductTypes(): ?array
     {
-        if ($this->sendGetRequest($this->helper->getApiHost() . '/v1/product-types') && strpos($this->curl->getBody(), 'errors') === false) {
-            return $this->decode($this->curl->getBody());
+        try {
+            $response = ApiClient::getInstance()->getProductTypes(
+                ProductTypesListTypeEnum::from(ProductTypesListTypeEnum::LIST_TYPE_WIDGET)
+            );
+
+            return $response->productTypesWithNames;
+        } catch (\Throwable $e) {
+            ApiClient::processApiError('Get product types error', $e);
+
+            return null;
         }
-
-        return null;
-    }
-
-    public function isShopAccountActive(): bool
-    {
-        $accountActive = false;
-
-        if (!empty($this->helper->getApiKey())) {
-            if ($this->sendGetRequest($this->helper->getApiHost() . '/v1/user/is-active')) {
-                $accountActive = $this->decode($this->curl->getBody());
-            }
-        }
-
-        return $accountActive;
-    }
-
-    public function getLogoUrl(): string
-    {
-        return $this->helper->getApiHost(true) . '/v1/get-logo-url';
     }
 
     /**
-     * Changes status for application and related order.
+     * Returns true if the shop account is active in Comfino API.
      */
-    public function changeStatus(string $externalId, string $status): bool
+    public function isShopAccountActive(): bool
     {
-        return $this->statusManagement->changeApplicationAndOrderStatus($externalId, $status);
+        if (empty(ConfigManager::getApiKey())) {
+            return false;
+        }
+
+        try {
+            return ApiClient::getInstance()->isShopAccountActive();
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Returns logo URL from Comfino API.
+     */
+    public function getLogoUrl(): string
+    {
+        /** @var Data $helper */
+        $helper = ObjectManager::getInstance()->get(Data::class);
+
+        return $helper->getApiHost(true) . '/v1/get-logo-url';
+    }
+
+    /**
+     * Validates and creates a Comfino order via the shared library API client.
+     *
+     * Performs local data validation, then Comfino API validation (simulation), then creates the order.
+     * The Magento order entity_id is used as the external order identifier passed to Comfino.
+     *
+     * @return CreateOrder
+     *
+     * @throws \InvalidArgumentException On local or API validation failure.
+     * @throws \Throwable On API communication error.
+     */
+    private function createApplicationTransaction(): CreateOrder
+    {
+        $magentoOrder = $this->session->getLastRealOrder();
+        $orderDto     = $this->buildOrderDto($magentoOrder);
+
+        // Step 1: Local pre-validation.
+        $errors = $this->validatePaymentData($orderDto);
+
+        if (!empty($errors)) {
+            DebugLogger::logEvent('[PAYMENT]', 'Local validation failed.', ['errors' => $errors]);
+
+            throw new \InvalidArgumentException(implode(' ', $errors));
+        }
+
+        // Step 2: API-side validation (simulation=true, no order created yet).
+        $validationResult = ApiClient::getInstance()->validateOrder($orderDto);
+
+        if (!$validationResult->success) {
+            $apiErrors = array_values((array) $validationResult->errors);
+
+            DebugLogger::logEvent('[PAYMENT]', 'API validation failed.', ['errors' => $apiErrors]);
+
+            throw new \InvalidArgumentException(implode(' ', $apiErrors));
+        }
+
+        // Step 3: Create order.
+        $response = ApiClient::getInstance()->createOrder($orderDto);
+
+        // Step 4: Mark order with the configured initial Comfino status.
+        $this->setComfinoCreatedStatus($magentoOrder);
+
+        return $response;
+    }
+
+    /**
+     * Builds the shared-lib Order DTO from the given Magento order.
+     *
+     * When COMFINO_USE_ORDER_REFERENCE is enabled the increment_id (customer-visible order number, e.g. "100000001")
+     * is used as the external order identifier passed to Comfino instead of the internal entity_id.
+     *
+     * @param \Magento\Sales\Model\Order $magentoOrder
+     * @return \Comfino\Shop\Order\Order
+     */
+    private function buildOrderDto(\Magento\Sales\Model\Order $magentoOrder): \Comfino\Shop\Order\Order
+    {
+        $totalAmount  = (int) round($magentoOrder->getGrandTotal() * 100);
+        $deliveryCost = (int) round((float) $magentoOrder->getBaseShippingInclTax() * 100);
+        $paymentInfo  = $magentoOrder->getPayment();
+        $loanTerm     = (int) $paymentInfo->getAdditionalInformation('term');
+        $loanType     = (string) $paymentInfo->getAdditionalInformation('type');
+
+        $cartItems = [];
+
+        foreach ($magentoOrder->getAllItems() as $item) {
+            /** @var \Magento\Sales\Model\Order\Item $item */
+            $product    = $item->getProduct();
+            $grossPrice = (int) round((float) $item->getPriceInclTax() * 100);
+            $netPrice   = (int) round((float) $item->getPrice() * 100);
+            $quantity   = (int) $item->getQtyOrdered();
+
+            $cartItems[] = new CartItem(
+                new Product(
+                    (string) $item->getName(),
+                    $grossPrice,
+                    $product ? (string) $product->getId() : null,
+                    null,  // category
+                    null,  // ean
+                    null,  // photoUrl
+                    null,  // categoryIds
+                    $netPrice,
+                    null,  // taxRate
+                    $grossPrice - $netPrice // taxValue
+                ),
+                $quantity
+            );
+        }
+
+        $customer = OrderManager::getShopCustomerFromOrder(
+            $magentoOrder,
+            (string) $this->remoteAddress->getRemoteAddress(),
+            $this->customerSession->isLoggedIn()
+        );
+
+        $externalId = ConfigManager::isUseOrderReference()
+            ? (!empty($magentoOrder->getIncrementId()) ? $magentoOrder->getIncrementId() : (string) $magentoOrder->getId())
+            : (string) $magentoOrder->getId();
+
+        return (new OrderFactory())->createOrder(
+            $externalId,
+            $totalAmount,
+            $deliveryCost,
+            $loanTerm,
+            LoanTypeEnum::from($loanType),
+            $cartItems,
+            $customer,
+            $this->urlBuilder->getUrl('checkout/onepage/success'),
+            $this->urlBuilder->getUrl('comfino/api/transactionstatus')
+        );
+    }
+
+    /**
+     * Validates payment data from the Order DTO before submission to Comfino API.
+     *
+     * @param \Comfino\Shop\Order\Order $orderDto
+     * @return string[] Array of error messages; empty if validation passes.
+     */
+    private function validatePaymentData(\Comfino\Shop\Order\Order $orderDto): array
+    {
+        $errors   = [];
+        $customer = $orderDto->getCustomer();
+
+        // 1. Customer e-mail.
+        $email = $customer !== null ? $customer->getEmail() : '';
+
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = (string) __('Invalid customer e-mail address. Please check your account contact data.');
+        }
+
+        // 2. Phone number.
+        if ($customer === null || empty($customer->getPhoneNumber())) {
+            $errors[] = (string) __('Phone number is required. Please add a phone number to your billing or delivery address.');
+        }
+
+        // 3. Customer names.
+        if ($customer === null || empty(trim($customer->getFirstName()))) {
+            $errors[] = (string) __('First name is required.');
+        }
+
+        if ($customer === null || empty(trim($customer->getLastName()))) {
+            $errors[] = (string) __('Last name is required.');
+        }
+
+        // 4. Delivery address.
+        $address = $customer !== null ? $customer->getAddress() : null;
+
+        if ($address === null) {
+            $errors[] = (string) __('Delivery address is required.');
+        } else {
+            if (empty(trim($address->getCity()))) {
+                $errors[] = (string) __('City is required.');
+            }
+
+            if (empty(trim($address->getPostalCode()))) {
+                $errors[] = (string) __('Postal code is required.');
+            }
+        }
+
+        // 5. Cart items.
+        if (empty($orderDto->getCart()->getItems())) {
+            $errors[] = (string) __('Cart is empty. Please add products to your cart.');
+        }
+
+        // 6. Total amount.
+        if ($orderDto->getCart()->getTotalAmount() <= 0) {
+            $errors[] = (string) __('Cart total amount must be greater than zero.');
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Marks the order with the configured initial Comfino order status after successful API submission.
+     * Uses COMFINO_INITIAL_ORDER_STATUS config value; defaults to comfino_created.
+     *
+     * @param \Magento\Sales\Model\Order $order
+     */
+    private function setComfinoCreatedStatus(\Magento\Sales\Model\Order $order): void
+    {
+        try {
+            $initialStatus = ConfigManager::getInitialOrderStatus();
+            $initialState  = ShopStatusManager::CUSTOM_STATUS_LABELS[$initialStatus]['state']
+                ?? Order::STATE_PENDING_PAYMENT;
+
+            $order->setState($initialState)->setStatus($initialStatus);
+            $order->addStatusToHistory(
+                $initialStatus,
+                __('Order submitted to Comfino - waiting for payment.')
+            );
+            $this->orderRepository->save($order);
+        } catch (\Throwable $e) {
+            ErrorLogger::sendError($e, 'Comfino created status update error', (string) $e->getCode(), $e->getMessage());
+        }
+    }
+
+    /**
+     * Sets the order to pending_payment state on application creation failure.
+     */
+    private function setOrderFailureStatus(): void
+    {
+        try {
+            $order = $this->session->getLastRealOrder();
+            $order->setStatus(Order::STATE_PENDING_PAYMENT)->setState(Order::STATE_PENDING_PAYMENT);
+            $order->addStatusToHistory(
+                Order::STATE_PENDING_PAYMENT,
+                __('Unsuccessful attempt to open the application. Communication error with Comfino API.')
+            );
+            $this->orderRepository->save($order);
+        } catch (\Throwable $e) {
+            ErrorLogger::sendError($e, 'Order failure status update error', (string) $e->getCode(), $e->getMessage());
+        }
     }
 }

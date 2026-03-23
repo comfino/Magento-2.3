@@ -1,0 +1,3 @@
+#!/bin/bash
+
+docker-compose exec shop-plugins-shared-php php "$@"

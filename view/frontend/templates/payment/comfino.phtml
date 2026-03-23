@@ -1,0 +1,26 @@
+<?php
+/** @var \Comfino\ComfinoGateway\Block\Payment\Comfino $block */
+/** @var \Magento\Framework\Escaper $escaper */
+?>
+
+<!-- Comfino web frontend SDK from CDN -->
+<script src="<?= $escaper->escapeUrl($block->getSdkScriptUrl()) ?>"></script>
+
+<!-- Hidden form fields — written by onUpdateOrderPaymentState callback, read on order submit -->
+<input id="comfino-loan-amount" name="comfino_loan_amount" type="hidden" />
+<input id="comfino-loan-type" name="comfino_loan_type" type="hidden" />
+<input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
+
+<!-- SDK renders paywall iframe here -->
+<div id="comfino-paywall-container" style="min-height:60px;"></div>
+
+<script>
+window.ComfinoPaywallData = {
+    paywallUrl: '<?= $escaper->escapeJs($block->getPaywallUrl()) ?>',
+    paymentStateUrl: '<?= $escaper->escapeJs($escaper->escapeUrl($block->getPaymentStateUrl())) ?>',
+    environment: '<?= $escaper->escapeJs($block->getEnvironment()) ?>'
+};
+if (typeof ComfinoPaywallInit === 'object') {
+    ComfinoPaywallInit.init();
+}
+</script>

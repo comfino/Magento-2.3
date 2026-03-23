@@ -11,25 +11,10 @@ use Magento\Framework\Event\ObserverInterface;
 
 class ConfigObserver implements ObserverInterface
 {
-    /**
-     * @var WriterInterface
-     */
-    private $configWriter;
-
-    /**
-     * @var TypeListInterface
-     */
-    private $cacheTypeList;
-
-    /**
-     * @var Data
-     */
-    private $helper;
-
-    /**
-     * @var ApplicationService
-     */
-    private $applicationService;
+    private WriterInterface $configWriter;
+    private TypeListInterface $cacheTypeList;
+    private Data $helper;
+    private ApplicationService $applicationService;
 
     public function __construct(WriterInterface $configWriter, TypeListInterface $cacheTypeList, Data $helper, ApplicationService $applicationService)
     {

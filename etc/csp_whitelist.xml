@@ -1,39 +1,59 @@
 <?xml version="1.0"?>
 <csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp/etc/csp_whitelist.xsd">
     <policies>
+        <!-- Comfino CDN scripts (comfino-sdk.min.js, widget-frontend.min.js) -->
         <policy id="script-src">
             <values>
-                <value id="comfino-prod-widget-js" type="host">widget.comfino.pl</value>
+                <value id="comfino-prod-cdn" type="host">widget.comfino.pl</value>
             </values>
             <values>
-                <value id="comfino-sandbox-widget-js" type="host">widget.craty.pl</value>
+                <value id="comfino-sandbox-cdn" type="host">widget.craty.pl</value>
             </values>
             <values>
-                <value id="comfino-dev-widget-js" type="host">widget-comfino.test:8080</value>
+                <value id="comfino-dev-cdn" type="host">widget-comfino.test:8080</value>
             </values>
         </policy>
+
+        <!-- Comfino API iframe (Direct API approach — iframe src points directly to Comfino API) -->
+        <policy id="frame-src">
+            <values>
+                <value id="comfino-prod-api" type="host">api-ecommerce.comfino.pl</value>
+            </values>
+            <values>
+                <value id="comfino-sandbox-api" type="host">api-ecommerce.ecraty.pl</value>
+            </values>
+            <values>
+                <value id="comfino-dev-api" type="host">api-ecommerce.comfino.test</value>
+            </values>
+        </policy>
+
+        <!-- Paywall CSS + widget CSS from Comfino CDN -->
         <policy id="style-src">
             <values>
-                <value id="comfino-prod-widget-js" type="host">widget.comfino.pl</value>
+                <value id="comfino-prod-cdn" type="host">widget.comfino.pl</value>
             </values>
             <values>
-                <value id="comfino-sandbox-widget-js" type="host">widget.craty.pl</value>
+                <value id="comfino-sandbox-cdn" type="host">widget.craty.pl</value>
             </values>
             <values>
-                <value id="comfino-dev-widget-js" type="host">widget-comfino.test:8080</value>
+                <value id="comfino-dev-cdn" type="host">widget-comfino.test:8080</value>
             </values>
         </policy>
+
+        <!-- Images from Comfino CDN -->
         <policy id="img-src">
             <values>
-                <value id="comfino-prod-widget-js" type="host">widget.comfino.pl</value>
+                <value id="comfino-prod-cdn" type="host">widget.comfino.pl</value>
             </values>
             <values>
-                <value id="comfino-sandbox-widget-js" type="host">widget.craty.pl</value>
+                <value id="comfino-sandbox-cdn" type="host">widget.craty.pl</value>
             </values>
             <values>
-                <value id="comfino-dev-widget-js" type="host">widget-comfino.test:8080</value>
+                <value id="comfino-dev-cdn" type="host">widget-comfino.test:8080</value>
             </values>
         </policy>
+
+        <!-- AJAX from paywall frontend scripts + backend API calls -->
         <policy id="connect-src">
             <values>
                 <value id="comfino-prod-api" type="host">api-ecommerce.comfino.pl</value>
@@ -43,6 +63,12 @@
             </values>
             <values>
                 <value id="comfino-dev-api" type="host">api-ecommerce.comfino.test</value>
+            </values>
+            <values>
+                <value id="comfino-prod-cdn" type="host">widget.comfino.pl</value>
+            </values>
+            <values>
+                <value id="comfino-sandbox-cdn" type="host">widget.craty.pl</value>
             </values>
         </policy>
     </policies>

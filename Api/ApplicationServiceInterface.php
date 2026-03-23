@@ -5,14 +5,9 @@ namespace Comfino\ComfinoGateway\Api;
 interface ApplicationServiceInterface
 {
     /**
+     * Creates an application in the Comfino API and returns the redirect URL.
+     *
      * @return array
      */
     public function save(): array;
-
-    /**
-     * @param string $externalId
-     * @param string $status
-     * @return bool
-     */
-    public function changeStatus(string $externalId, string $status): bool;
 }

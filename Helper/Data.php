@@ -7,12 +7,9 @@ use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Component\ComponentRegistrar;
 use Magento\Framework\Component\ComponentRegistrarInterface;
-use Magento\Framework\DB\Adapter\ConnectionException;
 use Magento\Framework\DB\Adapter\SqlVersionProvider;
 use Magento\Framework\Filesystem\Directory\ReadFactory;
 use Magento\Framework\Locale\Resolver;
-use Magento\Framework\Module\ModuleListInterface;
-use Magento\Framework\Pricing\Helper\Data as PriceHelper;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Store\Model\ScopeInterface;
@@ -34,81 +31,62 @@ class Data extends AbstractHelper
     public const XML_PATH_WIDGET_CODE = 'payment/comfino/widget_code';
     public const XML_PATH_SANDBOX_ENABLED = 'payment/comfino/sandbox';
     public const XML_PATH_SANDBOX_API_KEY = 'payment/comfino/sandbox_api_key';
+    public const XML_PATH_PAYWALL_TITLE = 'payment/comfino/paywall_title';
+    public const XML_PATH_USE_ORDER_REFERENCE = 'payment/comfino/use_order_reference';
+    public const XML_PATH_PRODUCT_CATEGORY_FILTERS = 'payment/comfino/product_category_filters';
+    public const XML_PATH_WIDGET_SHOW_PROVIDER_LOGOS = 'payment/comfino/widget_show_provider_logos';
+    public const XML_PATH_WIDGET_CUSTOM_BANNER_CSS_URL = 'payment/comfino/widget_custom_banner_css_url';
+    public const XML_PATH_WIDGET_CUSTOM_CALCULATOR_CSS_URL = 'payment/comfino/widget_custom_calculator_css_url';
+    public const XML_PATH_DEBUG = 'payment/comfino/debug';
+    public const XML_PATH_SERVICE_MODE = 'payment/comfino/service_mode';
+    public const XML_PATH_DEV_ENV_VARS = 'payment/comfino/dev_env_vars';
+    public const XML_PATH_IGNORED_STATUSES = 'payment/comfino/ignored_statuses';
+    public const XML_PATH_FORBIDDEN_STATUSES = 'payment/comfino/forbidden_statuses';
+    public const XML_PATH_STATUS_MAP = 'payment/comfino/status_map';
+    public const XML_PATH_API_CONNECT_TIMEOUT = 'payment/comfino/api_connect_timeout';
+    public const XML_PATH_API_TIMEOUT = 'payment/comfino/api_timeout';
+    public const XML_PATH_API_CONNECT_NUM_ATTEMPTS = 'payment/comfino/api_connect_num_attempts';
+    public const XML_PATH_WIDGET_PROD_SCRIPT_VERSION = 'payment/comfino/widget_prod_script_version';
+    public const XML_PATH_WIDGET_DEV_SCRIPT_VERSION = 'payment/comfino/widget_dev_script_version';
+    public const XML_PATH_CAT_FILTER_AVAIL_PROD_TYPES = 'payment/comfino/cat_filter_avail_prod_types';
+    public const XML_PATH_PROD_CAT_CACHE_TTL = 'payment/comfino/prod_cat_cache_ttl';
+    public const XML_PATH_INITIAL_ORDER_STATUS = 'payment/comfino/initial_order_status';
+
+    public const BUILD_TS = 1774013906;
 
     private const MODULE_NAME = 'Comfino_ComfinoGateway';
 
     private const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
-    private const COMFINO_FRONTEND_JS_SANDBOX = 'https://widget.craty.pl/comfino-frontend.min.js';
-    private const COMFINO_FRONTEND_JS_PRODUCTION = 'https://widget.comfino.pl/comfino-frontend.min.js';
-    private const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
-    private const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
+    private const COMFINO_SDK_JS_PRODUCTION               = 'https://widget.comfino.pl/sdk/v1/comfino-sdk.min.js';
+    private const COMFINO_SDK_JS_SANDBOX                  = 'https://widget.craty.pl/sdk/v1/comfino-sdk.min.js';
+    private const COMFINO_WIDGET_FRONTEND_JS_PRODUCTION  = 'https://widget.comfino.pl/v2/widget-frontend.min.js';
+    private const COMFINO_WIDGET_FRONTEND_JS_SANDBOX     = 'https://widget.craty.pl/v2/widget-frontend.min.js';
 
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
-
-    /**
-     * @var ModuleListInterface
-     */
-    private $moduleList;
-
-    /**
-     * @var ComponentRegistrarInterface
-     */
-    private $componentRegistrar;
-
-    /**
-     * @var ReadFactory
-     */
-    private $readFactory;
-
-    /**
-     * @var ProductMetadataInterface
-     */
-    private $productMetaData;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
-
-    /**
-     * @var Resolver
-     */
-    private $localeResolver;
-
-    /**
-     * @var PriceHelper
-     */
-    private $priceHelper;
-
-    /**
-     * @var SqlVersionProvider
-     */
-    private $sqlVersionProvider;
+    private SerializerInterface $serializer;
+    private ComponentRegistrarInterface $componentRegistrar;
+    private ReadFactory $readFactory;
+    private ProductMetadataInterface $productMetaData;
+    private StoreManagerInterface $storeManager;
+    private Resolver $localeResolver;
+    private SqlVersionProvider $sqlVersionProvider;
 
     public function __construct(
         Context $context,
         SerializerInterface $serializer,
-        ModuleListInterface $moduleList,
         ComponentRegistrarInterface $componentRegistrar,
         ReadFactory $readFactory,
         ProductMetadataInterface $productMetadata,
         StoreManagerInterface $storeManager,
         Resolver $localeResolver,
-        PriceHelper $priceHelper,
         SqlVersionProvider $sqlVersionProvider
     ) {
         $this->serializer = $serializer;
-        $this->moduleList = $moduleList;
         $this->componentRegistrar = $componentRegistrar;
         $this->readFactory = $readFactory;
         $this->productMetaData = $productMetadata;
         $this->storeManager = $storeManager;
         $this->localeResolver = $localeResolver;
-        $this->priceHelper = $priceHelper;
         $this->sqlVersionProvider = $sqlVersionProvider;
 
         parent::__construct($context);
@@ -132,8 +110,6 @@ class Data extends AbstractHelper
 
     /**
      * Returns API key for production.
-     *
-     * @return string
      */
     public function getProductionApiKey(): string
     {
@@ -158,10 +134,8 @@ class Data extends AbstractHelper
                 if (getenv('COMFINO_DEV_API_HOST_FRONTEND')) {
                     return getenv('COMFINO_DEV_API_HOST_FRONTEND');
                 }
-            } else {
-                if (getenv('COMFINO_DEV_API_HOST_BACKEND')) {
-                    return getenv('COMFINO_DEV_API_HOST_BACKEND');
-                }
+            } elseif (getenv('COMFINO_DEV_API_HOST_BACKEND')) {
+                return getenv('COMFINO_DEV_API_HOST_BACKEND');
             }
         }
 
@@ -176,24 +150,20 @@ class Data extends AbstractHelper
         return $this->isSandboxEnabled() ? $this->getSandboxApiKey() : $this->getProductionApiKey();
     }
 
-    /**
-     * Returns frontend script URL.
-     */
-    public function getFrontendScriptUrl(): string
+    public function getSdkScriptUrl(): string
     {
-        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_FRONTEND_SCRIPT_URL') &&
+        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_SDK_SCRIPT_URL') &&
             getenv('COMFINO_DEV') === 'MG_' . $this->getShopVersion() . '_' . $this->getShopUrl()
         ) {
-            return getenv('COMFINO_DEV_FRONTEND_SCRIPT_URL');
+            return getenv('COMFINO_DEV_SDK_SCRIPT_URL');
         }
 
-        return $this->isSandboxEnabled() ? self::COMFINO_FRONTEND_JS_SANDBOX : self::COMFINO_FRONTEND_JS_PRODUCTION;
+        return $this->isSandboxEnabled()
+            ? self::COMFINO_SDK_JS_SANDBOX
+            : self::COMFINO_SDK_JS_PRODUCTION;
     }
 
-    /**
-     * Returns widget script URL.
-     */
-    public function getWidgetScriptUrl(): ?string
+    public function getWidgetFrontendScriptUrl(): string
     {
         if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL') &&
             getenv('COMFINO_DEV') === 'MG_' . $this->getShopVersion() . '_' . $this->getShopUrl()
@@ -201,20 +171,9 @@ class Data extends AbstractHelper
             return getenv('COMFINO_DEV_WIDGET_SCRIPT_URL');
         }
 
-        return $this->isSandboxEnabled() ? self::COMFINO_WIDGET_JS_SANDBOX : self::COMFINO_WIDGET_JS_PRODUCTION;
-    }
-
-    public function getOffersUrl(float $total): string
-    {
-        return $this->storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_WEB) . "rest/V1/comfino-gateway/offers?total=$total";
-    }
-
-    /**
-     * Returns minimal cart amount for Comfino payments.
-     */
-    public function getMinimalCartAmount(): float
-    {
-        return (float) $this->getConfigValue(self::XML_PATH_MINIMAL_CART_AMOUNT);
+        return $this->isSandboxEnabled()
+            ? self::COMFINO_WIDGET_FRONTEND_JS_SANDBOX
+            : self::COMFINO_WIDGET_FRONTEND_JS_PRODUCTION;
     }
 
     /**
@@ -256,7 +215,7 @@ class Data extends AbstractHelper
 
     public function getPriceObserverLevel(): int
     {
-        return (int)$this->getConfigValue(self::XML_PATH_WIDGET_PRICE_OBSERVER_LEVEL);
+        return (int) $this->getConfigValue(self::XML_PATH_WIDGET_PRICE_OBSERVER_LEVEL);
     }
 
     /**
@@ -289,14 +248,6 @@ class Data extends AbstractHelper
     public function getWidgetCode(): ?string
     {
         return $this->getConfigValue(self::XML_PATH_WIDGET_CODE);
-    }
-
-    /**
-     * Returns module setup version.
-     */
-    public function getSetupVersion(): string
-    {
-        return $this->moduleList->getOne(self::MODULE_NAME)['setup_version'];
     }
 
     /**
@@ -353,15 +304,5 @@ class Data extends AbstractHelper
     public function getShopLanguage(): string
     {
         return substr($this->localeResolver->getLocale(), 0, 2);
-    }
-
-    public function isValidSignature(string $crSignature, string $jsonData): bool
-    {
-        return hash_equals(hash('sha3-256', $this->getApiKey() . $jsonData), $crSignature);
-    }
-
-    public function formatPrice(float $price): string
-    {
-        return $this->priceHelper->currency($price, true, false);
     }
 }

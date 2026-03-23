@@ -1,1 +1,10 @@
-<script src="/comfino/widget">define(['/comfino/widget']);</script>
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var \Comfino\ComfinoGateway\Helper\Data $helper */
+$helper = $block->getData('helper');
+if (!$helper) {
+    return;
+}
+?>
+<script src="<?= $escaper->escapeUrl($helper->getWidgetFrontendScriptUrl()) ?>"></script>
