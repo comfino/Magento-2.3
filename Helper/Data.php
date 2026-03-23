@@ -2,6 +2,7 @@
 
 namespace Comfino\ComfinoGateway\Helper;
 
+use Comfino\Configuration\ConfigManager;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\ProductMetadataInterface;
@@ -12,7 +13,6 @@ use Magento\Framework\Filesystem\Directory\ReadFactory;
 use Magento\Framework\Locale\Resolver;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\UrlInterface;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Data extends AbstractHelper
@@ -56,13 +56,6 @@ class Data extends AbstractHelper
 
     private const MODULE_NAME = 'Comfino_ComfinoGateway';
 
-    private const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
-    private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
-    private const COMFINO_SDK_JS_PRODUCTION               = 'https://widget.comfino.pl/sdk/v1/comfino-sdk.min.js';
-    private const COMFINO_SDK_JS_SANDBOX                  = 'https://widget.craty.pl/sdk/v1/comfino-sdk.min.js';
-    private const COMFINO_WIDGET_FRONTEND_JS_PRODUCTION  = 'https://widget.comfino.pl/v2/widget-frontend.min.js';
-    private const COMFINO_WIDGET_FRONTEND_JS_SANDBOX     = 'https://widget.craty.pl/v2/widget-frontend.min.js';
-
     private SerializerInterface $serializer;
     private ComponentRegistrarInterface $componentRegistrar;
     private ReadFactory $readFactory;
@@ -90,164 +83,6 @@ class Data extends AbstractHelper
         $this->sqlVersionProvider = $sqlVersionProvider;
 
         parent::__construct($context);
-    }
-
-    /**
-     * Returns store configuration value by path.
-     */
-    protected function getConfigValue(string $path)
-    {
-        return $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE);
-    }
-
-    /**
-     * Is sandbox activated.
-     */
-    public function isSandboxEnabled(): bool
-    {
-        return $this->scopeConfig->isSetFlag(self::XML_PATH_SANDBOX_ENABLED, ScopeInterface::SCOPE_STORE);
-    }
-
-    /**
-     * Returns API key for production.
-     */
-    public function getProductionApiKey(): string
-    {
-        return $this->getConfigValue(self::XML_PATH_API_KEY) ?? '';
-    }
-
-    /**
-     * Returns API key for sandbox.
-     */
-    public function getSandboxApiKey(): string
-    {
-        return $this->getConfigValue(self::XML_PATH_SANDBOX_API_KEY) ?? '';
-    }
-
-    /**
-     * Returns API URL depending on sandbox activation state.
-     */
-    public function getApiHost($frontendHost = false): string
-    {
-        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV') === 'MG_' . $this->getShopVersion() . '_' . $this->getShopUrl()) {
-            if ($frontendHost) {
-                if (getenv('COMFINO_DEV_API_HOST_FRONTEND')) {
-                    return getenv('COMFINO_DEV_API_HOST_FRONTEND');
-                }
-            } elseif (getenv('COMFINO_DEV_API_HOST_BACKEND')) {
-                return getenv('COMFINO_DEV_API_HOST_BACKEND');
-            }
-        }
-
-        return $this->isSandboxEnabled() ? self::COMFINO_SANDBOX_HOST : self::COMFINO_PRODUCTION_HOST;
-    }
-
-    /**
-     * Returns API key depending on sandbox activation state.
-     */
-    public function getApiKey(): string
-    {
-        return $this->isSandboxEnabled() ? $this->getSandboxApiKey() : $this->getProductionApiKey();
-    }
-
-    public function getSdkScriptUrl(): string
-    {
-        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_SDK_SCRIPT_URL') &&
-            getenv('COMFINO_DEV') === 'MG_' . $this->getShopVersion() . '_' . $this->getShopUrl()
-        ) {
-            return getenv('COMFINO_DEV_SDK_SCRIPT_URL');
-        }
-
-        return $this->isSandboxEnabled()
-            ? self::COMFINO_SDK_JS_SANDBOX
-            : self::COMFINO_SDK_JS_PRODUCTION;
-    }
-
-    public function getWidgetFrontendScriptUrl(): string
-    {
-        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL') &&
-            getenv('COMFINO_DEV') === 'MG_' . $this->getShopVersion() . '_' . $this->getShopUrl()
-        ) {
-            return getenv('COMFINO_DEV_WIDGET_SCRIPT_URL');
-        }
-
-        return $this->isSandboxEnabled()
-            ? self::COMFINO_WIDGET_FRONTEND_JS_SANDBOX
-            : self::COMFINO_WIDGET_FRONTEND_JS_PRODUCTION;
-    }
-
-    /**
-     * Returns widget activation status.
-     */
-    public function isWidgetActive(): bool
-    {
-        return $this->scopeConfig->isSetFlag(self::XML_PATH_WIDGET_ENABLED, ScopeInterface::SCOPE_STORE);
-    }
-
-    /**
-     * Returns widget key.
-     */
-    public function getWidgetKey(): ?string
-    {
-        return $this->getConfigValue(self::XML_PATH_WIDGET_KEY);
-    }
-
-    /**
-     * Returns widget price selector.
-     */
-    public function getWidgetPriceSelector(): ?string
-    {
-        return $this->getConfigValue(self::XML_PATH_WIDGET_PRICE_SELECTOR);
-    }
-
-    /**
-     * Returns widget target selector.
-     */
-    public function getWidgetTargetSelector(): ?string
-    {
-        return $this->getConfigValue(self::XML_PATH_WIDGET_TARGET_SELECTOR);
-    }
-
-    public function getPriceObserverSelector(): ?string
-    {
-        return $this->getConfigValue(self::XML_PATH_WIDGET_PRICE_OBSERVER_SELECTOR);
-    }
-
-    public function getPriceObserverLevel(): int
-    {
-        return (int) $this->getConfigValue(self::XML_PATH_WIDGET_PRICE_OBSERVER_LEVEL);
-    }
-
-    /**
-     * Returns widget type.
-     */
-    public function getWidgetType(): ?string
-    {
-        return $this->getConfigValue(self::XML_PATH_WIDGET_TYPE);
-    }
-
-    /**
-     * Returns widget offer type.
-     */
-    public function getWidgetOfferType(): ?string
-    {
-        return $this->getConfigValue(self::XML_PATH_WIDGET_OFFER_TYPE);
-    }
-
-    /**
-     * Returns widget embedding method.
-     */
-    public function getWidgetEmbedMethod(): ?string
-    {
-        return $this->getConfigValue(self::XML_PATH_WIDGET_EMBED_METHOD);
-    }
-
-    /**
-     * Returns widget initialization code.
-     */
-    public function getWidgetCode(): ?string
-    {
-        return $this->getConfigValue(self::XML_PATH_WIDGET_CODE);
     }
 
     /**
@@ -304,5 +139,14 @@ class Data extends AbstractHelper
     public function getShopLanguage(): string
     {
         return substr($this->localeResolver->getLocale(), 0, 2);
+    }
+
+    /**
+     * Returns widget JS URL (for product page widget). Delegates to ConfigManager.
+     * Called from view/frontend/templates/widget/init.phtml.
+     */
+    public function getWidgetFrontendScriptUrl(): string
+    {
+        return ConfigManager::getWidgetScriptUrl();
     }
 }

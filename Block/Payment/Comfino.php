@@ -2,28 +2,25 @@
 
 namespace Comfino\ComfinoGateway\Block\Payment;
 
-use Comfino\ComfinoGateway\Helper\Data;
 use Comfino\ComfinoGateway\Helper\IframeUrlGenerator;
+use Comfino\Configuration\ConfigManager;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 
 class Comfino extends Template
 {
-    private Data $configHelper;
     private IframeUrlGenerator $urlGenerator;
     private CheckoutSession $checkoutSession;
 
     public function __construct(
         Context $context,
-        Data $configHelper,
         IframeUrlGenerator $urlGenerator,
         CheckoutSession $checkoutSession,
         array $data = []
     ) {
         parent::__construct($context, $data);
 
-        $this->configHelper = $configHelper;
         $this->urlGenerator = $urlGenerator;
         $this->checkoutSession = $checkoutSession;
     }
@@ -46,7 +43,7 @@ class Comfino extends Template
      */
     public function getSdkScriptUrl(): string
     {
-        return $this->configHelper->getSdkScriptUrl();
+        return ConfigManager::getSdkScriptUrl();
     }
 
     /**
@@ -54,7 +51,7 @@ class Comfino extends Template
      */
     public function getEnvironment(): string
     {
-        return $this->configHelper->isSandboxEnabled() ? 'sandbox' : 'production';
+        return ConfigManager::isSandboxMode() ? 'sandbox' : 'production';
     }
 
     /**

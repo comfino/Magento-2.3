@@ -2,20 +2,12 @@
 
 namespace Comfino\ComfinoGateway\Helper;
 
+use Comfino\Api\ApiClient;
+use Comfino\Configuration\ConfigManager;
 use Magento\Framework\App\Helper\AbstractHelper;
-use Magento\Framework\App\Helper\Context;
 
 class IframeUrlGenerator extends AbstractHelper
 {
-    private Data $configHelper;
-
-    public function __construct(Context $context, Data $configHelper)
-    {
-        parent::__construct($context);
-
-        $this->configHelper = $configHelper;
-    }
-
     /**
      * Generate V3 Comfino API URL for paywall iframe.
      *
@@ -31,8 +23,11 @@ class IframeUrlGenerator extends AbstractHelper
      */
     public function generatePaywallUrl(int $loanAmount, ?array $productTypes = null): string
     {
-        $url = $this->configHelper->getApiHost() . '/v3/paywall'
-            . '?auth=' . $this->generateAuthToken($this->configHelper->getApiKey(), $this->configHelper->getWidgetKey() ?? '')
+        $url = ConfigManager::getApiHost(ApiClient::getInstance()->getApiHost()) . '/v3/paywall'
+            . '?auth=' . $this->generateAuthToken(
+                ConfigManager::getApiKey() ?? '',
+                ConfigManager::getWidgetKey() ?? ''
+            )
             . '&loanAmount=' . $loanAmount;
 
         if (!empty($productTypes)) {

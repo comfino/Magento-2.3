@@ -174,7 +174,8 @@
                         <label>Use development environment variables</label>
                         <config_path>payment/comfino/dev_env_vars</config_path>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <comment>Only effective when the COMFINO_DEV_ENV=TRUE environment variable is set on the server.</comment>
+                        <frontend_model>Comfino\ComfinoGateway\Block\Adminhtml\System\Config\DevEnvField</frontend_model>
+                        <comment>Use of development environment variables with custom hosts which overwrite hosts stored in the plugin.</comment>
                     </field>
                 </group>
 

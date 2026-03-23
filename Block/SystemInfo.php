@@ -4,6 +4,7 @@ namespace Comfino\ComfinoGateway\Block;
 
 use Comfino\ComfinoGateway\Helper\Data;
 use Comfino\ComfinoGateway\Model\Connector\Service\ApplicationService;
+use Comfino\Configuration\ConfigManager;
 use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
@@ -41,10 +42,10 @@ class SystemInfo extends Field
 
         $infoMessages[] = $systemInfo;
 
-        if ($this->helper->isSandboxEnabled()) {
+        if (ConfigManager::isSandboxMode()) {
             $warningMessages[] = __('Developer mode is active. You are using test environment.');
 
-            if (!empty($this->helper->getApiKey())) {
+            if (!empty(ConfigManager::getApiKey())) {
                 if ($this->applicationService->isShopAccountActive()) {
                     $successMessages[] = __('Test account is active.');
                 } else if (count($this->applicationService->getLastErrors())) {
@@ -59,7 +60,7 @@ class SystemInfo extends Field
             } else {
                 $errorMessages[] = __('Test API key not present.');
             }
-        } elseif (!empty($this->helper->getApiKey())) {
+        } elseif (!empty(ConfigManager::getApiKey())) {
             $successMessages[] = __('Production mode is active.');
 
             if ($this->applicationService->isShopAccountActive()) {

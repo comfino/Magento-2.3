@@ -2,6 +2,7 @@
 
 namespace Comfino\Configuration;
 
+use Comfino\Api\ApiClient;
 use Comfino\CategoryTree\BuildStrategy;
 use Comfino\ComfinoGateway\Helper\Data;
 use Comfino\Common\Backend\ConfigurationManager;
@@ -22,6 +23,9 @@ use Magento\Framework\App\ObjectManager;
  */
 final class ConfigManager
 {
+    private const COMFINO_SDK_JS_PRODUCTION = 'https://widget.comfino.pl/sdk/v1/comfino-sdk.min.js';
+    private const COMFINO_SDK_JS_SANDBOX    = 'https://widget.craty.pl/sdk/v1/comfino-sdk.min.js';
+
     public const CONFIG_OPTIONS = [
         'payment_settings' => [
             'COMFINO_API_KEY' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
@@ -206,12 +210,30 @@ final class ConfigManager
             && self::getInstance()->getConfigurationValue('COMFINO_DEV_ENV_VARS') ?? false;
     }
 
+    public static function getApiHost(?string $apiHost = null): ?string
+    {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_API_HOST')) {
+            return getenv('COMFINO_DEV_API_HOST');
+        }
+
+        return $apiHost;
+    }
+
+    public static function getSdkScriptUrl(): string
+    {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_SDK_SCRIPT_URL')) {
+            return getenv('COMFINO_DEV_SDK_SCRIPT_URL');
+        }
+
+        return self::isSandboxMode() ? self::COMFINO_SDK_JS_SANDBOX : self::COMFINO_SDK_JS_PRODUCTION;
+    }
+
     public static function getLogoUrl(): string
     {
         /** @var Data $dataHelper */
         $dataHelper = ObjectManager::getInstance()->get(Data::class);
 
-        return $dataHelper->getApiHost() . '/v1/get-logo-url?auth='
+        return self::getApiHost(ApiClient::getInstance()->getApiHost()) . '/v1/get-logo-url?auth='
             . FrontendHelper::getLogoAuthHash('MG', $dataHelper->getShopVersion(), $dataHelper->getModuleVersion(), Data::BUILD_TS);
     }
 

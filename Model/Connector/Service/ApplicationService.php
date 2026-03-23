@@ -6,7 +6,6 @@ use Comfino\Api\ApiClient;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Api\Response\CreateOrder;
 use Comfino\ComfinoGateway\Api\ApplicationServiceInterface;
-use Comfino\ComfinoGateway\Helper\Data;
 use Comfino\Common\Backend\Factory\OrderFactory;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
@@ -149,10 +148,7 @@ class ApplicationService implements ApplicationServiceInterface
      */
     public function getLogoUrl(): string
     {
-        /** @var Data $helper */
-        $helper = ObjectManager::getInstance()->get(Data::class);
-
-        return $helper->getApiHost(true) . '/v1/get-logo-url';
+        return ConfigManager::getApiHost(ApiClient::getInstance()->getApiHost()) . '/v1/get-logo-url';
     }
 
     /**

@@ -50,10 +50,10 @@ final class ErrorLogger
         string $errorPrefix,
         string $errorCode,
         string $errorMessage,
-        string $apiRequestUrl = null,
-        string $apiRequest = null,
-        string $apiResponse = null,
-        string $stackTrace = null
+        ?string $apiRequestUrl = null,
+        ?string $apiRequest = null,
+        ?string $apiResponse = null,
+        ?string $stackTrace = null
     ): void {
         if ($exception instanceof ResponseValidationError || $exception instanceof AuthorizationError) {
             /* - Don't collect validation errors - validation errors are already collected at API side (response with status code 400).

@@ -41,14 +41,14 @@ final class ApiClient
                     PHP_VERSION,
                     $helper->getShopDomain()
                 ),
-                $helper->getApiHost(),
+                ConfigManager::getApiHost(),
                 $helper->getShopLanguage(),
                 (int) ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 3),
                 (int) ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 5),
                 (int) ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_NUM_ATTEMPTS', 3)
             );
         } else {
-            self::$apiClient->setCustomApiHost($helper->getApiHost());
+            self::$apiClient->setCustomApiHost(ConfigManager::getApiHost());
             self::$apiClient->setApiKey($apiKey);
             self::$apiClient->setApiLanguage($helper->getShopLanguage());
         }
