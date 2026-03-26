@@ -1,7 +1,0 @@
-#!/bin/bash
-
-if command -v docker-compose > /dev/null; then
-	docker-compose exec shop-plugins-shared-php php ./vendor/bin/phpunit "$@"
-else
-	php ./vendor/bin/phpunit "$@"
-fi

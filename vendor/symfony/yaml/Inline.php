@@ -23,7 +23,7 @@ class Inline
     private static $objectSupport = \false;
     private static $objectForMap = \false;
     private static $constantSupport = \false;
-    public static function initialize(int $flags, int $parsedLineNumber = null, string $parsedFilename = null)
+    public static function initialize(int $flags, ?int $parsedLineNumber = null, ?string $parsedFilename = null)
     {
         self::$exceptionOnInvalidType = (bool) (Yaml::PARSE_EXCEPTION_ON_INVALID_TYPE & $flags);
         self::$objectSupport = (bool) (Yaml::PARSE_OBJECT & $flags);
@@ -41,7 +41,7 @@ class Inline
      * @return mixed
      * @throws ParseException
      */
-    public static function parse(string $value = null, int $flags = 0, array &$references = [])
+    public static function parse(?string $value = null, int $flags = 0, array &$references = [])
     {
         self::initialize($flags);
         $value = trim($value);
@@ -210,7 +210,7 @@ class Inline
      * @return mixed
      * @throws ParseException
      */
-    public static function parseScalar(string $scalar, int $flags = 0, array $delimiters = null, int &$i = 0, bool $evaluate = \true, array &$references = [], bool &$isQuoted = null)
+    public static function parseScalar(string $scalar, int $flags = 0, ?array $delimiters = null, int &$i = 0, bool $evaluate = \true, array &$references = [], ?bool &$isQuoted = null)
     {
         if (\in_array($scalar[$i], ['"', "'"])) {
             $isQuoted = \true;
@@ -440,7 +440,7 @@ class Inline
      * @return mixed
      * @throws ParseException
      */
-    private static function evaluateScalar(string $scalar, int $flags, array &$references = [], bool &$isQuotedString = null)
+    private static function evaluateScalar(string $scalar, int $flags, array &$references = [], ?bool &$isQuotedString = null)
     {
         $isQuotedString = \false;
         $scalar = trim($scalar);

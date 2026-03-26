@@ -29,4 +29,4 @@ final class Attribute
     }
 }
 
-\class_alias('ComfinoExternal\Attribute', 'Attribute', \false);
+if (!class_exists('Attribute', false)) { \class_alias('ComfinoExternal\Attribute', 'Attribute', \false); }

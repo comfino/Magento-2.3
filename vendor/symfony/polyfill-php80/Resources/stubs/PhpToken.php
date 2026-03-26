@@ -16,3 +16,5 @@ if (\PHP_VERSION_ID < 80000 && \extension_loaded('tokenizer')) {
     }
     \class_alias('ComfinoExternal\PhpToken', 'PhpToken', \false);
 }
+
+if (!class_exists('ComfinoExternal\\PhpToken', false)) { class PhpToken extends \PhpToken {} }

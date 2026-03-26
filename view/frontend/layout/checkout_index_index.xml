@@ -3,7 +3,7 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <!-- Paywall init script (vanilla JS — Hyvä/Luma/Blank compatible, no Knockout/RequireJS) -->
-        <script src="Comfino_ComfinoGateway::js/comfino-paywall-init.js" defer="true"/>
+        <script src="Comfino_ComfinoGateway::js/paywall-init.js" defer="true"/>
     </head>
     <body>
         <!-- Inject Comfino payment block into checkout payment methods area -->

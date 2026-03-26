@@ -20,6 +20,9 @@ window.ComfinoPaywallData = {
     paymentStateUrl: '<?= $escaper->escapeJs($escaper->escapeUrl($block->getPaymentStateUrl())) ?>',
     environment: '<?= $escaper->escapeJs($block->getEnvironment()) ?>'
 };
+// Signal to paywall-init.js that the payment method is active and this block was rendered.
+window.Comfino = window.Comfino || {};
+window.Comfino.active = true;
 if (typeof ComfinoPaywallInit === 'object') {
     ComfinoPaywallInit.init();
 }

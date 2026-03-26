@@ -10,9 +10,9 @@ namespace ComfinoExternal;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-if (\PHP_VERSION_ID < 80000) {
-    class ValueError extends \Error
-    {
-    }
-    \class_alias('ComfinoExternal\ValueError', 'ValueError', \false);
+
+class ValueError extends \Error
+{
 }
+if (!class_exists('ValueError', false) && !interface_exists('ValueError', false)) { \class_alias('ComfinoExternal\ValueError', 'ValueError', \false); }
+

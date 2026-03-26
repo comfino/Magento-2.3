@@ -10,9 +10,9 @@ namespace ComfinoExternal;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-if (\PHP_VERSION_ID < 80000) {
-    class UnhandledMatchError extends \Error
-    {
-    }
-    \class_alias('ComfinoExternal\UnhandledMatchError', 'UnhandledMatchError', \false);
+
+class UnhandledMatchError extends \Error
+{
 }
+if (!class_exists('UnhandledMatchError', false) && !interface_exists('UnhandledMatchError', false)) { \class_alias('ComfinoExternal\UnhandledMatchError', 'UnhandledMatchError', \false); }
+

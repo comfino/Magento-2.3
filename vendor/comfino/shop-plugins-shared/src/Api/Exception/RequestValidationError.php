@@ -21,7 +21,7 @@ class RequestValidationError extends \LogicException implements HttpErrorExcepti
      */
     private $response;
 
-    public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null, string $url = '', string $requestBody = '', string $responseBody = '', $deserializedResponseBody = null, ResponseInterface $response = null)
+    public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null, string $url = '', string $requestBody = '', string $responseBody = '', $deserializedResponseBody = null, ?ResponseInterface $response = null)
     {
         parent::__construct($message, $code, $previous);
 

@@ -159,7 +159,7 @@ interface FilesystemInterface
      * @param Handler $handler
      * @return Handler
      */
-    public function get($path, Handler $handler = null);
+    public function get($path, ?Handler $handler = null);
     /**
      * @param PluginInterface $plugin
      * @return $this

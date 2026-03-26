@@ -10,13 +10,13 @@ namespace ComfinoExternal;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-if (\PHP_VERSION_ID < 80000) {
-    interface Stringable
-    {
-        /**
+
+interface Stringable
+{
+    /**
      * @return string
      */
-        public function __toString();
-    }
-    \class_alias('ComfinoExternal\Stringable', 'Stringable', \false);
+    public function __toString();
 }
+if (!class_exists('Stringable', false) && !interface_exists('Stringable', false)) { \class_alias('ComfinoExternal\Stringable', 'Stringable', \false); }
+

@@ -428,7 +428,7 @@ class MountManager implements FilesystemInterface
      * @param Handler $handler
      * @return Handler
      */
-    public function get($path, Handler $handler = null)
+    public function get($path, ?Handler $handler = null)
     {
         list($prefix, $path) = $this->getPrefixAndPath($path);
         return $this->getFilesystem($prefix)->get($path);

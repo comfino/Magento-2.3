@@ -10,7 +10,13 @@ window.ComfinoPaywallInit = (function () {
     var _paywall = null;
 
     function init() {
-        if (!window.Comfino || !window.Comfino.ComfinoSDK) {
+        // window.Comfino.active is set by comfino.phtml only when the payment method is active and the
+        // block was rendered. When the module is disabled the flag is absent — exit silently, no SDK check.
+        if (!window.Comfino || !window.Comfino.active) {
+            return;
+        }
+
+        if (!window.Comfino.ComfinoSDK) {
             console.error('Comfino: SDK not loaded — check script tag in template.');
             return;
         }

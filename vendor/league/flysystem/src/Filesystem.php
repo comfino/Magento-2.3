@@ -243,7 +243,7 @@ class Filesystem implements FilesystemInterface
         return $this->getAdapter()->getMetadata($path);
     }
     
-    public function get($path, Handler $handler = null)
+    public function get($path, ?Handler $handler = null)
     {
         $path = Util::normalizePath($path);
         if (!$handler) {
