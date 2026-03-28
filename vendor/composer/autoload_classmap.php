@@ -260,7 +260,7 @@ return array(
     'Comfino\\ComfinoGateway\\Controller\\Result\\Index' => $baseDir . '/Controller/Result/Index.php',
     'Comfino\\ComfinoGateway\\Controller\\Widget\\Index' => $baseDir . '/Controller/Widget/Index.php',
     'Comfino\\ComfinoGateway\\Helper\\Data' => $baseDir . '/Helper/Data.php',
-    'Comfino\\ComfinoGateway\\Helper\\IframeUrlGenerator' => $baseDir . '/Helper/IframeUrlGenerator.php',
+    'Comfino\\ComfinoGateway\\Helper\\PaywallAuthTokenGenerator' => $baseDir . '/Helper/PaywallAuthTokenGenerator.php',
     'Comfino\\ComfinoGateway\\Model\\Adminhtml\\System\\Config\\Source\\WidgetEmbedMethod' => $baseDir . '/Model/Adminhtml/System/Config/Source/WidgetEmbedMethod.php',
     'Comfino\\ComfinoGateway\\Model\\Adminhtml\\System\\Config\\Source\\WidgetOfferType' => $baseDir . '/Model/Adminhtml/System/Config/Source/WidgetOfferType.php',
     'Comfino\\ComfinoGateway\\Model\\Adminhtml\\System\\Config\\Source\\WidgetType' => $baseDir . '/Model/Adminhtml/System/Config/Source/WidgetType.php',

@@ -552,7 +552,7 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\ComfinoGateway\\Controller\\Result\\Index' => __DIR__ . '/../..' . '/Controller/Result/Index.php',
         'Comfino\\ComfinoGateway\\Controller\\Widget\\Index' => __DIR__ . '/../..' . '/Controller/Widget/Index.php',
         'Comfino\\ComfinoGateway\\Helper\\Data' => __DIR__ . '/../..' . '/Helper/Data.php',
-        'Comfino\\ComfinoGateway\\Helper\\IframeUrlGenerator' => __DIR__ . '/../..' . '/Helper/IframeUrlGenerator.php',
+        'Comfino\\ComfinoGateway\\Helper\\PaywallAuthTokenGenerator' => __DIR__ . '/../..' . '/Helper/PaywallAuthTokenGenerator.php',
         'Comfino\\ComfinoGateway\\Model\\Adminhtml\\System\\Config\\Source\\WidgetEmbedMethod' => __DIR__ . '/../..' . '/Model/Adminhtml/System/Config/Source/WidgetEmbedMethod.php',
         'Comfino\\ComfinoGateway\\Model\\Adminhtml\\System\\Config\\Source\\WidgetOfferType' => __DIR__ . '/../..' . '/Model/Adminhtml/System/Config/Source/WidgetOfferType.php',
         'Comfino\\ComfinoGateway\\Model\\Adminhtml\\System\\Config\\Source\\WidgetType' => __DIR__ . '/../..' . '/Model/Adminhtml/System/Config/Source/WidgetType.php',

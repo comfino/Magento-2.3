@@ -2,7 +2,7 @@
 
 namespace Comfino\ComfinoGateway\Block\Payment;
 
-use Comfino\ComfinoGateway\Helper\IframeUrlGenerator;
+use Comfino\ComfinoGateway\Helper\PaywallAuthTokenGenerator;
 use Comfino\Configuration\ConfigManager;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\View\Element\Template;
@@ -10,32 +10,36 @@ use Magento\Framework\View\Element\Template\Context;
 
 class Comfino extends Template
 {
-    private IframeUrlGenerator $urlGenerator;
+    private PaywallAuthTokenGenerator $authTokenGenerator;
     private CheckoutSession $checkoutSession;
 
     public function __construct(
         Context $context,
-        IframeUrlGenerator $urlGenerator,
+        PaywallAuthTokenGenerator $authTokenGenerator,
         CheckoutSession $checkoutSession,
         array $data = []
     ) {
         parent::__construct($context, $data);
 
-        $this->urlGenerator = $urlGenerator;
+        $this->authTokenGenerator = $authTokenGenerator;
         $this->checkoutSession = $checkoutSession;
     }
 
     /**
-     * Returns full V3 paywall URL for the Comfino web frontend SDK.
-     * Includes auth token (HMAC-SHA3-256 signed) and loanAmount as plain query params.
-     * Iframe points directly to api-ecommerce.comfino.pl - NOT the shop domain.
+     * Returns the V3 paywall auth token (raw base64, not URL-encoded).
+     * The SDK constructs the full paywall URL from this token + environment.
      */
-    public function getPaywallUrl(): string
+    public function getAuthToken(): string
     {
-        $quote = $this->checkoutSession->getQuote();
-        $loanAmount = (int) round($quote->getGrandTotal() * 100);
+        return $this->authTokenGenerator->generateAuthToken();
+    }
 
-        return $this->urlGenerator->generatePaywallUrl($loanAmount);
+    /**
+     * Returns the cart grand total in grosze (1 PLN = 100 grosze).
+     */
+    public function getLoanAmount(): int
+    {
+        return (int) round($this->checkoutSession->getQuote()->getGrandTotal() * 100);
     }
 
     /**
@@ -53,5 +57,4 @@ class Comfino extends Template
     {
         return ConfigManager::isSandboxMode() ? 'sandbox' : 'production';
     }
-
 }

@@ -6,9 +6,10 @@
 <!-- Set paywall data BEFORE loading SDK so the SDK auto-bootstrap can detect it at load time -->
 <script>
 window.ComfinoPaywallData = {
-    paywallUrl: '<?= $escaper->escapeJs($block->getPaywallUrl()) ?>',
+    authToken:   '<?= $escaper->escapeJs($block->getAuthToken()) ?>',
+    loanAmount:  <?= (int) $block->getLoanAmount() ?>,
     environment: '<?= $escaper->escapeJs($block->getEnvironment()) ?>',
-    platform: 'magento'
+    platform:    'magento'
 };
 </script>
 

@@ -19,9 +19,11 @@ define([
 
             var config = (window.checkoutConfig.payment || {}).comfino || {};
 
-            // Expose paywall URL and environment for SDK auto-bootstrap.
+            // Expose auth token, loan amount, and environment for SDK auto-bootstrap.
+            // The SDK constructs the full paywall URL internally from authToken + loanAmount + environment.
             window.ComfinoPaywallData = {
-                paywallUrl:  config.paywallUrl  || '',
+                authToken:   config.authToken   || '',
+                loanAmount:  config.loanAmount  || 0,
                 environment: config.environment || 'production',
                 platform:    'magento'
             };
