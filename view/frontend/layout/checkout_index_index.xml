@@ -1,10 +1,6 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-    <head>
-        <!-- Paywall init script (vanilla JS IIFE — no Knockout/RequireJS dependency) -->
-        <script src="Comfino_ComfinoGateway::js/paywall-init.js" defer="true"/>
-    </head>
     <body>
         <!-- Register Comfino payment method renderer in Magento checkout JS layout -->
         <referenceBlock name="checkout.root">
