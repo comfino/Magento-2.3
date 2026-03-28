@@ -23,8 +23,8 @@ use Magento\Framework\App\ObjectManager;
  */
 final class ConfigManager
 {
-    private const COMFINO_SDK_JS_PRODUCTION = 'https://widget.comfino.pl/sdk/v1/comfino-sdk.min.js';
-    private const COMFINO_SDK_JS_SANDBOX    = 'https://widget.craty.pl/sdk/v1/comfino-sdk.min.js';
+    private const COMFINO_SDK_JS_PRODUCTION  = 'https://widget.comfino.pl/sdk/v1/comfino-sdk.min.js';
+    private const COMFINO_SDK_JS_SANDBOX     = 'https://widget.craty.pl/sdk/v1/comfino-sdk.min.js';
 
     public const CONFIG_OPTIONS = [
         'payment_settings' => [
@@ -147,6 +147,7 @@ final class ConfigManager
 
         $envFields = [
             'plugin_version' => $dataHelper->getModuleVersion(),
+            'plugin_build_ts' => Data::BUILD_TS,
             'shop_version' => $dataHelper->getShopVersion(),
             'php_version' => PHP_VERSION,
             'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'n/a',

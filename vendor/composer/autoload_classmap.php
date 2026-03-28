@@ -256,7 +256,6 @@ return array(
     'Comfino\\ComfinoGateway\\Controller\\Api\\AbstractApiEndpoint' => $baseDir . '/Controller/Api/AbstractApiEndpoint.php',
     'Comfino\\ComfinoGateway\\Controller\\Api\\CacheInvalidate' => $baseDir . '/Controller/Api/CacheInvalidate.php',
     'Comfino\\ComfinoGateway\\Controller\\Api\\Configuration' => $baseDir . '/Controller/Api/Configuration.php',
-    'Comfino\\ComfinoGateway\\Controller\\Api\\PaymentState' => $baseDir . '/Controller/Api/PaymentState.php',
     'Comfino\\ComfinoGateway\\Controller\\Api\\TransactionStatus' => $baseDir . '/Controller/Api/TransactionStatus.php',
     'Comfino\\ComfinoGateway\\Controller\\Result\\Index' => $baseDir . '/Controller/Result/Index.php',
     'Comfino\\ComfinoGateway\\Controller\\Widget\\Index' => $baseDir . '/Controller/Widget/Index.php',
@@ -354,6 +353,7 @@ return array(
     'Comfino\\Shop\\Order\\OrderInterface' => $vendorDir . '/comfino/shop-plugins-shared/src/Shop/Order/OrderInterface.php',
     'Comfino\\Shop\\Order\\Seller' => $vendorDir . '/comfino/shop-plugins-shared/src/Shop/Order/Seller.php',
     'Comfino\\Shop\\Order\\SellerInterface' => $vendorDir . '/comfino/shop-plugins-shared/src/Shop/Order/SellerInterface.php',
+    'Comfino\\Update\\UpdateManager' => $baseDir . '/src/Update/UpdateManager.php',
     'Comfino\\Widget\\WidgetTypeEnum' => $vendorDir . '/comfino/shop-plugins-shared/src/Widget/WidgetTypeEnum.php',
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
 );

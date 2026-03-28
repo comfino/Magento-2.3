@@ -45,11 +45,6 @@
                         <label>Payment text</label>
                         <config_path>payment/comfino/paywall_title</config_path>
                     </field>
-                    <field id="minimal_cart_amount" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Minimal amount in cart</label>
-                        <config_path>payment/comfino/minimal_cart_amount</config_path>
-                        <validate>validate-number validate-zero-or-greater</validate>
-                    </field>
                     <field id="use_order_reference" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Use order reference as external ID</label>
                         <config_path>payment/comfino/use_order_reference</config_path>

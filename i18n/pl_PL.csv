@@ -6,7 +6,6 @@
 "Payment settings","Ustawienia płatności"
 "Production API key","Klucz API środowiska produkcyjnego"
 "Payment text","Tekst płatności"
-"Minimal amount in cart","Minimalna kwota w koszyku"
 "Use order reference as external ID","Użyj numeru zamówienia jako zewnętrznego ID"
 "When enabled, the order reference number is sent to Comfino instead of the order increment ID.","Gdy włączone, numer referencyjny zamówienia jest wysyłany do Comfino zamiast numerycznego ID zamówienia. Dotyczy tylko nowych zamówień."
 "Sale settings","Ustawienia sprzedaży"

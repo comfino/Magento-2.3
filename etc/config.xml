@@ -7,7 +7,6 @@
                 <title>Comfino (Raty | Kup Teraz, Zapłać Później | Finansowanie dla Firm)</title>
                 <paywall_title>Comfino - raty i płatności odroczone</paywall_title>
                 <order_status>pending_payment</order_status>
-                <instructions>Instruction.</instructions>
                 <model>ComfinoFacade</model>
                 <group>offline</group>
                 <can_use_checkout>1</can_use_checkout>

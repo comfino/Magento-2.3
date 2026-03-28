@@ -2,16 +2,46 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <!-- Paywall init script (vanilla JS — Hyvä/Luma/Blank compatible, no Knockout/RequireJS) -->
+        <!-- Paywall init script (vanilla JS IIFE — no Knockout/RequireJS dependency) -->
         <script src="Comfino_ComfinoGateway::js/paywall-init.js" defer="true"/>
     </head>
     <body>
-        <!-- Inject Comfino payment block into checkout payment methods area -->
-        <referenceContainer name="checkout.payment.methods">
-            <block class="Comfino\ComfinoGateway\Block\Payment\Comfino"
-                   name="comfino.payment"
-                   template="Comfino_ComfinoGateway::payment/comfino.phtml"
-                   cacheable="false"/>
-        </referenceContainer>
+        <!-- Register Comfino payment method renderer in Magento checkout JS layout -->
+        <referenceBlock name="checkout.root">
+            <arguments>
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="checkout" xsi:type="array">
+                            <item name="children" xsi:type="array">
+                                <item name="steps" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <item name="billing-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="payment" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="renders" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="comfinogateway-comfino" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Comfino_ComfinoGateway/js/view/payment/comfino</item>
+                                                                    <item name="methods" xsi:type="array">
+                                                                        <item name="comfino" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                    </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
     </body>
 </page>

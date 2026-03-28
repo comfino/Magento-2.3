@@ -548,7 +548,6 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\ComfinoGateway\\Controller\\Api\\AbstractApiEndpoint' => __DIR__ . '/../..' . '/Controller/Api/AbstractApiEndpoint.php',
         'Comfino\\ComfinoGateway\\Controller\\Api\\CacheInvalidate' => __DIR__ . '/../..' . '/Controller/Api/CacheInvalidate.php',
         'Comfino\\ComfinoGateway\\Controller\\Api\\Configuration' => __DIR__ . '/../..' . '/Controller/Api/Configuration.php',
-        'Comfino\\ComfinoGateway\\Controller\\Api\\PaymentState' => __DIR__ . '/../..' . '/Controller/Api/PaymentState.php',
         'Comfino\\ComfinoGateway\\Controller\\Api\\TransactionStatus' => __DIR__ . '/../..' . '/Controller/Api/TransactionStatus.php',
         'Comfino\\ComfinoGateway\\Controller\\Result\\Index' => __DIR__ . '/../..' . '/Controller/Result/Index.php',
         'Comfino\\ComfinoGateway\\Controller\\Widget\\Index' => __DIR__ . '/../..' . '/Controller/Widget/Index.php',
@@ -646,6 +645,7 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\Shop\\Order\\OrderInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Shop/Order/OrderInterface.php',
         'Comfino\\Shop\\Order\\Seller' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Shop/Order/Seller.php',
         'Comfino\\Shop\\Order\\SellerInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Shop/Order/SellerInterface.php',
+        'Comfino\\Update\\UpdateManager' => __DIR__ . '/../..' . '/src/Update/UpdateManager.php',
         'Comfino\\Widget\\WidgetTypeEnum' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Widget/WidgetTypeEnum.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
     );

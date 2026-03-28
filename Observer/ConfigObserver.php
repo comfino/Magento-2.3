@@ -59,9 +59,9 @@ class ConfigObserver implements ObserverInterface
             $errors[] = __('Field "%1" can not be empty.', __('Payment text'));
         }
         if (empty($minimalCartAmount)) {
-            $errors[] = __('Field "%1" can not be empty.', __('Minimal amount in cart'));
+            $errors[] = __('Field "%1" can not be empty.', __('Minimal order value'));
         } elseif (!is_numeric($minimalCartAmount)) {
-            $errors[] = __('Field "%1" has wrong numeric format.', __('Minimal amount in cart'));
+            $errors[] = __('Field "%1" has wrong numeric format.', __('Minimal order value'));
         }
 
         // Numeric fields

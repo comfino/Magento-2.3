@@ -20,10 +20,10 @@
                 <value id="comfino-prod-api" type="host">api-ecommerce.comfino.pl</value>
             </values>
             <values>
-                <value id="comfino-sandbox-api" type="host">api-ecommerce.ecraty.pl</value>
+                <value id="comfino-sandbox-api" type="host">api-ecommerce.craty.pl</value>
             </values>
             <values>
-                <value id="comfino-dev-api" type="host">api-ecommerce.comfino.test</value>
+                <value id="comfino-dev-api" type="host">ecommerce</value>
             </values>
         </policy>
 
@@ -59,16 +59,19 @@
                 <value id="comfino-prod-api" type="host">api-ecommerce.comfino.pl</value>
             </values>
             <values>
-                <value id="comfino-sandbox-api" type="host">api-ecommerce.ecraty.pl</value>
+                <value id="comfino-sandbox-api" type="host">api-ecommerce.craty.pl</value>
             </values>
             <values>
-                <value id="comfino-dev-api" type="host">api-ecommerce.comfino.test</value>
+                <value id="comfino-dev-api" type="host">ecommerce</value>
             </values>
             <values>
                 <value id="comfino-prod-cdn" type="host">widget.comfino.pl</value>
             </values>
             <values>
                 <value id="comfino-sandbox-cdn" type="host">widget.craty.pl</value>
+            </values>
+            <values>
+                <value id="comfino-dev-cdn" type="host">widget-comfino.test:8080</value>
             </values>
         </policy>
     </policies>

@@ -10,14 +10,9 @@ window.ComfinoPaywallInit = (function () {
     var _paywall = null;
 
     function init() {
-        // window.Comfino.active is set by comfino.phtml only when the payment method is active and the
-        // block was rendered. When the module is disabled the flag is absent — exit silently, no SDK check.
-        if (!window.Comfino || !window.Comfino.active) {
-            return;
-        }
-
-        if (!window.Comfino.ComfinoSDK) {
-            console.error('Comfino: SDK not loaded — check script tag in template.');
+        // ComfinoSDK presence is the authoritative signal that the SDK is loaded and the payment
+        // method is active.  Exit silently if not set (module disabled, or SDK not yet loaded).
+        if (!window.Comfino || !window.Comfino.ComfinoSDK) {
             return;
         }
 
@@ -27,15 +22,28 @@ window.ComfinoPaywallInit = (function () {
             return;
         }
 
-        var sdk = window.Comfino.ComfinoSDK.getInstance();
-
-        if (!sdk.isInitialized()) {
-            sdk.init({
-                environment:  data.environment || 'production',
-                platformName: 'magento',
-                logLevel:     'warn'
+        // Guard: the Knockout template may not have rendered #comfino-paywall-container yet
+        // (e.g. when script.onload fires before KO finishes).  The SDK's PaywallManager throws
+        // "Payment method element not found" if neither the container nor the payment radio is
+        // in the DOM.  Watch for the container and retry when it appears.
+        if (!document.getElementById('comfino-paywall-container')) {
+            var observer = new MutationObserver(function () {
+                if (document.getElementById('comfino-paywall-container')) {
+                    observer.disconnect();
+                    init();
+                }
             });
+            observer.observe(document.body, { childList: true, subtree: true });
+            return;
         }
+
+        // Get the SDK singleton, then initialise it (SDK v1 API requires explicit init() call).
+        // init() is idempotent — on re-entry it logs a warning and returns without throwing.
+        var sdk = window.Comfino.ComfinoSDK.getInstance();
+        sdk.init({
+            environment: data.environment || 'production',
+            platform: 'magento'
+        });
 
         // Destroy previous instance on re-initialization (e.g. SPA navigation)
         if (_paywall) {
@@ -43,32 +51,16 @@ window.ComfinoPaywallInit = (function () {
             _paywall = null;
         }
 
+        // Do NOT pass useObserver — that mode waits for the container via MutationObserver
+        // and never fires when the container is already in the DOM (KO checkout case).
         _paywall = sdk.createPaywall({
             paywallUrl:  data.paywallUrl,
             containerId: 'comfino-paywall-container',
-            useObserver: true,
             onUpdateOrderPaymentState: function (params) {
-                // Update hidden form fields read by DataAssignObserver on order placement
-                document.getElementById('comfino-loan-amount').value = params.loanAmount || '';
-                document.getElementById('comfino-loan-type').value   = params.loanType   || '';
-                document.getElementById('comfino-loan-term').value   = params.loanTerm   || '';
-
-                // Persist to backend session for order creation
-                var body = 'loan_amount=' + encodeURIComponent(params.loanAmount || '')
-                    + '&loan_type=' + encodeURIComponent(params.loanType || '')
-                    + '&loan_term=' + encodeURIComponent(params.loanTerm || '');
-
-                fetch(data.paymentStateUrl, {
-                    method:  'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body:    body
-                }).catch(function (err) {
-                    console.error('Comfino: Failed to update payment state', err);
-                });
+                // Store loan parameters in hidden fields; getData() reads them on order placement.
+                document.getElementById('comfino-loan-type').value = params.loanType || '';
+                document.getElementById('comfino-loan-term').value = params.loanTerm || '';
             },
-            onOfferError: function (err) {
-                console.error('Comfino paywall error:', err);
-            }
         });
 
         // Reveal the paywall iframe (hidden by default in SDK CSS)

@@ -7,7 +7,6 @@
 <script src="<?= $escaper->escapeUrl($block->getSdkScriptUrl()) ?>"></script>
 
 <!-- Hidden form fields — written by onUpdateOrderPaymentState callback, read on order submit -->
-<input id="comfino-loan-amount" name="comfino_loan_amount" type="hidden" />
 <input id="comfino-loan-type" name="comfino_loan_type" type="hidden" />
 <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
 
@@ -17,7 +16,6 @@
 <script>
 window.ComfinoPaywallData = {
     paywallUrl: '<?= $escaper->escapeJs($block->getPaywallUrl()) ?>',
-    paymentStateUrl: '<?= $escaper->escapeJs($escaper->escapeUrl($block->getPaymentStateUrl())) ?>',
     environment: '<?= $escaper->escapeJs($block->getEnvironment()) ?>'
 };
 // Signal to paywall-init.js that the payment method is active and this block was rendered.

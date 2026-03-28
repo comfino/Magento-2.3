@@ -18,7 +18,7 @@ use Magento\Store\Model\StoreManagerInterface;
 class Data extends AbstractHelper
 {
     public const XML_PATH_API_KEY = 'payment/comfino/api_key';
-    public const XML_PATH_MINIMAL_CART_AMOUNT = 'payment/comfino/minimal_cart_amount';
+    public const XML_PATH_MINIMAL_CART_AMOUNT = 'payment/comfino/min_order_total';
     public const XML_PATH_WIDGET_ENABLED = 'payment/comfino/widget_enabled';
     public const XML_PATH_WIDGET_KEY = 'payment/comfino/widget_key';
     public const XML_PATH_WIDGET_PRICE_SELECTOR = 'payment/comfino/widget_price_selector';
@@ -52,7 +52,7 @@ class Data extends AbstractHelper
     public const XML_PATH_PROD_CAT_CACHE_TTL = 'payment/comfino/prod_cat_cache_ttl';
     public const XML_PATH_INITIAL_ORDER_STATUS = 'payment/comfino/initial_order_status';
 
-    public const BUILD_TS = 1774437957;
+    public const BUILD_TS = 1774520719;
 
     private const MODULE_NAME = 'Comfino_ComfinoGateway';
 

@@ -54,11 +54,4 @@ class Comfino extends Template
         return ConfigManager::isSandboxMode() ? 'sandbox' : 'production';
     }
 
-    /**
-     * Returns backend AJAX endpoint URL for persisting selected loan parameters.
-     */
-    public function getPaymentStateUrl(): string
-    {
-        return $this->getUrl('comfino/api/paymentstate');
-    }
 }
