@@ -22,7 +22,8 @@ define([
             // Expose paywall URL and environment for SDK auto-bootstrap.
             window.ComfinoPaywallData = {
                 paywallUrl:  config.paywallUrl  || '',
-                environment: config.environment || 'production'
+                environment: config.environment || 'production',
+                platform:    'magento'
             };
 
             // Load SDK as a plain script via DOM injection.
