@@ -34,7 +34,7 @@
                 <initial_order_status>comfino_created</initial_order_status>
                 <ignored_statuses>WAITING_FOR_FILLING,WAITING_FOR_CONFIRMATION,WAITING_FOR_PAYMENT,PAID</ignored_statuses>
                 <forbidden_statuses>RESIGN</forbidden_statuses>
-                <status_map>{"ACCEPTED":"processing","CANCELLED":"canceled","REJECTED":"canceled","CANCELLED_BY_SHOP":"canceled"}</status_map>
+                <status_map>{"ACCEPTED":"comfino_accepted","CANCELLED":"comfino_cancelled","REJECTED":"comfino_rejected","CANCELLED_BY_SHOP":"comfino_cancelled_by_shop"}</status_map>
                 <api_connect_timeout>3</api_connect_timeout>
                 <api_timeout>5</api_timeout>
                 <api_connect_num_attempts>3</api_connect_num_attempts>
