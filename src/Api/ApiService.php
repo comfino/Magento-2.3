@@ -113,9 +113,9 @@ final class ApiService
         CacheManager::init($dirList->getPath('var'));
 
         self::init(
-            $urlBuilder->getUrl('comfino/api/transactionstatus'),
-            $urlBuilder->getUrl('comfino/api/configuration'),
-            $urlBuilder->getUrl('comfino/api/cacheinvalidate'),
+            rtrim($urlBuilder->getUrl('comfino/transactionstatus'), '/'),
+            rtrim($urlBuilder->getUrl('comfino/configuration'), '/'),
+            rtrim($urlBuilder->getUrl('comfino/cacheinvalidate'), '/'),
             $helper->getShopVersion(),
             $helper->getModuleVersion(),
             $orderRepository,

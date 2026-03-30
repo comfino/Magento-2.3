@@ -1,8 +1,9 @@
 <?php
 
-namespace Comfino\ComfinoGateway\Controller\Api;
+namespace Comfino\ComfinoGateway\Controller\TransactionStatus;
 
 use Comfino\Api\ApiService;
+use Comfino\ComfinoGateway\Controller\AbstractApiEndpoint;
 use Comfino\ErrorLogger;
 use Magento\Framework\App\Action\HttpPutActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
@@ -10,7 +11,7 @@ use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultInterface;
 
-class TransactionStatus extends AbstractApiEndpoint implements HttpPutActionInterface, CsrfAwareActionInterface
+class Index extends AbstractApiEndpoint implements HttpPutActionInterface, CsrfAwareActionInterface
 {
     public function execute(): ResultInterface
     {

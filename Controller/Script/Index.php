@@ -1,30 +1,27 @@
 <?php
 
-namespace Comfino\ComfinoGateway\Controller\Widget;
+namespace Comfino\ComfinoGateway\Controller\Script;
 
 use Comfino\Common\Frontend\WidgetInitScriptHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
-use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\Result\RawFactory;
 
-class Index extends Action
+class Index implements HttpGetActionInterface
 {
     private RawFactory $resultRawFactory;
+    private RequestInterface $request;
 
-    public function __construct(Context $context, RawFactory $resultRawFactory)
+    public function __construct(RawFactory $resultRawFactory, RequestInterface $request)
     {
         $this->resultRawFactory = $resultRawFactory;
-
-        parent::__construct($context);
+        $this->request = $request;
     }
 
-    /**
-     * Returns widget initialization code.
-     */
     public function execute(): Raw
     {
         ErrorLogger::init();
@@ -33,7 +30,7 @@ class Index extends Action
         $result->setHeader('Content-Type', 'application/javascript');
 
         if (ConfigManager::isWidgetEnabled() && ConfigManager::getWidgetKey() !== '') {
-            if (($productId = $this->getRequest()->getParam('product_id')) !== null) {
+            if (($productId = $this->request->getParam('product_id')) !== null) {
                 $productId = (int) $productId;
             }
 

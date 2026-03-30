@@ -1,6 +1,6 @@
 <?php
 
-namespace Comfino\ComfinoGateway\Controller\Api;
+namespace Comfino\ComfinoGateway\Controller;
 
 use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 use Magento\Framework\Controller\Result\RawFactory;

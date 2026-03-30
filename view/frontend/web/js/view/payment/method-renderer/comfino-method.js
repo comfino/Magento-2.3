@@ -87,7 +87,7 @@ define([
 
             fullScreenLoader.startLoader();
 
-            storage.post(url.build('rest/V1/comfino-gateway/application/save'))
+            storage.post(url.build('rest/comfino/payment'))
                 .done(function (response) {
                     fullScreenLoader.stopLoader();
 

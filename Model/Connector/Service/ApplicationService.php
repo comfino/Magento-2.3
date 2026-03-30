@@ -257,8 +257,8 @@ class ApplicationService implements ApplicationServiceInterface
             LoanTypeEnum::from($loanType),
             $cartItems,
             $customer,
-            $this->urlBuilder->getUrl('checkout/onepage/success'),
-            $this->urlBuilder->getUrl('comfino/api/transactionstatus')
+            rtrim($this->urlBuilder->getUrl('checkout/onepage/success'), '/'),
+            rtrim($this->urlBuilder->getUrl('comfino/transactionstatus'), '/')
         );
     }
 
