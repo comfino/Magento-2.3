@@ -7,6 +7,7 @@ use Comfino\CategoryTree\BuildStrategy;
 use Comfino\ComfinoGateway\Helper\Data;
 use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\Common\Frontend\FrontendHelper;
+use Comfino\Common\Frontend\WidgetInitScriptHelper;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Common\Shop\Product\CategoryTree;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
@@ -332,6 +333,11 @@ final class ConfigManager
     public static function getCurrentWidgetCode(?int $productId = null): string
     {
         $widgetCode = trim(str_replace("\r", '', (string) self::getConfigurationValue('COMFINO_WIDGET_CODE')));
+
+        if ($widgetCode === '' || WidgetInitScriptHelper::initScriptRequiresUpdate($widgetCode)) {
+            $widgetCode = WidgetInitScriptHelper::getInitialWidgetCode();
+        }
+
         $productData = self::getProductData($productId);
 
         $optionsToInject = [];

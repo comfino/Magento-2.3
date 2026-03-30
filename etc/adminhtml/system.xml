@@ -85,7 +85,7 @@
                             <config_path>payment/comfino/widget_type</config_path>
                             <source_model>Comfino\ComfinoGateway\Model\Adminhtml\System\Config\Source\WidgetType</source_model>
                         </field>
-                        <field id="widget_offer_type" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <field id="widget_offer_type" translate="label" type="multiselect" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Offer types</label>
                             <config_path>payment/comfino/widget_offer_type</config_path>
                             <source_model>Comfino\ComfinoGateway\Model\Adminhtml\System\Config\Source\WidgetOfferType</source_model>

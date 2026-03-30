@@ -1,10 +1,9 @@
 <?php
-/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Comfino\ComfinoGateway\Block\Widget\Init $block */
 /** @var \Magento\Framework\Escaper $escaper */
-/** @var \Comfino\ComfinoGateway\Helper\Data $helper */
-$helper = $block->getData('helper');
-if (!$helper) {
+$initScriptUrl = $block->getWidgetInitScriptUrl();
+if (!$initScriptUrl) {
     return;
 }
 ?>
-<script src="<?= $escaper->escapeUrl($helper->getWidgetFrontendScriptUrl()) ?>"></script>
+<script defer src="<?= $escaper->escapeUrl($initScriptUrl) ?>"></script>
