@@ -59,7 +59,7 @@ class ApplicationService implements ApplicationServiceInterface
             $this->setOrderFailureStatus();
 
             return [[
-                'redirectUrl' => 'onepage/failure',
+                'redirectUrl' => $this->urlBuilder->getUrl('checkout/onepage/failure'),
                 'error' => $e->getMessage(),
             ]];
         } catch (\Throwable $e) {
@@ -68,8 +68,8 @@ class ApplicationService implements ApplicationServiceInterface
             ApiClient::processApiError('Communication error with Comfino API', $e);
 
             return [[
-                'redirectUrl' => 'onepage/failure',
-                'error' => __('Unsuccessful attempt to open the application. Please try again later.'),
+                'redirectUrl' => $this->urlBuilder->getUrl('checkout/onepage/failure'),
+                'error' => (string) __('Unsuccessful attempt to open the application. Please try again later.'),
             ]];
         }
 
@@ -210,8 +210,8 @@ class ApplicationService implements ApplicationServiceInterface
         $totalAmount  = (int) round($magentoOrder->getGrandTotal() * 100);
         $deliveryCost = (int) round((float) $magentoOrder->getBaseShippingInclTax() * 100);
         $paymentInfo  = $magentoOrder->getPayment();
-        $loanTerm     = (int) $paymentInfo->getAdditionalInformation('term');
-        $loanType     = (string) $paymentInfo->getAdditionalInformation('type');
+        $loanTerm     = (int) $paymentInfo->getAdditionalInformation('loanTerm');
+        $loanType     = (string) $paymentInfo->getAdditionalInformation('loanType');
 
         $cartItems = [];
 

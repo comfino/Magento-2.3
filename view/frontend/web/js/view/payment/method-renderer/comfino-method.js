@@ -5,13 +5,18 @@
  * via MagentoPaywallController (bootstrapped automatically when window.ComfinoPaywallData is set).
  */
 define([
-    'Magento_Checkout/js/view/payment/default'
-], function (Component) {
+    'Magento_Checkout/js/view/payment/default',
+    'mage/storage',
+    'Magento_Checkout/js/model/full-screen-loader',
+    'Magento_Checkout/js/model/error-processor',
+    'mage/url'
+], function (Component, storage, fullScreenLoader, errorProcessor, url) {
     'use strict';
 
     return Component.extend({
         defaults: {
-            template: 'Comfino_ComfinoGateway/payment/comfino'
+            template: 'Comfino_ComfinoGateway/payment/comfino',
+            redirectAfterPlaceOrder: false
         },
 
         initialize: function () {
@@ -71,6 +76,34 @@ define([
                     loanTerm: (document.getElementById('comfino-loan-term') || {}).value || ''
                 }
             };
+        },
+
+        /**
+         * Called after Magento order is placed successfully.
+         * Sends the order to Comfino API and redirects to the Comfino application URL.
+         */
+        afterPlaceOrder: function () {
+            var self = this;
+
+            fullScreenLoader.startLoader();
+
+            storage.post(
+                url.build('rest/V1/comfino-gateway/application/save')
+            ).done(function (response) {
+                fullScreenLoader.stopLoader();
+
+                var data = response && response[0];
+
+                if (data && data.redirectUrl) {
+                    window.location.replace(data.redirectUrl);
+                } else {
+                    self.isPlaceOrderActionAllowed(true);
+                }
+            }).fail(function (response) {
+                fullScreenLoader.stopLoader();
+                errorProcessor.process(response, self.messageContainer);
+                self.isPlaceOrderActionAllowed(true);
+            });
         }
     });
 });
