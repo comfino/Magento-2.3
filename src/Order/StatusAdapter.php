@@ -11,6 +11,7 @@ use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\OrderRepository;
 
 /**
@@ -24,12 +25,12 @@ use Magento\Sales\Model\OrderRepository;
  * in the database. The custom status becomes the final, persistent label visible in the admin order grid,
  * so merchants see "Credit granted (Comfino)" rather than the generic "Processing".
  *
- * Single-step status flow:
+ * Status flow:
  *   - Determine the custom status code from ConfigManager::getStatusMap() (configurable; defaults to ShopStatusManager::DEFAULT_STATUS_MAP).
  *   - Determine the target Magento state from ShopStatusManager::CUSTOM_STATUS_LABELS.
- *   - For ACCEPTED: run payment capture/authorization first (which may internally set generic state/status),
- *     then override with the custom status so our label is the final one on save.
  *   - Set order state + custom status in one call, add one history entry with the Comfino status string.
+ *   - For ACCEPTED on virtual-only orders: additionally create an offline invoice so Magento
+ *     auto-transitions the order to STATE_COMPLETE (nothing to ship) and grants access to virtual/downloadable items.
  *
  * @see OrderStatusAdapterInterface
  * @see StatusManager
@@ -52,11 +53,6 @@ class StatusAdapter implements OrderStatusAdapterInterface
      * Called by the StatusNotification REST endpoint when a status webhook arrives from the Comfino API.
      * $orderId is the external order identifier that was passed to Comfino during order creation - either the
      * Magento entity_id (default) or the increment_id when COMFINO_USE_ORDER_REFERENCE is enabled.
-     *
-     * For ACCEPTED orders the payment capture/authorization is registered before applying the custom status,
-     * because Magento's registerCaptureNotification() may internally override state/status. Setting the custom
-     * status last guarantees that "Credit granted (Comfino)" - not the generic "Processing" - is the label
-     * the merchant sees in the admin order grid.
      *
      * @param string|int $orderId Magento order entity_id or increment_id (depends on COMFINO_USE_ORDER_REFERENCE)
      * @param string $status Comfino payment status string (e.g. "ACCEPTED", "CANCELLED")
@@ -123,22 +119,21 @@ class StatusAdapter implements OrderStatusAdapterInterface
             $order = $this->orderRepository->get((int) $orderId);
         }
 
-        /* For ACCEPTED: register payment capture first so any internal state/status changes from Magento's payment
-           machinery happen before we apply the custom Comfino status below. */
-        if ($inputStatus === StatusManager::STATUS_ACCEPTED) {
-            $amount = $order->getBaseTotalDue();
-            $payment = $order->getPayment();
-
-            if ($payment !== null && $amount > 0) {
-                $payment->registerAuthorizationNotification($amount);
-                $payment->registerCaptureNotification($amount);
-            }
-        }
-
         /* Single-step: set Magento state + custom Comfino status simultaneously. The custom status code is pre-assigned
            to $customState in the database (AddComfinoOrderStatuses), so Magento's order workflow remains consistent. */
         $order->setState($customState)->setStatus($customStatusCode);
         $order->addStatusToHistory($customStatusCode, __('Comfino payment status: %1', $inputStatus));
+
+        /* For ACCEPTED on virtual-only orders: create an offline invoice so that Magento's internal
+           state machine can auto-transition the order to STATE_COMPLETE (no shipment required) and
+           grant the customer access to virtual/downloadable items. The canInvoice() guard prevents a
+           duplicate invoice if the webhook is delivered more than once. */
+        if ($inputStatus === StatusManager::STATUS_ACCEPTED && $order->getIsVirtual() && $order->canInvoice()) {
+            $invoice = $order->prepareInvoice();
+            $invoice->setRequestedCaptureCase(Invoice::CAPTURE_OFFLINE);
+            $invoice->register();
+            $order->addRelatedObject($invoice);
+        }
 
         $this->orderRepository->save($order);
 

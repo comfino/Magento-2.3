@@ -1,7 +1,7 @@
 /**
  * Comfino payment method registrar.
- * Registers 'comfino' in Magento's payment renderer list so the checkout
- * discovers it. Follows the standard Magento 2 payment module pattern.
+ * Registers 'comfino' in Magento's payment renderer list so the checkout discovers it.
+ * Follows the standard Magento 2 payment module pattern.
  */
 define([
     'uiComponent',

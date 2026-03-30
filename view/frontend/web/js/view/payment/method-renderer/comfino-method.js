@@ -27,10 +27,10 @@ define([
             // Expose auth token, loan amount, and environment for SDK auto-bootstrap.
             // The SDK constructs the full paywall URL internally from authToken + loanAmount + environment.
             window.ComfinoPaywallData = {
-                authToken:   config.authToken   || '',
-                loanAmount:  config.loanAmount  || 0,
+                authToken: config.authToken || '',
+                loanAmount: config.loanAmount || 0,
                 environment: config.environment || 'production',
-                platform:    'magento'
+                platform: 'magento'
             };
 
             // Load SDK as a plain script via DOM injection.

@@ -69,7 +69,7 @@ final class ApiClient
      * specially to extract URL, request/response bodies and timeout details.
      * For all other exceptions a generic [API_ERROR] debug event is emitted.
      *
-     * @param string $errorPrefix Context label shown in log entries (e.g. "Cancel order error").
+     * @param string $errorPrefix Context label shown in log entries (e.g. "Cancel order error")
      * @param \Throwable $exception
      */
     public static function processApiError(string $errorPrefix, \Throwable $exception): void
@@ -109,12 +109,12 @@ final class ApiClient
             '[API_ERROR]',
             $errorPrefix,
             [
-                'exception'     => get_class($exception),
+                'exception' => get_class($exception),
                 'error_message' => $exception->getMessage(),
-                'error_code'    => $exception->getCode(),
-                'error_file'    => $exception->getFile(),
-                'error_line'    => $exception->getLine(),
-                'error_trace'   => $exception->getTraceAsString(),
+                'error_code' => $exception->getCode(),
+                'error_file' => $exception->getFile(),
+                'error_line' => $exception->getLine(),
+                'error_trace' => $exception->getTraceAsString(),
             ]
         );
 
