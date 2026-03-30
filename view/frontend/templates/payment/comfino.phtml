@@ -5,18 +5,18 @@
 
 <!-- Set paywall data BEFORE loading SDK so the SDK auto-bootstrap can detect it at load time -->
 <script>
-window.ComfinoPaywallData = {
-    authToken:   '<?= $escaper->escapeJs($block->getAuthToken()) ?>',
-    loanAmount:  <?= (int) $block->getLoanAmount() ?>,
-    environment: '<?= $escaper->escapeJs($block->getEnvironment()) ?>',
-    platform:    'magento'
-};
+    window.ComfinoPaywallData = {
+        authToken: '<?= $escaper->escapeJs($block->getAuthToken()) ?>',
+        loanAmount: <?= (int) $block->getLoanAmount() ?>,
+        environment: '<?= $escaper->escapeJs($block->getEnvironment()) ?>',
+        platform: 'magento'
+    };
 </script>
 
-<!-- Comfino web frontend SDK from CDN — auto-bootstraps MagentoPaywallController on load -->
+<!-- Comfino web frontend SDK from CDN - auto-bootstraps MagentoPaywallController on load -->
 <script src="<?= $escaper->escapeUrl($block->getSdkScriptUrl()) ?>"></script>
 
-<!-- Hidden form fields — written by MagentoAdapter.updatePaymentState(), read on order submit -->
+<!-- Hidden form fields - written by MagentoAdapter.updatePaymentState(), read on order submit -->
 <input id="comfino-loan-type" name="comfino_loan_type" type="hidden" />
 <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
 

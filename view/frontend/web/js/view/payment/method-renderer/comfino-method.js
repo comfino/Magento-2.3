@@ -36,7 +36,7 @@ define([
             // Load SDK as a plain script via DOM injection.
             //
             // Why not require([url])?  The SDK is a UMD bundle.  When RequireJS's global
-            // define() is present, UMD takes the AMD branch — it calls define() and returns
+            // define() is present, UMD takes the AMD branch - it calls define() and returns
             // its export to RequireJS, but skips the global assignment (window.Comfino.*).
             //
             // Solution: hide window.define before the script executes so the SDK's UMD wrapper
@@ -87,23 +87,22 @@ define([
 
             fullScreenLoader.startLoader();
 
-            storage.post(
-                url.build('rest/V1/comfino-gateway/application/save')
-            ).done(function (response) {
-                fullScreenLoader.stopLoader();
+            storage.post(url.build('rest/V1/comfino-gateway/application/save'))
+                .done(function (response) {
+                    fullScreenLoader.stopLoader();
 
-                var data = response && response[0];
+                    var data = response && response[0];
 
-                if (data && data.redirectUrl) {
-                    window.location.replace(data.redirectUrl);
-                } else {
+                    if (data && data.redirectUrl) {
+                        window.location.replace(data.redirectUrl);
+                    } else {
+                        self.isPlaceOrderActionAllowed(true);
+                    }
+                }).fail(function (response) {
+                    fullScreenLoader.stopLoader();
+                    errorProcessor.process(response, self.messageContainer);
                     self.isPlaceOrderActionAllowed(true);
-                }
-            }).fail(function (response) {
-                fullScreenLoader.stopLoader();
-                errorProcessor.process(response, self.messageContainer);
-                self.isPlaceOrderActionAllowed(true);
-            });
+                });
         }
     });
 });

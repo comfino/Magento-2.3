@@ -9,7 +9,7 @@ use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
 use Magento\Framework\Setup\UninstallInterface;
 
-// Same autoloader workaround as in Setup\Patch\Data\AddComfinoOrderStatuses —
+// Same autoloader workaround as in Setup\Patch\Data\AddComfinoOrderStatuses -
 // app/code/ installs bypass the module's PSR-4 mappings for the Comfino\ bridge namespace.
 (static function (): void {
     $moduleRoot = dirname(__DIR__);

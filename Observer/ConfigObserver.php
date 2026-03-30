@@ -101,7 +101,7 @@ class ConfigObserver implements ObserverInterface
         try {
             $apiClient = ApiClient::getInstance($isSandbox, $activeApiKey);
 
-            // Verify key is accepted — throws AuthorizationError on 401, AccessDenied on 403.
+            // Verify key is accepted - throws AuthorizationError on 401, AccessDenied on 403.
             $apiClient->isShopAccountActive();
 
             // Persist widget key returned by API.

@@ -436,7 +436,7 @@ final class ConfigManager
                 $product = $productRepository->getById($productId);
                 $price = (float) $product->getFinalPrice();
             } catch (\Throwable $e) {
-                // Product not found or error — price stays 'null'.
+                // Product not found or error - price stays 'null'.
             }
         }
 

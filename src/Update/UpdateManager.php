@@ -38,7 +38,7 @@ class UpdateManager
                 return $cacheItem->get();
             }
         } catch (\Throwable $e) {
-            // Cache not available — proceed without it.
+            // Cache not available - proceed without it.
         }
 
         $result = self::fetchLatestRelease($currentVersion);

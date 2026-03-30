@@ -14,7 +14,7 @@
             </values>
         </policy>
 
-        <!-- Comfino API iframe (Direct API approach — iframe src points directly to Comfino API) -->
+        <!-- Comfino API iframe (Direct API approach - iframe src points directly to Comfino API) -->
         <policy id="frame-src">
             <values>
                 <value id="comfino-prod-api" type="host">api-ecommerce.comfino.pl</value>
