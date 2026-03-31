@@ -1,8 +1,9 @@
 /**
- * Comfino payment method renderer.
- * Sets window.ComfinoPaywallData and injects the Comfino SDK script.
- * All paywall lifecycle logic (init, iframe, offer selection) is handled by the SDK itself
- * via MagentoPaywallController (bootstrapped automatically when window.ComfinoPaywallData is set).
+ * Comfino payment method renderer
+ *
+ * Injects the Comfino SDK script and passes paywall data directly to bootstrapPaywall() in the
+ * onload callback. All paywall lifecycle logic (init, iframe, offer selection) is handled by the
+ * SDK via MagentoPaywallController.
  */
 define([
     'Magento_Checkout/js/view/payment/default',
@@ -22,11 +23,9 @@ define([
         initialize: function () {
             this._super();
 
-            var config = (window.checkoutConfig.payment || {}).comfino || {};
+            const config = (window.checkoutConfig.payment || {}).comfino || {};
 
-            // Expose auth token, loan amount, and environment for SDK auto-bootstrap.
-            // The SDK constructs the full paywall URL internally from authToken + loanAmount + environment.
-            window.ComfinoPaywallData = {
+            const data = {
                 authToken: config.authToken || '',
                 loanAmount: config.loanAmount || 0,
                 environment: config.environment || 'production',
@@ -45,22 +44,24 @@ define([
             // By the time the user can navigate to the payment step all Magento/KO modules are
             // already defined, so the brief window where define is hidden is safe.
             //
-            // The SDK detects window.ComfinoPaywallData at load time and auto-bootstraps via
-            // MagentoPaywallController, which uses waitForContainer to defer paywall creation
-            // until #comfino-paywall-container appears in the DOM (after KO renders the template).
+            // Pass data directly to bootstrapPaywall() in onload — no global window object used.
+            // MagentoPaywallController uses waitForContainer to defer paywall creation until
+            // #comfino-paywall-container appears in the DOM (after KO renders the template).
             if (config.sdkScriptUrl && !document.querySelector('script[data-comfino-sdk]')) {
-                var _amdDefine = window.define;
+                const _amdDefine = window.define;
                 window.define = undefined;
 
-                var script = document.createElement('script');
+                const script = document.createElement('script');
                 script.src = config.sdkScriptUrl;
                 script.setAttribute('data-comfino-sdk', '1');
                 script.onload = function () {
                     window.define = _amdDefine;
+                    window.Comfino.bootstrapPaywall('magento', data);
                 };
                 script.onerror = function () {
                     window.define = _amdDefine;
                 };
+
                 document.head.appendChild(script);
             }
 
@@ -83,15 +84,15 @@ define([
          * Sends the order to Comfino API and redirects to the Comfino application URL.
          */
         afterPlaceOrder: function () {
-            var self = this;
+            const self = this;
 
             fullScreenLoader.startLoader();
 
-            storage.post(url.build('rest/comfino/payment'))
+            storage.post(url.build('rest/V1/comfino/payment'))
                 .done(function (response) {
                     fullScreenLoader.stopLoader();
 
-                    var data = response && response[0];
+                    const data = response && response[0];
 
                     if (data && data.redirectUrl) {
                         window.location.replace(data.redirectUrl);
