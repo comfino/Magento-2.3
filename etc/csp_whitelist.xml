@@ -40,7 +40,7 @@
             </values>
         </policy>
 
-        <!-- Images from Comfino CDN -->
+        <!-- Images from Comfino CDN and API (logo endpoint: /v1/get-logo-url) -->
         <policy id="img-src">
             <values>
                 <value id="comfino-prod-cdn" type="host">widget.comfino.pl</value>
@@ -50,6 +50,15 @@
             </values>
             <values>
                 <value id="comfino-dev-cdn" type="host">widget-comfino.test:8080</value>
+            </values>
+            <values>
+                <value id="comfino-prod-api" type="host">api-ecommerce.comfino.pl</value>
+            </values>
+            <values>
+                <value id="comfino-sandbox-api" type="host">api-ecommerce.craty.pl</value>
+            </values>
+            <values>
+                <value id="comfino-dev-api" type="host">ecommerce</value>
             </values>
         </policy>
 
