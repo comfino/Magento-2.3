@@ -1,6 +1,12 @@
 <?php
 /** @var \Comfino\ComfinoGateway\Block\Payment\Comfino $block */
 /** @var \Magento\Framework\Escaper $escaper */
+/** @var string[]|null $allowedProductTypes null = no filter, [] = all filtered (hidden), [...] = filtered list */
+$allowedProductTypes = $block->getAllowedProductTypeStrings();
+if ($allowedProductTypes === []) {
+    // All product types filtered out - hide paywall entirely
+    return;
+}
 ?>
 <!-- Load Comfino SDK and pass paywall data directly in onload — no global window object used -->
 <script>(function () {
@@ -8,7 +14,8 @@
         authToken: '<?= $escaper->escapeJs($block->getAuthToken()) ?>',
         loanAmount: <?= (int) $block->getLoanAmount() ?>,
         environment: '<?= $escaper->escapeJs($block->getEnvironment()) ?>',
-        platform: 'magento'
+        platform: 'magento'<?php if ($allowedProductTypes !== null): ?>,
+        productTypes: <?= /* @noEscape */ json_encode($allowedProductTypes) ?><?php endif; ?>
     };
     var _amdDefine = window.define;
     window.define = undefined;

@@ -22,7 +22,7 @@ class SaleSettings extends Field
     public function render(AbstractElement $element): string
     {
         $categoriesTree = new CategoryTree(new BuildStrategy());
-        $allCategoryIds = array_values($categoriesTree->getNodeIds());
+        $allCategoryIds = $this->collectLeafIds($categoriesTree->getNodes());
 
         $availableProductTypes = SettingsManager::getCatFilterAvailProdTypes();
         $productCategoryFilters = SettingsManager::getProductCategoryFilters();
@@ -113,10 +113,36 @@ class SaleSettings extends Field
     }
 
     /**
+     * Recursively collects IDs of leaf nodes (nodes without children) from the category tree.
+     *
+     * Only leaf IDs are used for comfinoAllCategoryIds in JS because tree.min.js::getValues()
+     * returns only leaf node IDs — parent nodes are never included in this.values regardless of
+     * their check state. Using all node IDs (including parents) would cause parent IDs to always
+     * appear in the excluded set.
+     *
+     * @param NodeIterator $nodes
+     * @return int[]
+     */
+    private function collectLeafIds(NodeIterator $nodes): array
+    {
+        $leafIds = [];
+
+        foreach ($nodes as $node) {
+            if ($node->hasChildren()) {
+                $leafIds = array_merge($leafIds, $this->collectLeafIds($node->getChildren()));
+            } else {
+                $leafIds[] = $node->getId();
+            }
+        }
+
+        return $leafIds;
+    }
+
+    /**
      * Recursively converts CategoryTree nodes into the tree.min.js data format.
      *
      * @param NodeIterator $nodes
-     * @param int[] $selectedCategories IDs of categories that should be checked (not excluded)
+     * @param int[] $selectedCategories IDs of leaf categories that should be checked (not excluded)
      * @return array
      */
     private function buildTreeNodes(NodeIterator $nodes, array $selectedCategories): array

@@ -5,6 +5,7 @@ namespace Comfino\Configuration;
 use Comfino\Common\Backend\Configuration\StorageAdapterInterface;
 use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\ComfinoGateway\Helper\Data;
+use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Store\Model\ScopeInterface;
@@ -20,6 +21,7 @@ class StorageAdapter implements StorageAdapterInterface
 {
     private ScopeConfigInterface $scopeConfig;
     private WriterInterface $configWriter;
+    private TypeListInterface $cacheTypeList;
     /** @var int[] */
     private array $optTypeFlags;
 
@@ -61,10 +63,11 @@ class StorageAdapter implements StorageAdapterInterface
         'COMFINO_API_CONNECT_NUM_ATTEMPTS' => Data::XML_PATH_API_CONNECT_NUM_ATTEMPTS,
     ];
 
-    public function __construct(ScopeConfigInterface $scopeConfig, WriterInterface $configWriter)
+    public function __construct(ScopeConfigInterface $scopeConfig, WriterInterface $configWriter, TypeListInterface $cacheTypeList)
     {
         $this->scopeConfig = $scopeConfig;
         $this->configWriter = $configWriter;
+        $this->cacheTypeList = $cacheTypeList;
         $this->optTypeFlags = array_merge(array_merge(...array_values(ConfigManager::CONFIG_OPTIONS)));
     }
 
@@ -99,12 +102,19 @@ class StorageAdapter implements StorageAdapterInterface
      */
     public function save($configurationOptions): void
     {
+        $saved = false;
+
         foreach ($configurationOptions as $optName => $optValue) {
             $xmlPath = self::$keyToXmlPath[$optName] ?? null;
 
             if ($xmlPath !== null) {
                 $this->configWriter->save($xmlPath, $optValue);
+                $saved = true;
             }
+        }
+
+        if ($saved) {
+            $this->cacheTypeList->cleanType('config');
         }
     }
 }

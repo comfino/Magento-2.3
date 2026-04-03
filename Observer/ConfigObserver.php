@@ -70,10 +70,7 @@ class ConfigObserver implements ObserverInterface
         }
 
         // Custom CSS URL validation
-        foreach ([
-            (string) __('Custom banner CSS style URL') => $bannerCssUrl,
-            (string) __('Custom calculator CSS style URL') => $calculatorCssUrl,
-        ] as $label => $url) {
+        foreach ([$bannerCssUrl, $calculatorCssUrl] as $url) {
             if (!empty($url)) {
                 if (!filter_var($url, FILTER_VALIDATE_URL)) {
                     $errors[] = __('Custom CSS URL "%1" is not valid.', $url);
@@ -87,7 +84,9 @@ class ConfigObserver implements ObserverInterface
             foreach ($errors as $error) {
                 $this->messageManager->addWarningMessage($error);
             }
+
             $this->messageManager->addErrorMessage(__('Settings not updated.'));
+
             return;
         }
 
@@ -110,13 +109,16 @@ class ConfigObserver implements ObserverInterface
                 $this->configWriter->save(Data::XML_PATH_WIDGET_KEY, $widgetKey);
             } catch (\Throwable $e) {
                 ApiClient::processApiError('ConfigObserver: get widget key error', $e);
+
                 $this->messageManager->addErrorMessage($e->getMessage());
             }
         } catch (AuthorizationError | AccessDenied $e) {
-            $this->messageManager->addWarningMessage(__('API key %1 is not valid.', $activeApiKey));
             ApiClient::processApiError('ConfigObserver: API key validation error', $e);
+
+            $this->messageManager->addWarningMessage(__('API key %1 is not valid.', $activeApiKey));
         } catch (\Throwable $e) {
             ApiClient::processApiError('ConfigObserver: config save error', $e);
+
             $this->messageManager->addErrorMessage($e->getMessage());
         }
 

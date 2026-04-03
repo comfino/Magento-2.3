@@ -2,8 +2,12 @@
 
 namespace Comfino\ComfinoGateway\Block\Payment;
 
+use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\ComfinoGateway\Helper\PaywallAuthTokenGenerator;
 use Comfino\Configuration\ConfigManager;
+use Comfino\Configuration\SettingsManager;
+use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Order\OrderManager;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
@@ -56,5 +60,34 @@ class Comfino extends Template
     public function getEnvironment(): string
     {
         return ConfigManager::isSandboxMode() ? 'sandbox' : 'production';
+    }
+
+    /**
+     * Returns allowed product type strings for the paywall based on active category/value filters,
+     * or null when no filters are configured (no restriction).
+     * Returns an empty array when all product types are filtered out — paywall should be hidden.
+     *
+     * @return string[]|null
+     */
+    public function getAllowedProductTypeStrings(): ?array
+    {
+        try {
+            $cart = OrderManager::getShopCart($this->checkoutSession->getQuote());
+            $allowedProductTypes = SettingsManager::getAllowedProductTypes(
+                ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
+                $cart
+            );
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        if ($allowedProductTypes === null) {
+            return null;
+        }
+
+        return array_map(
+            static function (LoanTypeEnum $type): string { return (string) $type; },
+            $allowedProductTypes
+        );
     }
 }

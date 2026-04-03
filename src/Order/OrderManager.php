@@ -7,6 +7,7 @@ use Comfino\Shop\Order\Cart\CartItem;
 use Comfino\Shop\Order\Cart\Product;
 use Comfino\Shop\Order\Customer;
 use Comfino\Shop\Order\Customer\Address;
+use Magento\Catalog\Helper\Data as CatalogHelper;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Exception\LocalizedException;
@@ -332,6 +333,58 @@ final class OrderManager
         }
 
         return [$streetLine, $buildingNumber];
+    }
+
+    /**
+     * Builds a Comfino Cart from a single Magento product, for use with product type filters and widget data.
+     *
+     * The returned Cart contains a single item and no delivery cost. Tax data (net price, tax rate, tax amount)
+     * is resolved via the store's tax configuration, mirroring the per-item logic in getShopCart().
+     *
+     * @throws LocalizedException
+     */
+    public static function getShopCartFromProduct(\Magento\Catalog\Model\Product $product): Cart
+    {
+        /** @var CatalogHelper $catalogHelper */
+        $catalogHelper = ObjectManager::getInstance()->get(CatalogHelper::class);
+        $finalPrice = $product->getFinalPrice();
+
+        $grossPrice = (int) round(round((float) $catalogHelper->getTaxPrice($product, $finalPrice, true), 2) * 100);
+        $netPriceInt = (int) round(round((float) $catalogHelper->getTaxPrice($product, $finalPrice, false), 2) * 100);
+
+        $hasTax = $netPriceInt > 0 && $netPriceInt !== $grossPrice;
+        $netPrice = $hasTax ? $netPriceInt : null;
+        $taxValue = $hasTax ? $grossPrice - $netPriceInt : null;
+        $taxRate = $hasTax ? (int) round(($grossPrice - $netPriceInt) / $netPriceInt * 100) : null;
+
+        $categoryIds = self::getProductCategoryIds($product);
+        $categoryNames = self::getProductCategoryNames($categoryIds);
+        $categories = !empty($categoryNames) ? implode('→', $categoryNames) : null;
+
+        return new Cart(
+            $grossPrice,
+            $netPrice,
+            $taxValue,
+            0,
+            null,
+            null,
+            null,
+            [new CartItem(
+                new Product(
+                    $product->getName(),
+                    $grossPrice,
+                    (string) $product->getId(),
+                    $categories,
+                    $product->getSku(),
+                    self::getProductImageUrl($product),
+                    $categoryIds,
+                    $netPrice,
+                    $taxRate,
+                    $taxValue
+                ),
+                1
+            )]
+        );
     }
 
     /**

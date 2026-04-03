@@ -12,7 +12,10 @@ use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Common\Shop\Product\CategoryTree;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\ObjectManager;
@@ -127,7 +130,8 @@ final class ConfigManager
                 ConfigurationManager::OPT_SERIALIZE_ARRAYS,
                 new StorageAdapter(
                     ObjectManager::getInstance()->get(ScopeConfigInterface::class),
-                    ObjectManager::getInstance()->get(WriterInterface::class)
+                    ObjectManager::getInstance()->get(WriterInterface::class),
+                    ObjectManager::getInstance()->get(TypeListInterface::class)
                 ),
                 new JsonSerializer()
             );
@@ -431,19 +435,31 @@ final class ConfigManager
     {
         $price = 'null';
         $productCartDetails = 'null';
-        $availableProductTypes = SettingsManager::getProductTypesStrings(ProductTypesListTypeEnum::LIST_TYPE_WIDGET);
 
         if ($productId !== null) {
             try {
-                /** @var \Magento\Catalog\Api\ProductRepositoryInterface $productRepository */
-                $productRepository = ObjectManager::getInstance()->get(
-                    \Magento\Catalog\Api\ProductRepositoryInterface::class
-                );
+                /** @var ProductRepositoryInterface $productRepository */
+                $productRepository = ObjectManager::getInstance()->get(ProductRepositoryInterface::class);
+                /** @var \Magento\Catalog\Model\Product $product */
                 $product = $productRepository->getById($productId);
-                $price = (float) $product->getFinalPrice();
+                $price = $product->getFinalPrice();
+                $shopCart = OrderManager::getShopCartFromProduct($product);
+                $availableProductTypes = SettingsManager::getAllowedProductTypes(
+                    ProductTypesListTypeEnum::LIST_TYPE_WIDGET,
+                    $shopCart,
+                    true
+                );
+                $productCartDetails = $shopCart->getAsArray();
             } catch (\Throwable $e) {
-                // Product not found or error - price stays 'null'.
+                // Product not found or error - fall back to unfiltered product types.
+                $availableProductTypes = SettingsManager::getProductTypesStrings(
+                    ProductTypesListTypeEnum::LIST_TYPE_WIDGET
+                );
             }
+        } else {
+            $availableProductTypes = SettingsManager::getProductTypesStrings(
+                ProductTypesListTypeEnum::LIST_TYPE_WIDGET
+            );
         }
 
         return [

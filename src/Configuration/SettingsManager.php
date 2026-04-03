@@ -21,7 +21,8 @@ use Magento\Framework\Locale\ResolverInterface;
  */
 class SettingsManager
 {
-    private static ?ProductTypeFilterManager $filterManager;
+    /** @var ProductTypeFilterManager[] Keyed by list type */
+    private static array $filterManagers = [];
 
     public static function getProductTypesSelectList(string $listType): array
     {
@@ -261,15 +262,20 @@ class SettingsManager
 
     private static function getFilterManager(string $listType): ProductTypeFilterManager
     {
-        if (self::$filterManager === null) {
-            self::$filterManager = ProductTypeFilterManager::getInstance();
+        if (!isset(self::$filterManagers[$listType])) {
+            // Clone the singleton so each list type gets an independent filter set.
+            // The singleton itself is never modified (no addFilter calls on it),
+            // so it stays clean and every clone starts with an empty $filters array.
+            $manager = clone ProductTypeFilterManager::getInstance();
 
             foreach (self::buildFiltersList($listType) as $filter) {
-                self::$filterManager->addFilter($filter);
+                $manager->addFilter($filter);
             }
+
+            self::$filterManagers[$listType] = $manager;
         }
 
-        return self::$filterManager;
+        return self::$filterManagers[$listType];
     }
 
     /**

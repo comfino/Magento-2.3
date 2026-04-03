@@ -8,6 +8,7 @@ use Comfino\Api\Response\CreateOrder;
 use Comfino\ComfinoGateway\Api\ApplicationServiceInterface;
 use Comfino\Common\Backend\Factory\OrderFactory;
 use Comfino\Configuration\ConfigManager;
+use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
@@ -249,6 +250,18 @@ class ApplicationService implements ApplicationServiceInterface
             ? (!empty($magentoOrder->getIncrementId()) ? $magentoOrder->getIncrementId() : (string) $magentoOrder->getId())
             : (string) $magentoOrder->getId();
 
+        $allowedProductTypes = null;
+
+        try {
+            $shopCart = OrderManager::getShopCart($this->session->getQuote());
+            $allowedProductTypes = SettingsManager::getAllowedProductTypes(
+                ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
+                $shopCart
+            );
+        } catch (\Throwable $e) {
+            // Ignore - proceed without product type filter
+        }
+
         return (new OrderFactory())->createOrder(
             $externalId,
             $totalAmount,
@@ -258,7 +271,8 @@ class ApplicationService implements ApplicationServiceInterface
             $cartItems,
             $customer,
             rtrim($this->urlBuilder->getUrl('checkout/onepage/success'), '/'),
-            rtrim($this->urlBuilder->getUrl('comfino/transactionstatus'), '/')
+            rtrim($this->urlBuilder->getUrl('comfino/transactionstatus'), '/'),
+            $allowedProductTypes
         );
     }
 

@@ -25,12 +25,25 @@ define([
 
             const config = (window.checkoutConfig.payment || {}).comfino || {};
 
+            // allowedProductTypes: null = no filter active, [] = all filtered (don't load SDK),
+            // [...] = filtered subset to pass to bootstrapPaywall().
+            const allowedProductTypes = config.allowedProductTypes;
+
+            if (Array.isArray(allowedProductTypes) && allowedProductTypes.length === 0) {
+                // All product types filtered out for this cart — don't load the paywall.
+                return this;
+            }
+
             const data = {
                 authToken: config.authToken || '',
                 loanAmount: config.loanAmount || 0,
                 environment: config.environment || 'production',
                 platform: 'magento'
             };
+
+            if (Array.isArray(allowedProductTypes) && allowedProductTypes.length > 0) {
+                data.productTypes = allowedProductTypes;
+            }
 
             // Load SDK as a plain script via DOM injection.
             //
