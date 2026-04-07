@@ -2,14 +2,14 @@
 
 namespace Comfino\ComfinoGateway\Model\Adminhtml\System\Config\Source;
 
-class WidgetOfferType implements \Magento\Framework\Option\ArrayInterface
+use Comfino\Configuration\SettingsManager;
+use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Magento\Framework\Data\OptionSourceInterface;
+
+class WidgetOfferType implements OptionSourceInterface
 {
     public function toOptionArray(): array
     {
-        return [
-            ['value' => 'INSTALLMENTS_ZERO_PERCENT', 'label' => __('Zero percent installments')],
-            ['value' => 'CONVENIENT_INSTALLMENTS', 'label' => __('Convenient installments')],
-            ['value' => 'PAY_LATER', 'label' => __('Pay later')],
-        ];
+        return SettingsManager::getProductTypesSelectList(ProductTypesListTypeEnum::LIST_TYPE_WIDGET);
     }
 }

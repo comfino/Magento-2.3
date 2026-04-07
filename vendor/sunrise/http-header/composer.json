@@ -1,0 +1,36 @@
+{
+    "name": "sunrise/http-header",
+    "homepage": "https://github.com/sunrise-php/http-header",
+    "description": "HTTP header interface",
+    "license": "MIT",
+    "keywords": [
+        "fenric",
+        "sunrise",
+        "http",
+        "header"
+    ],
+    "authors": [
+        {
+            "name": "Anatoly Fenric",
+            "email": "afenric@gmail.com",
+            "homepage": "https://github.com/fenric"
+        }
+    ],
+    "require": {
+        "php": "^7.1|^8.0"
+    },
+    "require-dev": {
+        "sunrise/coding-standard": "1.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sunrise\\Http\\Header\\": "src/"
+        }
+    },
+    "scripts": {
+        "test": [
+            "phpcs",
+            "psalm"
+        ]
+    }
+}

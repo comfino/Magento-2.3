@@ -1,0 +1,38 @@
+<?php
+/** @var \Comfino\ComfinoGateway\Block\Payment\Comfino $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var string[]|null $allowedProductTypes null = no filter, [] = all filtered (hidden), [...] = filtered list */
+$allowedProductTypes = $block->getAllowedProductTypeStrings();
+if ($allowedProductTypes === []) {
+    // All product types filtered out - hide paywall entirely
+    return;
+}
+?>
+<!-- Load Comfino SDK and pass paywall data directly in onload — no global window object used -->
+<script>(function () {
+    var data = {
+        authToken: '<?= $escaper->escapeJs($block->getAuthToken()) ?>',
+        loanAmount: <?= (int) $block->getLoanAmount() ?>,
+        environment: '<?= $escaper->escapeJs($block->getEnvironment()) ?>',
+        platform: 'magento'<?php if ($allowedProductTypes !== null): ?>,
+        productTypes: <?= /* @noEscape */ json_encode($allowedProductTypes) ?><?php endif; ?>
+    };
+    var _amdDefine = window.define;
+    window.define = undefined;
+    var script = document.createElement('script');
+    script.src = '<?= $escaper->escapeUrl($block->getSdkScriptUrl()) ?>';
+    script.setAttribute('data-comfino-sdk', '1');
+    script.onload = function () {
+        window.define = _amdDefine;
+        window.Comfino.bootstrapPaywall('magento', data);
+    };
+    script.onerror = function () {
+        window.define = _amdDefine;
+    };
+    document.head.appendChild(script);
+}());</script>
+<!-- Loan parameters written by MagentoAdapter.updatePaymentState(), read on order submit -->
+<input id="comfino-loan-type" name="comfino_loan_type" type="hidden" />
+<input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
+<!-- Comfino web frontend SDK renders paywall iframe here -->
+<div id="comfino-paywall-container"></div>

@@ -1,0 +1,10 @@
+services:
+    comfino-magento-php:
+        build:
+            context: ./
+            dockerfile: docker/Dockerfile
+        working_dir: /comfino-magento
+        tty: true
+        volumes:
+            - ./:/comfino-magento
+            - ~/.composer:/home/comfino/.composer

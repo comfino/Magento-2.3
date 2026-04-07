@@ -8,37 +8,28 @@ use Magento\Quote\Api\Data\PaymentInterface;
 
 class DataAssignObserver extends AbstractDataAssignObserver
 {
-    public const PAYMENT_LOAN_TYPE = 'type';
-    public const PAYMENT_LOAN_TERM = 'term';
+    public const PAYMENT_LOAN_TYPE = 'loanType';
+    public const PAYMENT_LOAN_TERM = 'loanTerm';
 
-    /**
-     * @var array
-     */
-    protected $additionalInformationList = [
-        self::PAYMENT_LOAN_TYPE,
-        self::PAYMENT_LOAN_TERM,
-    ];
-
-    /**
-     * @param Observer $observer
-     */
     public function execute(Observer $observer): void
     {
-        $additionalData = $this->readDataArgument($observer)->getData(PaymentInterface::KEY_ADDITIONAL_DATA);
+        $data = $this->readDataArgument($observer);
+        $additionalData = $data->getData(PaymentInterface::KEY_ADDITIONAL_DATA);
+        $paymentInfo = $this->readPaymentModelArgument($observer);
 
         if (!is_array($additionalData)) {
             return;
         }
 
-        $paymentInfo = $this->readPaymentModelArgument($observer);
+        $loanType = $additionalData[self::PAYMENT_LOAN_TYPE] ?? null;
+        $loanTerm = $additionalData[self::PAYMENT_LOAN_TERM] ?? null;
 
-        foreach ($this->additionalInformationList as $additionalInformationKey) {
-            if (isset($additionalData[$additionalInformationKey])) {
-                $paymentInfo->setAdditionalInformation(
-                    $additionalInformationKey,
-                    $additionalData[$additionalInformationKey]
-                );
-            }
+        if (!empty($loanType)) {
+            $paymentInfo->setAdditionalInformation(self::PAYMENT_LOAN_TYPE, $loanType);
+        }
+
+        if (!empty($loanTerm)) {
+            $paymentInfo->setAdditionalInformation(self::PAYMENT_LOAN_TERM, $loanTerm);
         }
     }
 }

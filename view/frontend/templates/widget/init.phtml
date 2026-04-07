@@ -1,1 +1,9 @@
-<script src="/comfino/widget" defer></script>
+<?php
+/** @var \Comfino\ComfinoGateway\Block\Widget\Init $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$initScriptUrl = $block->getWidgetInitScriptUrl();
+if (!$initScriptUrl) {
+    return;
+}
+?>
+<script defer src="<?= $escaper->escapeUrl($initScriptUrl) ?>"></script>

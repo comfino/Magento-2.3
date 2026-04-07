@@ -1,0 +1,49 @@
+{
+    "name": "comfino/shop-plugins-shared",
+    "type": "library",
+    "description": "Shared library for shop plugins with all dependencies cumulated from ecommerce packages.",
+    "homepage": "https://github.com/comfino/shop-plugins-shared",
+    "minimum-stability": "stable",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Artur Kozubski",
+            "email": "akozubski@comperia.pl",
+            "homepage": "https://comfino.pl/plugins"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-zlib": "*",
+        "psr/log": "^1.1",
+        "monolog/monolog": "^1.27",
+        "psr/http-message": "1.0.1",
+        "sunrise/http-client-curl": "^1.4",
+        "sunrise/http-factory": "^2.0",
+        "cache/array-adapter": "1.1.0",
+        "cache/filesystem-adapter": "1.1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7",
+        "phpspec/prophecy-phpunit": "^1.1",
+        "php-http/mock-client": "^1.6",
+        "nyholm/psr7": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Comfino\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Comfino\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    }
+}

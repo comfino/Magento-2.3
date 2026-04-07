@@ -1,0 +1,37 @@
+<div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+    <div class="payment-method-title field choice">
+        <input type="radio" name="payment[method]" class="radio" data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()" />
+        <label class="label" data-bind="attr: {for: getCode()}">
+            <span data-bind="text: getTitle()"></span>
+        </label>
+    </div>
+    <!-- ko if: (getCode() == isChecked()) -->
+    <div class="payment-method-content">
+        <!-- ko foreach: $parent.getRegion('messages') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+        <div class="payment-method-billing-address">
+            <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+        <!-- Comfino web frontend SDK renders paywall iframe here -->
+        <div id="comfino-paywall-container"></div>
+        <!-- Loan parameters written by MagentoAdapter.updatePaymentState(), read by getData() on order placement -->
+        <input id="comfino-loan-type" name="comfino_loan_type" type="hidden" />
+        <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
+        <div class="checkout-agreements-block">
+            <!-- ko foreach: $parent.getRegion('before-place-order') -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button class="action primary checkout" type="submit" data-bind="click: placeOrder, attr: {title: $t('Place Order')}, css: {disabled: !isPlaceOrderActionAllowed()}, enable: isPlaceOrderActionAllowed()">
+                    <span data-bind="i18n: 'Place Order'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+</div>

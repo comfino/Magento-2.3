@@ -1,13 +1,10 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <preference for="Comfino\ComfinoGateway\Api\Data\ApplicationResponseInterface"
-                type="Comfino\ComfinoGateway\Model\Connector\Transaction\Response\ApplicationResponse"/>
+    <!-- Service contract preferences -->
     <preference for="Comfino\ComfinoGateway\Api\ApplicationServiceInterface"
                 type="Comfino\ComfinoGateway\Model\Connector\Service\ApplicationService"/>
-    <preference for="Comfino\ComfinoGateway\Api\OfferServiceInterface"
-                type="Comfino\ComfinoGateway\Model\Connector\Service\OfferService"/>
-    <preference for="Comfino\ComfinoGateway\Api\ComfinoStatusManagementInterface"
-                type="Comfino\ComfinoGateway\Model\ComfinoStatusManagement"/>
+
+    <!-- Payment method integration -->
     <virtualType name="ComfinoFacade" type="Magento\Payment\Model\Method\Adapter">
         <arguments>
             <argument name="code" xsi:type="const">Comfino\ComfinoGateway\Model\Ui\ConfigProvider::CODE</argument>
@@ -46,18 +43,11 @@
             <argument name="config" xsi:type="object">ComfinoConfig</argument>
         </arguments>
     </virtualType>
-    <virtualType name="ComfinoLogger" type="Magento\Framework\Logger\Monolog">
+
+    <!-- Block\Payment\Comfino DI wiring -->
+    <type name="Comfino\ComfinoGateway\Block\Payment\Comfino">
         <arguments>
-            <argument name="handlers" xsi:type="array">
-                <item name="debug" xsi:type="object">Comfino\ComfinoGateway\Logger\Handler\DebugHandler</item>
-                <item name="info" xsi:type="object">Comfino\ComfinoGateway\Logger\Handler\InfoHandler</item>
-                <item name="error" xsi:type="object">Comfino\ComfinoGateway\Logger\Handler\ErrorHandler</item>
-            </argument>
-        </arguments>
-    </virtualType>
-    <type name="Comfino\ComfinoGateway\Model\Connector\Service\ServiceAbstract">
-        <arguments>
-            <argument name="logger" xsi:type="object">ComfinoLogger</argument>
+            <argument name="urlGenerator" xsi:type="object">Comfino\ComfinoGateway\Helper\IframeUrlGenerator</argument>
         </arguments>
     </type>
 </config>

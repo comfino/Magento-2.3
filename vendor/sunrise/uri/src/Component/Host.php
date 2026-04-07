@@ -1,0 +1,56 @@
+<?php
+
+declare (strict_types=1);
+/**
+ * It's free open-source software released under the MIT License.
+ *
+ * @author Anatoly Fenric <anatoly@fenric.ru>
+ * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @license https://github.com/sunrise-php/uri/blob/master/LICENSE
+ * @link https://github.com/sunrise-php/uri
+ */
+namespace ComfinoExternal\Sunrise\Uri\Component;
+
+use ComfinoExternal\Sunrise\Uri\Exception\InvalidUriComponentException;
+
+use function is_string;
+use function preg_replace_callback;
+use function rawurlencode;
+use function strtolower;
+
+class Host implements ComponentInterface
+{
+    /**
+     * @var string
+     */
+    private const NORMALIZE_REGEX = '/(?:(?:%[0-9A-Fa-f]{2}|[0-9A-Za-z\-\._~\!\$&\'\(\)\*\+,;\=]+)|(.?))/u';
+    /**
+     * @var string
+     */
+    protected $value = '';
+    /**
+     * @param mixed $value
+     * @throws InvalidUriComponentException
+     */
+    public function __construct($value)
+    {
+        if ($value === '') {
+            return;
+        }
+        if (!is_string($value)) {
+            throw new InvalidUriComponentException('URI component "host" must be a string');
+        }
+        $this->value = preg_replace_callback(self::NORMALIZE_REGEX, function (array $match): string {
+            return isset($match[1]) ? rawurlencode($match[1]) : $match[0];
+        }, $value);
+        
+        $this->value = strtolower($this->value);
+    }
+    /**
+     * @return string
+     */
+    public function present(): string
+    {
+        return $this->value;
+    }
+}

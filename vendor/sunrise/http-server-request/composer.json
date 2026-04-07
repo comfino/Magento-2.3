@@ -1,0 +1,75 @@
+{
+    "name": "sunrise/http-server-request",
+    "homepage": "https://github.com/sunrise-php/http-server-request",
+    "description": "HTTP server request wrapper for PHP 7.1+ based on PSR-7 and PSR-17",
+    "license": "MIT",
+    "keywords": [
+        "fenric",
+        "sunrise",
+        "http",
+        "server",
+        "request",
+        "psr-7",
+        "psr-17",
+        "php7",
+        "php8"
+    ],
+    "authors": [
+        {
+            "name": "Anatoly Fenric",
+            "email": "afenric@gmail.com",
+            "homepage": "https://github.com/fenric"
+        },
+        {
+            "name": "李昀陞 (Peter)",
+            "email": "peter279k@gmail.com",
+            "homepage": "https://github.com/peter279k"
+        }
+    ],
+    "provide": {
+        "psr/http-message-implementation": "1.0"
+    },
+    "require": {
+        "php": "^7.1|^8.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^1.0",
+        "sunrise/http-message": "^2.0",
+        "sunrise/stream": "^1.2",
+        "sunrise/uri": "^1.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "7.5.20|9.5.0",
+        "sunrise/coding-standard": "1.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sunrise\\Http\\ServerRequest\\": "src/"
+        },
+        "files": [
+            "constants/UPLOAD_ERRORS.php",
+            "functions/request_body.php",
+            "functions/request_files.php",
+            "functions/request_headers.php",
+            "functions/request_method.php",
+            "functions/request_protocol.php",
+            "functions/request_uri.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sunrise\\Http\\ServerRequest\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": [
+            "phpcs",
+            "psalm",
+            "XDEBUG_MODE=coverage phpunit --coverage-text --colors=always"
+        ],
+        "build": [
+            "phpdoc -d src/ -t phpdoc/",
+            "XDEBUG_MODE=coverage phpunit --coverage-html coverage/"
+        ]
+    },
+    "abandoned": "sunrise/http-message"
+}

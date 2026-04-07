@@ -1,275 +1,122 @@
-define(
-    [
-        'ko',
-        'Magento_Checkout/js/view/payment/default',
-        'Magento_Checkout/js/action/redirect-on-success',
-        'mage/url',
-        'Magento_Customer/js/customer-data',
-        'Magento_Checkout/js/model/error-processor',
-        'Magento_Checkout/js/model/full-screen-loader',
-        'Magento_Ui/js/modal/modal',
-        'Magento_Catalog/js/price-utils',
-        'mage/translate',
-    ],
-    function (ko, Component, redirectOnSuccessAction, url, customerData, errorProcessor, fullScreenLoader, modal, priceUtils, t) {
-        'use strict';
+/**
+ * Comfino payment method renderer
+ *
+ * Injects the Comfino SDK script and passes paywall data directly to bootstrapPaywall() in the
+ * onload callback. All paywall lifecycle logic (init, iframe, offer selection) is handled by the
+ * SDK via MagentoPaywallController.
+ */
+define([
+    'Magento_Checkout/js/view/payment/default',
+    'mage/storage',
+    'Magento_Checkout/js/model/full-screen-loader',
+    'Magento_Checkout/js/model/error-processor',
+    'mage/url'
+], function (Component, storage, fullScreenLoader, errorProcessor, url) {
+    'use strict';
 
-        return Component.extend({
-            redirectAfterPlaceOrder: false,
-            redirectUrl: '',
-            defaults: {
-                template: 'Comfino_ComfinoGateway/payment/ComfinoGateway',
-                loanType: null,
-                loanTerm: null,
-                isAvailable: ko.observable(false)
-            },
-            offerList: { elements: null, data: null },
-            selectedOffer: 0,
+    return Component.extend({
+        defaults: {
+            template: 'Comfino_ComfinoGateway/payment/comfino',
+            redirectAfterPlaceOrder: false
+        },
 
-            getData: function () {
-                return {
-                    'method': this.getCode(),
-                    'additional_data': {
-                        'type': this.loanType
-                    }
-                };
-            },
+        initialize: function () {
+            this._super();
 
-            setLoanType: function (type) {
-                this.loanType = type;
-            },
+            const config = (window.checkoutConfig.payment || {}).comfino || {};
 
-            setLoanTerm: function (term) {
-                this.loanTerm = term;
-            },
+            // allowedProductTypes: null = no filter active, [] = all filtered (don't load SDK),
+            // [...] = filtered subset to pass to bootstrapPaywall().
+            const allowedProductTypes = config.allowedProductTypes;
 
-            isMethodAvailable: function () {
-                return this.isAvailable();
-            },
-
-            getMailingAddress: function () {
-                return window.checkoutConfig.payment.checkmo.mailingAddress;
-            },
-
-            afterPlaceOrder: function () {
-                let self = this;
-
-                fetch(url.build('rest/V1/comfino-gateway/application/save'), { method: 'POST' })
-                    .then(response => response.json())
-                    .then(function (data) {
-                        fullScreenLoader.stopLoader();
-                        window.location.href = data[0].redirectUrl;
-                    }).catch(function (error) {
-                        fullScreenLoader.stopLoader();
-                        errorProcessor.process(error, self.messageContainer);
-                    });
-            },
-
-            selectTerm(loanTermBox, termElement)
-            {
-                loanTermBox.querySelectorAll('div > div.comfino-installments-quantity').forEach(function (item) {
-                    item.classList.remove('comfino-active');
-                });
-
-                if (termElement !== null) {
-                    termElement.classList.add('comfino-active');
-
-                    for (let loanParams of this.offerList.data[this.selectedOffer].loanParameters) {
-                        if (loanParams.loanTerm === parseInt(termElement.dataset.term)) {
-                            document.getElementById('comfino-total-payment').innerHTML = priceUtils.formatPrice(customerData.get('cart')().subtotalAmount);
-                            document.getElementById('comfino-monthly-rate').innerHTML = priceUtils.formatPrice(loanParams.instalmentAmount);
-                            document.getElementById('comfino-summary-total').innerHTML = priceUtils.formatPrice(loanParams.toPay);
-                            document.getElementById('comfino-rrso').innerHTML = this.offerList.data[this.selectedOffer].rrso + '%';
-                            document.getElementById('comfino-description-box').innerHTML = this.offerList.data[this.selectedOffer].description;
-                            document.getElementById('comfino-repr-example').innerHTML = this.offerList.data[this.selectedOffer].representativeExample;
-
-                            this.offerList.elements[this.selectedOffer].dataset.sumamount = parseFloat(customerData.get('cart')().subtotalAmount);
-                            this.offerList.elements[this.selectedOffer].dataset.term = loanParams.loanTerm;
-
-                            this.setLoanType(this.offerList.data[this.selectedOffer].type);
-                            this.setLoanTerm(termElement.dataset.term);
-
-                            break;
-                        }
-                    }
-                } else {
-                    document.getElementById('comfino-total-payment').innerHTML = priceUtils.formatPrice(customerData.get('cart')().subtotalAmount);
-                }
-            },
-
-            selectCurrentTerm(loanTermBox, term)
-            {
-                let termElement = loanTermBox.querySelector('div > div[data-term="' + term + '"]');
-
-                if (termElement !== null) {
-                    loanTermBox.querySelectorAll('div > div.comfino-installments-quantity').forEach(function (item) {
-                        item.classList.remove('comfino-active');
-                    });
-
-                    termElement.classList.add('comfino-active');
-
-                    for (let loanParams of this.offerList.data[this.selectedOffer].loanParameters) {
-                        if (loanParams.loanTerm === parseInt(term)) {
-                            document.getElementById('comfino-total-payment').innerHTML = priceUtils.formatPrice(customerData.get('cart')().subtotalAmount);
-                            document.getElementById('comfino-monthly-rate').innerHTML = priceUtils.formatPrice(loanParams.instalmentAmount);
-                            document.getElementById('comfino-summary-total').innerHTML = priceUtils.formatPrice(loanParams.toPay);
-                            document.getElementById('comfino-rrso').innerHTML = this.offerList.data[this.selectedOffer].rrso + '%';
-                            document.getElementById('comfino-description-box').innerHTML = this.offerList.data[this.selectedOffer].description;
-                            document.getElementById('comfino-repr-example').innerHTML = this.offerList.data[this.selectedOffer].representativeExample;
-
-                            this.setLoanType(this.offerList.data[this.selectedOffer].type);
-                            this.setLoanTerm(termElement.dataset.term);
-
-                            break;
-                        }
-                    }
-                }
-            },
-
-            fetchProductDetails(offerData)
-            {
-                let self = this;
-
-                if (offerData.type === 'PAY_LATER') {
-                    document.getElementById('comfino-payment-delay').style.display = 'block';
-                    document.getElementById('comfino-installments').style.display = 'none';
-                } else {
-                    let loanTermBox = document.getElementById('comfino-quantity-select');
-                    let loanTermBoxContents = ``;
-
-                    offerData.loanParameters.forEach(function (item, index) {
-                        if (index === 0) {
-                            loanTermBoxContents += `<div class="comfino-select-box">`;
-                        } else if (index % 3 === 0) {
-                            loanTermBoxContents += `</div><div class="comfino-select-box">`;
-                        }
-
-                        loanTermBoxContents += `<div data-term="` + item.loanTerm + `" class="comfino-installments-quantity">` + item.loanTerm + `</div>`;
-
-                        if (index === offerData.loanParameters.length - 1) {
-                            loanTermBoxContents += `</div>`;
-                        }
-                    });
-
-                    loanTermBox.innerHTML = loanTermBoxContents;
-
-                    loanTermBox.querySelectorAll('div > div.comfino-installments-quantity').forEach(function (item) {
-                        item.addEventListener('click', function (event) {
-                            event.preventDefault();
-                            self.selectTerm(loanTermBox, event.target);
-                        });
-                    });
-
-                    document.getElementById('comfino-payment-delay').style.display = 'none';
-                    document.getElementById('comfino-installments').style.display = 'block';
-                }
-            },
-
-            putDataIntoSection(data)
-            {
-                let self = this;
-                let offerElements = [];
-                let offerData = [];
-
-                data.forEach(function (item, index) {
-                    let comfinoOffer = document.createElement('div');
-
-                    comfinoOffer.dataset.type = item.type;
-                    comfinoOffer.dataset.sumamount = customerData.get('cart')().subtotalAmount;
-                    comfinoOffer.dataset.term = item.loanTerm;
-
-                    comfinoOffer.classList.add('comfino-order');
-
-                    let comfinoOptId = 'comfino-opt-' + item.type;
-
-                    comfinoOffer.innerHTML = `
-                        <div class="comfino-single-payment">
-                            <input type="radio" id="` + comfinoOptId + `" class="comfino-input" name="comfino" />
-                            <label for="` + comfinoOptId + `">
-                                <div class="comfino-icon">` + item.icon + `</div>
-                                <span class="comfino-single-payment__text">` + item.name + `</span>
-                            </label>
-                        </div>
-                    `;
-
-                    if (index === 0) {
-                        let paymentOption = comfinoOffer.querySelector('#' + comfinoOptId);
-
-                        comfinoOffer.classList.add('selected');
-                        paymentOption.setAttribute('checked', 'checked');
-
-                        self.fetchProductDetails(item);
-                    }
-
-                    offerData[index] = item;
-                    offerElements[index] = document.getElementById('comfino-offer-items').appendChild(comfinoOffer);
-                });
-
-                return { elements: offerElements, data: offerData };
-            },
-
-            /**
-             * Get offers from API.
-             */
-            initPayments()
-            {
-                let self = this;
-                let offerWrapper = document.getElementById('comfino-offer-items');
-
-                self.isAvailable(true);
-
-                fetch(url.build('rest/V1/comfino-gateway/offers'))
-                    .then(response => response.json())
-                    .then(function (data) {
-                        if (data === null || data.length === 0) {
-                            self.isAvailable(false);
-
-                            return;
-                        }
-
-                        let loanTermBox = document.getElementById('comfino-quantity-select');
-
-                        offerWrapper.innerHTML = '';
-                        self.offerList = self.putDataIntoSection(data);
-
-                        self.selectTerm(loanTermBox, loanTermBox.querySelector('div > div[data-term="' + self.offerList.data[self.selectedOffer].loanTerm + '"]'));
-
-                        self.offerList.elements.forEach(function (item, index) {
-                            item.querySelector('label').addEventListener('click', function () {
-                                self.selectedOffer = index;
-
-                                self.fetchProductDetails(self.offerList.data[self.selectedOffer]);
-
-                                self.offerList.elements.forEach(function () {
-                                    item.classList.remove('selected');
-                                });
-
-                                item.classList.add('selected');
-
-                                self.selectCurrentTerm(loanTermBox, self.offerList.elements[self.selectedOffer].dataset.term);
-                            });
-                        });
-
-                        document.getElementById('comfino-repr-example-link').addEventListener('click', function (event) {
-                            event.preventDefault();
-                            document.getElementById('modal-repr-example').classList.add('open');
-                        });
-
-                        document.getElementById('modal-repr-example').querySelector('button.comfino-modal-exit').addEventListener('click', function (event) {
-                            event.preventDefault();
-                            document.getElementById('modal-repr-example').classList.remove('open');
-                        });
-
-                        document.getElementById('modal-repr-example').querySelector('div.comfino-modal-exit').addEventListener('click', function (event) {
-                            event.preventDefault();
-                            document.getElementById('modal-repr-example').classList.remove('open');
-                        });
-                    }).catch(function (error) {
-                        offerWrapper.innerHTML = `<div class="message message-error error">` +  t.__('There was an error while performing this operation') + ': ' + error + `</div>`;
-
-                        errorProcessor.process(error, this.messageContainer);
-                    });
+            if (Array.isArray(allowedProductTypes) && allowedProductTypes.length === 0) {
+                // All product types filtered out for this cart — don't load the paywall.
+                return this;
             }
-        });
-    }
-);
+
+            const data = {
+                authToken: config.authToken || '',
+                loanAmount: config.loanAmount || 0,
+                environment: config.environment || 'production',
+                platform: 'magento'
+            };
+
+            if (Array.isArray(allowedProductTypes) && allowedProductTypes.length > 0) {
+                data.productTypes = allowedProductTypes;
+            }
+
+            // Load SDK as a plain script via DOM injection.
+            //
+            // Why not require([url])?  The SDK is a UMD bundle.  When RequireJS's global
+            // define() is present, UMD takes the AMD branch - it calls define() and returns
+            // its export to RequireJS, but skips the global assignment (window.Comfino.*).
+            //
+            // Solution: hide window.define before the script executes so the SDK's UMD wrapper
+            // sees no AMD environment, takes the global-assignment branch, and sets
+            // window.Comfino.ComfinoSDK.  Restore define() in onload/onerror.
+            // By the time the user can navigate to the payment step all Magento/KO modules are
+            // already defined, so the brief window where define is hidden is safe.
+            //
+            // Pass data directly to bootstrapPaywall() in onload — no global window object used.
+            // MagentoPaywallController uses waitForContainer to defer paywall creation until
+            // #comfino-paywall-container appears in the DOM (after KO renders the template).
+            if (config.sdkScriptUrl && !document.querySelector('script[data-comfino-sdk]')) {
+                const _amdDefine = window.define;
+                window.define = undefined;
+
+                const script = document.createElement('script');
+                script.src = config.sdkScriptUrl;
+                script.setAttribute('data-comfino-sdk', '1');
+                script.onload = function () {
+                    window.define = _amdDefine;
+                    window.Comfino.bootstrapPaywall('magento', data);
+                };
+                script.onerror = function () {
+                    window.define = _amdDefine;
+                };
+
+                document.head.appendChild(script);
+            }
+
+            return this;
+        },
+
+        /** Called by Magento on order placement to collect payment data. */
+        getData: function () {
+            return {
+                method: this.item.method,
+                additional_data: {
+                    loanType: (document.getElementById('comfino-loan-type') || {}).value || '',
+                    loanTerm: (document.getElementById('comfino-loan-term') || {}).value || ''
+                }
+            };
+        },
+
+        /**
+         * Called after Magento order is placed successfully.
+         * Sends the order to Comfino API and redirects to the Comfino application URL.
+         */
+        afterPlaceOrder: function () {
+            const self = this;
+
+            fullScreenLoader.startLoader();
+
+            storage.post(url.build('rest/V1/comfino/payment'))
+                .done(function (response) {
+                    fullScreenLoader.stopLoader();
+
+                    const data = response && response[0];
+
+                    if (data && data.redirectUrl) {
+                        window.location.replace(data.redirectUrl);
+                    } else {
+                        self.isPlaceOrderActionAllowed(true);
+                    }
+                }).fail(function (response) {
+                    fullScreenLoader.stopLoader();
+                    errorProcessor.process(response, self.messageContainer);
+                    self.isPlaceOrderActionAllowed(true);
+                });
+        }
+    });
+});
