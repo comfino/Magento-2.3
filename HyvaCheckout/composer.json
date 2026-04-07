@@ -1,7 +1,7 @@
 {
-    "name": "comfino/magento-hyva-checkout",
+    "name": "comfino/magento2-hyva-checkout",
     "type": "magento2-module",
-    "description": "Hyvä Checkout compatibility module for Comfino Payment Gateway",
+    "description": "Hyvä Checkout compatibility module for Comfino Payment Gateway.",
     "homepage": "https://github.com/comfino/Magento-2.3",
     "license": "OSL-3.0",
     "version": "1.0.0",
