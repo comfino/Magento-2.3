@@ -4,7 +4,7 @@
     "description": "Magento 2 payment module for Comfino Payment Gateway.",
     "homepage": "https://github.com/comfino/Magento-2.3",
     "license": "OSL-3.0",
-    "version": "4.0.0",
+    "version": "3.0.0",
     "authors": [
         {
             "name": "Artur Kozubski",
