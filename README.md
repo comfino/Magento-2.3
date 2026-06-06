@@ -1,6 +1,5 @@
 # Comfino Payment Gateway for Magento 2
 
-[![Tests](https://github.com/comfino/Magento-2.3/workflows/Tests/badge.svg)](https://github.com/comfino/Magento-2.3/actions)
 [![PHP Version](https://img.shields.io/badge/php-7.4%20to%208.4-blue.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-OSL--3.0-green.svg)](LICENSE)
 

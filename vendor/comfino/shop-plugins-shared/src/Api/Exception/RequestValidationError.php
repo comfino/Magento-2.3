@@ -9,6 +9,8 @@ use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 
 class RequestValidationError extends \LogicException implements HttpErrorExceptionInterface
 {
+    use SensitiveHttpExceptionTrait;
+
     private $url;
 
     private $requestBody;

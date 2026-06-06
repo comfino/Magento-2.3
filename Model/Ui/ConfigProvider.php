@@ -3,6 +3,7 @@
 namespace Comfino\ComfinoGateway\Model\Ui;
 
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
+use Comfino\Common\Shop\Cart;
 use Comfino\ComfinoGateway\Helper\Data;
 use Comfino\ComfinoGateway\Helper\PaywallAuthTokenGenerator;
 use Comfino\Configuration\ConfigManager;
@@ -46,9 +47,11 @@ class ConfigProvider implements ConfigProviderInterface
         // []    = all product types filtered out (paywall should be hidden)
         // [...] = filtered subset of product types
         $allowedProductTypes = null;
+        $paywallCart = null;
 
         try {
             $cart = OrderManager::getShopCart($quote);
+            $paywallCart = self::buildPaywallCart($cart);
             $types = SettingsManager::getAllowedProductTypes(
                 ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
                 $cart
@@ -64,6 +67,29 @@ class ConfigProvider implements ConfigProviderInterface
             // Ignore filter errors - proceed without restriction
         }
 
+        /* Optional paywall-data enrichments. Each is best-effort: a failure here must not break checkout,
+           and the SDK treats every one of these fields as optional, falling back to loanAmount alone. */
+        $currency = $quote->getQuoteCurrencyCode() ?: 'PLN';
+
+        try {
+            $productTypeNames = SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null;
+        } catch (\Throwable $e) {
+            $productTypeNames = null;
+        }
+
+        try {
+            $paymentMethodAuth = ConfigManager::getPaywallLogoAuthHash();
+        } catch (\Throwable $e) {
+            $paymentMethodAuth = '';
+        }
+
+        try {
+            // Product-type => creditor-codes map; drives the creditor-logo row on the payment-method tile.
+            $creditors = SettingsManager::getCreditors() ?: null;
+        } catch (\Throwable $e) {
+            $creditors = null;
+        }
+
         return [
             'payment' => [
                 self::CODE => [
@@ -72,10 +98,58 @@ class ConfigProvider implements ConfigProviderInterface
                     'authToken' => $this->authTokenGenerator->generateAuthToken(),
                     'loanAmount' => $loanAmount,
                     'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
+                    // This module ships only the UMD bundle; the renderer keeps the define()-suppression path for it.
+                    'sdkScriptKind' => 'umd',
                     'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
                     'allowedProductTypes' => $allowedProductTypes,
+                    'cart' => $paywallCart,
+                    'paywallSettings' => [
+                        'language' => $this->helper->getShopLanguage(),
+                        'currency' => $currency,
+                    ],
+                    'productTypeNames' => $productTypeNames,
+                    'paymentMethodAuth' => $paymentMethodAuth,
+                    'creditors' => $creditors,
                 ]
             ]
+        ];
+    }
+
+    /**
+     * Serializes the shared-library Cart into the flat array shape the paywall iframe expects.
+     * All monetary values are already expressed in minor units (grosze) by the Cart DTO.
+     *
+     * @return array<string, mixed>|null null when the cart has no items
+     */
+    private static function buildPaywallCart(Cart $cart): ?array
+    {
+        $products = [];
+
+        foreach ($cart->getCartItems() as $cartItem) {
+            $product = $cartItem->getProduct();
+
+            $products[] = [
+                'name' => $product->getName(),
+                'quantity' => $cartItem->getQuantity(),
+                'price' => $product->getPrice(),
+                'netPrice' => $product->getNetPrice() ?? $product->getPrice(),
+                'vatRate' => $product->getTaxRate() ?? 0,
+                'vatAmount' => $product->getTaxValue() ?? 0,
+                'category' => $product->getCategory() ?? '',
+            ];
+        }
+
+        if ($products === []) {
+            return null;
+        }
+
+        return [
+            'totalAmount' => $cart->getTotalValue(),
+            'deliveryCost' => $cart->getDeliveryCost(),
+            'deliveryNetCost' => $cart->getDeliveryNetCost() ?? 0,
+            'deliveryCostVatRate' => $cart->getDeliveryTaxRate() ?? 0,
+            'deliveryCostVatAmount' => $cart->getDeliveryTaxValue() ?? 0,
+            'products' => $products,
         ];
     }
 }

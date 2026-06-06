@@ -32,4 +32,6 @@ interface OrderInterface
     public function getAccountNumber(): ?string;
 
     public function getTransferTitle(): ?string;
+
+    public function getAllowedProductsConfig(): ?array;
 }

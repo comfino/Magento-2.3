@@ -21,7 +21,7 @@
             "homepage": "https://github.com/fenric"
         },
         {
-            "name": "李昀陞 (Peter)",
+            "name": "\u674e\u6600\u965e (Peter)",
             "email": "peter279k@gmail.com",
             "homepage": "https://github.com/peter279k"
         }
@@ -71,5 +71,6 @@
             "XDEBUG_MODE=coverage phpunit --coverage-html coverage/"
         ]
     },
-    "abandoned": "sunrise/http-message"
+    "abandoned": "sunrise/http-message",
+    "version": "v2.2.2"
 }

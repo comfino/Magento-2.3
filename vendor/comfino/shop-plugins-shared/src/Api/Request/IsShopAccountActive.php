@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Comfino\Api\Request;
 
 use Comfino\Api\Request;
+use Comfino\Api\UrlValidator;
 
 class IsShopAccountActive extends Request
 {
@@ -20,10 +21,14 @@ class IsShopAccountActive extends Request
         $requestHeaders = [];
 
         if (!empty($cacheInvalidateUrl)) {
+            UrlValidator::assertValidCallbackUrl($cacheInvalidateUrl, 'Comfino-Cache-Invalidate-Url');
+
             $requestHeaders['Comfino-Cache-Invalidate-Url'] = $cacheInvalidateUrl;
         }
 
         if (!empty($configurationUrl)) {
+            UrlValidator::assertValidCallbackUrl($configurationUrl, 'Comfino-Configuration-Url');
+
             $requestHeaders['Comfino-Configuration-Url'] = $configurationUrl;
         }
 

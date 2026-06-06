@@ -8,6 +8,8 @@ use Comfino\Api\HttpErrorExceptionInterface;
 
 class ResponseValidationError extends \RuntimeException implements HttpErrorExceptionInterface
 {
+    use SensitiveHttpExceptionTrait;
+
     private $url;
 
     private $requestBody;

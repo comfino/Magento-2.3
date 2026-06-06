@@ -39,7 +39,7 @@ class Client extends \Comfino\Api\Client
 
             new BaseApiResponse(
                 $request,
-                $this->sendRequest($request->setSerializer($this->serializer)),
+                $this->sendRequest($request->setSerializer($this->serializer), 2),
                 $this->serializer
             );
         } catch (\Throwable $exception) {

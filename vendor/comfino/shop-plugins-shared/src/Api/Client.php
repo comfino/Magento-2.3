@@ -6,6 +6,7 @@ namespace Comfino\Api;
 
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
+use Comfino\Api\Dto\Plugin\ShopEnvironmentReport;
 use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Api\Exception\RequestValidationError;
@@ -13,6 +14,7 @@ use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Exception\ServiceUnavailable;
 use Comfino\Api\Request\CancelOrder as CancelOrderRequest;
 use Comfino\Api\Request\CreateOrder as CreateOrderRequest;
+use Comfino\Api\Request\GetCreditors as GetCreditorsRequest;
 use Comfino\Api\Request\GetFinancialProductDetails as GetFinancialProductDetailsRequest;
 use Comfino\Api\Request\GetFinancialProducts as GetFinancialProductsRequest;
 use Comfino\Api\Request\GetOrder as GetOrderRequest;
@@ -22,8 +24,10 @@ use Comfino\Api\Request\GetProductTypes as GetProductTypesRequest;
 use Comfino\Api\Request\GetWidgetKey as GetWidgetKeyRequest;
 use Comfino\Api\Request\GetWidgetTypes as GetWidgetTypesRequest;
 use Comfino\Api\Request\IsShopAccountActive as IsShopAccountActiveRequest;
+use Comfino\Api\Request\ReportShopEnvironment as ReportShopEnvironmentRequest;
 use Comfino\Api\Response\Base as BaseApiResponse;
 use Comfino\Api\Response\CreateOrder as CreateOrderResponse;
+use Comfino\Api\Response\GetCreditors as GetCreditorsResponse;
 use Comfino\Api\Response\GetFinancialProductDetails as GetFinancialProductDetailsResponse;
 use Comfino\Api\Response\GetFinancialProducts as GetFinancialProductsResponse;
 use Comfino\Api\Response\GetOrder as GetOrderResponse;
@@ -105,15 +109,21 @@ class Client
      * @param int $apiVersion
      * @param SerializerInterface|null $serializer
      */
-    public function __construct(RequestFactoryInterface $requestFactory, StreamFactoryInterface $streamFactory, ClientInterface $client, ?string $apiKey, int $apiVersion = 1, ?SerializerInterface $serializer = null)
-    {
-        $serializer = $serializer ?? null ?? new JsonSerializer();
+    public function __construct(
+        RequestFactoryInterface $requestFactory,
+        StreamFactoryInterface $streamFactory,
+        ClientInterface $client,
+        ?string $apiKey,
+        int $apiVersion = 1,
+        ?SerializerInterface $serializer = null
+    ) {
         $this->requestFactory = $requestFactory;
         $this->streamFactory = $streamFactory;
         $this->client = $client;
         $this->apiKey = $apiKey;
         $this->apiVersion = $apiVersion;
         $this->serializer = $serializer;
+        $this->serializer = $this->serializer ?? new JsonSerializer();
     }
 
     /**
@@ -218,6 +228,18 @@ class Client
      */
     public function addCustomHeader($headerName, $headerValue): void
     {
+        if (preg_match('/^[!#$%&\'*+\-.^_`|~0-9A-Za-z]+$/', $headerName) !== 1) {
+            throw new \InvalidArgumentException(
+                sprintf('Invalid HTTP header name: "%s".', $headerName)
+            );
+        }
+
+        if (preg_match('/[\r\n\x00]/', $headerValue) === 1) {
+            throw new \InvalidArgumentException(
+                sprintf('HTTP header "%s" value contains illegal control characters.', $headerName)
+            );
+        }
+
         $this->customHeaders[$headerName] = $headerValue;
     }
 
@@ -392,6 +414,23 @@ class Client
     }
 
     /**
+     * @param ShopEnvironmentReport $report
+     * @return bool
+     */
+    public function reportShopEnvironment($report): bool
+    {
+        try {
+            $this->request = (new ReportShopEnvironmentRequest($report))->setSerializer($this->serializer);
+
+            new BaseApiResponse($this->request, $this->sendRequest($this->request), $this->serializer);
+        } catch (\Throwable $exception) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -405,6 +444,21 @@ class Client
         $this->request = (new GetProductTypesRequest($listType))->setSerializer($this->serializer);
 
         return new GetProductTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
+    }
+
+    /**
+     * @throws RequestValidationError
+     * @throws ResponseValidationError
+     * @throws AuthorizationError
+     * @throws AccessDenied
+     * @throws ServiceUnavailable
+     * @throws ClientExceptionInterface
+     */
+    public function getCreditors(): GetCreditorsResponse
+    {
+        $this->request = (new GetCreditorsRequest())->setSerializer($this->serializer);
+
+        return new GetCreditorsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
     }
 
     /**

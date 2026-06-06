@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Comfino\Api\Request;
 
+use Comfino\Api\Dto\Payment\AllowedProductConfig;
+use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Request;
 use Comfino\Shop\Order\CartTrait;
 use Comfino\Shop\Order\OrderInterface;
@@ -121,6 +123,27 @@ class CreateOrder extends Request
                 'accountNumber' => $this->order->getAccountNumber(),
                 'transferTitle' => $this->order->getTransferTitle(),
                 'simulation' => $this->validateOnly ?: null,
+
+                'allowedProductsConfig' => ($configs = $this->order->getAllowedProductsConfig()) !== null
+                    ? array_map(
+                        static function (AllowedProductConfig $prodConfig): array {
+                            $entry = ['type' => (string) $prodConfig->type];
+
+                            if ($prodConfig->maxTerm !== null) {
+                                $entry['maxTerm'] = $prodConfig->maxTerm;
+                            }
+                            if ($prodConfig->minTerm !== null) {
+                                $entry['minTerm'] = $prodConfig->minTerm;
+                            }
+                            if ($prodConfig->terms !== null) {
+                                $entry['terms'] = $prodConfig->terms;
+                            }
+
+                            return $entry;
+                        },
+                        $configs
+                    )
+                    : null,
             ],
             static function ($value): bool {
                 return $value !== null;
@@ -133,9 +156,22 @@ class CreateOrder extends Request
     private function generateHash(array $data): string
     {
         try {
-            return hash('sha3-256', json_encode($data, JSON_PRESERVE_ZERO_FRACTION));
-        } catch (\JsonException $exception) {
-            return '';
+            $encoded = json_encode($data, JSON_PRESERVE_ZERO_FRACTION);
+        } catch (\JsonException $e) {
+            throw new RequestValidationError(
+                'Failed to serialize order data for integrity hashing: ' . $e->getMessage(),
+                0,
+                $e
+            );
         }
+
+        if ($encoded === false) {
+            throw new RequestValidationError(
+                'Failed to serialize order data for integrity hashing: ' . json_last_error_msg(),
+                0
+            );
+        }
+
+        return hash('sha3-256', $encoded);
     }
 }

@@ -6,15 +6,12 @@ namespace Comfino\Api\Request;
 
 use Comfino\Api\Request;
 
-class GetOrder extends Request
+class GetCreditors extends Request
 {
-    /**
-     * @param string $orderId
-     */
-    public function __construct(string $orderId)
+    public function __construct()
     {
         $this->setRequestMethod('GET');
-        $this->setApiEndpointPath(sprintf('orders/%s', rawurlencode($orderId)));
+        $this->setApiEndpointPath('creditors');
     }
 
     protected function prepareRequestBody(): ?array

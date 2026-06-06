@@ -95,6 +95,39 @@ class SettingsManager
     }
 
     /**
+     * Returns the creditors map (product type code => creditor codes) used by the paywall payment-method tile
+     * to render creditor logos. Cached under the same 'admin_product_types' tag as the product types list.
+     *
+     * @return array<string, string[]>
+     */
+    public static function getCreditors(): array
+    {
+        $cacheKey = 'creditors';
+
+        if (($creditors = CacheManager::get($cacheKey)) !== null) {
+            return is_array($creditors) ? $creditors : [];
+        }
+
+        if (empty(ApiClient::getInstance()->getApiKey())) {
+            return [];
+        }
+
+        try {
+            $response = ApiClient::getInstance()->getCreditors();
+            $creditorsList = is_array($response->creditors) ? $response->creditors : [];
+            $cacheTtl = (int) $response->getHeader('Cache-TTL', '0');
+
+            CacheManager::set($cacheKey, $creditorsList, $cacheTtl, ['admin_product_types']);
+
+            return $creditorsList;
+        } catch (\Throwable $e) {
+            ApiClient::processApiError('Creditors error (Comfino API).', $e);
+        }
+
+        return [];
+    }
+
+    /**
      * @return string[]
      */
     public static function getProductTypesStrings(string $listType): array

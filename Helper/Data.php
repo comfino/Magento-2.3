@@ -52,7 +52,14 @@ class Data extends AbstractHelper
     public const XML_PATH_PROD_CAT_CACHE_TTL = 'payment/comfino/prod_cat_cache_ttl';
     public const XML_PATH_INITIAL_ORDER_STATUS = 'payment/comfino/initial_order_status';
 
-    public const BUILD_TS = 1774520719;
+    public const BUILD_TS = 1780748638;
+
+    /**
+     * md5 of the default widget init script template, baked at build time by the lib-builder
+     * (bin/update-widget-init-script-hash.php). Build-time marker mirroring the WC/PS plugins;
+     * the runtime regenerate-on-change check is handled live by WidgetInitScriptHelper::initScriptRequiresUpdate().
+     */
+    public const WIDGET_INIT_SCRIPT_HASH = '0603f4e0904fd65e2aef1aded0c57c40';
 
     private const MODULE_NAME = 'Comfino_ComfinoGateway';
 

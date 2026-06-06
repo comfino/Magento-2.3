@@ -243,6 +243,25 @@ final class ConfigManager
             . FrontendHelper::getLogoAuthHash('MG', $dataHelper->getShopVersion(), $dataHelper->getModuleVersion(), Data::BUILD_TS);
     }
 
+    /**
+     * HMAC-SHA3-256 authentication hash for the paywall creditor-logo endpoint, consumed by the SDK
+     * (bootstrapPaywall paymentMethodItem.auth). Mirrors getLogoUrl() but binds the api/widget keys too.
+     */
+    public static function getPaywallLogoAuthHash(): string
+    {
+        /** @var Data $dataHelper */
+        $dataHelper = ObjectManager::getInstance()->get(Data::class);
+
+        return FrontendHelper::getPaywallLogoAuthHash(
+            'MG',
+            $dataHelper->getShopVersion(),
+            $dataHelper->getModuleVersion(),
+            (string) self::getApiKey(),
+            (string) self::getWidgetKey(),
+            Data::BUILD_TS
+        );
+    }
+
     public static function getApiKey(): ?string
     {
         return self::isSandboxMode()

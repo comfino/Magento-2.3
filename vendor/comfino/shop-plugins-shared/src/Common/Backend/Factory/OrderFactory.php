@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Comfino\Common\Backend\Factory;
 
+use Comfino\Api\Dto\Payment\AllowedProductConfig;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Shop\Order\Cart;
 use Comfino\Shop\Order\Cart\CartItemInterface;
@@ -16,6 +17,7 @@ final class OrderFactory
     /**
      * @param CartItemInterface[] $cartItems
      * @param LoanTypeEnum[]|null $allowedProductTypes
+     * @param AllowedProductConfig[]|null $allowedProductsConfig
      */
     public function createOrder(
         string $orderId,
@@ -31,7 +33,8 @@ final class OrderFactory
         ?int $deliveryNetCost = null,
         ?int $deliveryCostTaxRate = null,
         ?int $deliveryCostTaxValue = null,
-        ?string $category = null
+        ?string $category = null,
+        ?array $allowedProductsConfig = null
     ): Order {
         return new Order(
             $orderId,
@@ -52,7 +55,11 @@ final class OrderFactory
                 $category
             ),
             $customer,
-            $notificationUrl
+            $notificationUrl,
+            null,
+            null,
+            null,
+            $allowedProductsConfig
         );
     }
 }

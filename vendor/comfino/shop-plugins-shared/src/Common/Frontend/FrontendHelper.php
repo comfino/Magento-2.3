@@ -17,10 +17,28 @@ final class FrontendHelper
         string $widgetKey,
         int $buildTimestamp
     ): string {
+        return urlencode(self::getPaywallLogoAuthHashRaw(
+            $platformCode,
+            $platformVersion,
+            $pluginVersion,
+            $apiKey,
+            $widgetKey,
+            $buildTimestamp
+        ));
+    }
+
+    public static function getPaywallLogoAuthHashRaw(
+        string $platformCode,
+        string $platformVersion,
+        string $pluginVersion,
+        string $apiKey,
+        string $widgetKey,
+        int $buildTimestamp
+    ): string {
         $authKey = self::getLogoAuthKey($platformCode, $platformVersion, $pluginVersion, $buildTimestamp) . $widgetKey;
         $authKey .= hash_hmac('sha3-256', $authKey, $apiKey, true);
 
-        return urlencode(base64_encode($authKey));
+        return base64_encode($authKey);
     }
 
     public static function getLogoAuthKey(string $platformCode, string $platformVersion, string $pluginVersion, int $buildTimestamp): string
