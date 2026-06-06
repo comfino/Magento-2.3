@@ -103,7 +103,8 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@github.com:comfino/shop-plugins-shared.git"
+            "url": "git@github.com:comfino/shop-plugins-shared.git",
+            "no-api": true
         }
     ]
 }

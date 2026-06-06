@@ -4,7 +4,7 @@ Open page https://github.com/comfino/Magento-2.3/releases and download latest pl
 
 ## INSTALLATION
 
-Magento 2.3.5+
+Magento 2.3.7+
 -------
 
 **It is recommended to make a complete backup of the Magento directory before installing the module.**

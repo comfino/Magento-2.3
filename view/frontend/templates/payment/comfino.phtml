@@ -24,7 +24,7 @@ if ($allowedProductTypes === []) {
     script.setAttribute('data-comfino-sdk', '1');
     script.onload = function () {
         window.define = _amdDefine;
-        window.Comfino.bootstrapPaywall('magento', data);
+        window.Comfino.bootstrapPaywall(data);
     };
     script.onerror = function () {
         window.define = _amdDefine;

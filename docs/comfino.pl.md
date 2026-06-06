@@ -4,7 +4,7 @@ Otwórz stronę https://github.com/comfino/Magento-2.3/releases i pobierz najnow
 
 ## INSTALACJA
 
-Magento 2.3.5+
+Magento 2.3.7+
 -------
 
 **Przed instalacją modułu zalecane jest wykonanie kompletnej kopii zapasowej katalogu Magento.**

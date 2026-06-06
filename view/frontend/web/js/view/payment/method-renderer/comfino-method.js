@@ -34,7 +34,7 @@ define([
                 return this;
             }
 
-            const data = {
+            const comfinoPaywallData = {
                 authToken: config.authToken || '',
                 loanAmount: config.loanAmount || 0,
                 environment: config.environment || 'production',
@@ -42,7 +42,7 @@ define([
             };
 
             if (Array.isArray(allowedProductTypes) && allowedProductTypes.length > 0) {
-                data.productTypes = allowedProductTypes;
+                comfinoPaywallData.productTypes = allowedProductTypes;
             }
 
             // Load SDK as a plain script via DOM injection.
@@ -69,7 +69,7 @@ define([
                 script.setAttribute('data-comfino-sdk', '1');
                 script.onload = function () {
                     window.define = _amdDefine;
-                    window.Comfino.bootstrapPaywall('magento', data);
+                    window.Comfino.bootstrapPaywall(comfinoPaywallData);
                 };
                 script.onerror = function () {
                     window.define = _amdDefine;

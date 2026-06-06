@@ -18,7 +18,7 @@ Magento 2 payment module for Comfino deferred payments gateway - installment pay
 
 ## Compatibility
 
-- **Magento**: 2.3.5 or higher
+- **Magento**: 2.3.7 or higher
 - **PHP**: 7.4 or higher
 - **PHP extensions**: ctype, curl, json, zlib
 
@@ -27,7 +27,7 @@ Magento 2 payment module for Comfino deferred payments gateway - installment pay
 ### Requirements
 
 - PHP 7.4 or higher
-- Magento 2.3.5 or higher
+- Magento 2.3.7 or higher
 - PHP extensions: ctype, curl, json, zlib
 - Docker and Docker Compose (for local development)
 
