@@ -3,6 +3,8 @@
 [![PHP Version](https://img.shields.io/badge/php-7.4%20to%208.4-blue.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-OSL--3.0-green.svg)](LICENSE)
 
+> **Notice:** Version 3.1.0 is the **last release compatible with PHP 7.4** and **Magento 2.3.7**. The upcoming version 4.0.0 will require **PHP 8.1 or higher**, **Magento 2.4.4 or higher**, and is actively developed in the separate [magento2-dev](https://github.com/comfino/magento2) repository. Please plan your environment upgrade accordingly. The new module will be available as an official Composer package from the `comfino/magento2` channel.
+
 Magento 2 payment module for Comfino deferred payments gateway - installment payments, buy now pay later (BNPL) and corporate payments.
 
 ## Installation
@@ -17,9 +19,19 @@ Magento 2 payment module for Comfino deferred payments gateway - installment pay
 
 ## Compatibility
 
+### Current version (3.1.0 — last PHP 7.4 compatible release)
+
 - **Magento**: 2.3.7 or higher
 - **PHP**: 7.4 or higher
 - **PHP extensions**: ctype, curl, json, zlib
+
+### Upcoming version (4.0.0)
+
+- **Magento**: 2.4.4 or higher
+- **PHP**: 8.1 or higher
+- **PHP extensions**: ctype, curl, json, sodium, zlib
+- Repository: [github.com/comfino/magento2](https://github.com/comfino/magento2)
+- Composer: `comfino/magento2` channel
 
 ## Development
 
