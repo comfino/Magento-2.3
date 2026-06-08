@@ -2,6 +2,7 @@
 
 namespace Comfino\ComfinoGateway\Model\Ui;
 
+use Comfino\Api\ApiClient;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Common\Shop\Cart;
 use Comfino\ComfinoGateway\Helper\Data;
@@ -96,6 +97,8 @@ class ConfigProvider implements ConfigProviderInterface
                     'isActive' => true,
                     'pluginVersion' => $this->helper->getModuleVersion(),
                     'authToken' => $this->authTokenGenerator->generateAuthToken(),
+                    'loggingToken' => $this->authTokenGenerator->generateLoggingToken(),
+                    'trackId' => ApiClient::getInstance()->getTrackId(),
                     'loanAmount' => $loanAmount,
                     'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
                     // This module ships only the UMD bundle; the renderer keeps the define()-suppression path for it.

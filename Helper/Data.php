@@ -52,7 +52,7 @@ class Data extends AbstractHelper
     public const XML_PATH_PROD_CAT_CACHE_TTL = 'payment/comfino/prod_cat_cache_ttl';
     public const XML_PATH_INITIAL_ORDER_STATUS = 'payment/comfino/initial_order_status';
 
-    public const BUILD_TS = 1780748638;
+    public const BUILD_TS = 1780904749;
 
     /**
      * md5 of the default widget init script template, baked at build time by the lib-builder
