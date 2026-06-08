@@ -47,6 +47,7 @@ final class ApiClient
                 (int) ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 5),
                 (int) ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_NUM_ATTEMPTS', 3)
             );
+            self::$apiClient->setClientHostName($helper->getShopDomain());
         } else {
             self::$apiClient->setCustomApiHost(ConfigManager::getApiHost());
             self::$apiClient->setApiKey($apiKey);

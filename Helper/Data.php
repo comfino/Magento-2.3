@@ -59,7 +59,7 @@ class Data extends AbstractHelper
      * (bin/update-widget-init-script-hash.php). Build-time marker mirroring the WC/PS plugins;
      * the runtime regenerate-on-change check is handled live by WidgetInitScriptHelper::initScriptRequiresUpdate().
      */
-    public const WIDGET_INIT_SCRIPT_HASH = '0603f4e0904fd65e2aef1aded0c57c40';
+    public const WIDGET_INIT_SCRIPT_HASH = 'f3c470be6afdb86ca1e87096f8eed622';
 
     private const MODULE_NAME = 'Comfino_ComfinoGateway';
 

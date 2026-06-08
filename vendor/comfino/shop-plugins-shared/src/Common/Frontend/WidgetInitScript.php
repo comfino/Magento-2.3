@@ -28,6 +28,8 @@ script.onload = function () {
         showProviderLogos: {SHOW_PROVIDER_LOGOS},
         customBannerCss: '{CUSTOM_BANNER_CSS_URL}',
         customCalculatorCss: '{CUSTOM_CALCULATOR_CSS_URL}',
+        loggingToken: '{LOGGING_TOKEN}',
+        trackId: '{TRACK_ID}',
         callbackBefore: function () {},
         callbackAfter: function () {},
         onOfferRendered: function (jsonResponse, widgetTarget, widgetNode) { },

@@ -5,6 +5,7 @@ namespace Comfino\Configuration;
 use Comfino\Api\ApiClient;
 use Comfino\CategoryTree\BuildStrategy;
 use Comfino\ComfinoGateway\Helper\Data;
+use Comfino\ComfinoGateway\Helper\PaywallAuthTokenGenerator;
 use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Common\Frontend\WidgetInitScriptHelper;
@@ -27,8 +28,8 @@ use Magento\Framework\App\ObjectManager;
  */
 final class ConfigManager
 {
-    private const COMFINO_SDK_JS_PRODUCTION  = 'https://widget.comfino.pl/sdk/v1/comfino-sdk.min.js';
-    private const COMFINO_SDK_JS_SANDBOX     = 'https://widget.craty.pl/sdk/v1/comfino-sdk.min.js';
+    private const COMFINO_SDK_JS_PRODUCTION = 'https://widget.comfino.pl/sdk/v1/comfino-sdk.min.js';
+    private const COMFINO_SDK_JS_SANDBOX = 'https://widget.craty.pl/sdk/v1/comfino-sdk.min.js';
 
     public const CONFIG_OPTIONS = [
         'payment_settings' => [
@@ -409,6 +410,8 @@ final class ConfigManager
             'PRODUCT_CART_DETAILS' => $productData['product_cart_details'],
             'LANGUAGE' => $dataHelper->getShopLanguage(),
             'CURRENCY' => $currency,
+            'LOGGING_TOKEN' => ObjectManager::getInstance()->get(PaywallAuthTokenGenerator::class)->generateLoggingToken(),
+            'TRACK_ID' => ApiClient::getInstance()->getTrackId(),
         ];
     }
 

@@ -115,6 +115,8 @@ define([
 
             const comfinoPaywallData = {
                 authToken: config.authToken || '',
+                loggingToken: config.loggingToken || '',
+                trackId: config.trackId || '',
                 loanAmount: loanAmount,
                 environment: config.environment || 'production',
                 platform: 'magento',
