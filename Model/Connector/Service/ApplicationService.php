@@ -4,6 +4,7 @@ namespace Comfino\ComfinoGateway\Model\Connector\Service;
 
 use Comfino\Api\ApiClient;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
+use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Response\CreateOrder;
 use Comfino\ComfinoGateway\Api\ApplicationServiceInterface;
 use Comfino\Common\Backend\Factory\OrderFactory;
@@ -56,6 +57,12 @@ class ApplicationService implements ApplicationServiceInterface
         } catch (\InvalidArgumentException $e) {
             /* Local or API validation failure - keep the cart and report the message to the customer.
                Not reported to the Comfino error tracker (expected validation outcome, not a fault). */
+            $this->restoreCartAfterFailure($e->getMessage());
+
+            return [['error' => $e->getMessage()]];
+        } catch (RequestValidationError $e) {
+            /* HTTP 400 from createOrder() - the API rejected the request payload.
+               Treat the same as local validation: show the real API error, skip the error tracker. */
             $this->restoreCartAfterFailure($e->getMessage());
 
             return [['error' => $e->getMessage()]];
@@ -325,6 +332,9 @@ class ApplicationService implements ApplicationServiceInterface
             $initialState = ShopStatusManager::CUSTOM_STATUS_LABELS[$initialStatus]['state']
                 ?? Order::STATE_PENDING_PAYMENT;
 
+            /* Flag persisted with the order so the cancel observer can distinguish orders that were
+               actually submitted to Comfino from orphaned orders canceled by restoreCartAfterFailure(). */
+            $order->getPayment()->setAdditionalInformation('comfino_order_created', true);
             $order->setState($initialState)->setStatus($initialStatus);
             $order->addStatusToHistory(
                 $initialStatus,
