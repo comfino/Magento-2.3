@@ -16,6 +16,7 @@ use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
 use Magento\Checkout\Model\Session;
 use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Framework\UrlInterface;
 use Magento\Sales\Model\Order;
@@ -200,6 +201,7 @@ class ApplicationService implements ApplicationServiceInterface
      * @param Order $magentoOrder
      *
      * @return \Comfino\Shop\Order\Order
+     * @throws LocalizedException
      */
     private function buildOrderDto(Order $magentoOrder): \Comfino\Shop\Order\Order
     {
