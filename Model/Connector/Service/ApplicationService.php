@@ -14,11 +14,8 @@ use Comfino\ErrorLogger;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
-use Comfino\Shop\Order\Cart\CartItem;
-use Comfino\Shop\Order\Cart\Product;
 use Magento\Checkout\Model\Session;
 use Magento\Customer\Model\Session as CustomerSession;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Framework\UrlInterface;
 use Magento\Sales\Model\Order;
@@ -49,29 +46,26 @@ class ApplicationService implements ApplicationServiceInterface
     }
 
     /**
-     * Creates application in the Comfino API and returns the redirect URL.
+     * Creates an application in the Comfino API and returns the redirect URL.
      */
     public function save(): array
     {
         try {
             $response = $this->createApplicationTransaction();
         } catch (\InvalidArgumentException $e) {
-            // Local or API validation failure - set failure status but do not report to Comfino error tracker.
-            $this->setOrderFailureStatus();
+            /* Local or API validation failure - keep the cart and report the message to the customer.
+               Not reported to the Comfino error tracker (expected validation outcome, not a fault). */
+            $this->restoreCartAfterFailure($e->getMessage());
 
-            return [[
-                'redirectUrl' => $this->urlBuilder->getUrl('checkout/onepage/failure'),
-                'error' => $e->getMessage(),
-            ]];
+            return [['error' => $e->getMessage()]];
         } catch (\Throwable $e) {
-            $this->setOrderFailureStatus();
-
             ApiClient::processApiError('Communication error with Comfino API', $e);
 
-            return [[
-                'redirectUrl' => $this->urlBuilder->getUrl('checkout/onepage/failure'),
-                'error' => (string) __('Unsuccessful attempt to open the application. Please try again later.'),
-            ]];
+            $errorMessage = (string) __('Unsuccessful attempt to open the application. Please try again later.');
+
+            $this->restoreCartAfterFailure($errorMessage);
+
+            return [['error' => $errorMessage]];
         }
 
         DebugLogger::logEvent('ApplicationService', 'Redirect URL: ' . $response->applicationUrl);
@@ -111,7 +105,7 @@ class ApplicationService implements ApplicationServiceInterface
     }
 
     /**
-     * Returns list of available product types for Comfino widget.
+     * Returns the list of available product types for Comfino widget.
      */
     public function getProductTypes(): ?array
     {
@@ -166,7 +160,7 @@ class ApplicationService implements ApplicationServiceInterface
     private function createApplicationTransaction(): CreateOrder
     {
         $magentoOrder = $this->session->getLastRealOrder();
-        $orderDto     = $this->buildOrderDto($magentoOrder);
+        $orderDto = $this->buildOrderDto($magentoOrder);
 
         // Step 1: Local pre-validation.
         $errors = $this->validatePaymentData($orderDto);
@@ -200,45 +194,23 @@ class ApplicationService implements ApplicationServiceInterface
     /**
      * Builds the shared-lib Order DTO from the given Magento order.
      *
-     * When COMFINO_USE_ORDER_REFERENCE is enabled the increment_id (customer-visible order number, e.g. "100000001")
+     * When COMFINO_USE_ORDER_REFERENCE is enabled, the increment_id (customer-visible order number, e.g. "100000001")
      * is used as the external order identifier passed to Comfino instead of the internal entity_id.
      *
-     * @param \Magento\Sales\Model\Order $magentoOrder
+     * @param Order $magentoOrder
+     *
      * @return \Comfino\Shop\Order\Order
      */
-    private function buildOrderDto(\Magento\Sales\Model\Order $magentoOrder): \Comfino\Shop\Order\Order
+    private function buildOrderDto(Order $magentoOrder): \Comfino\Shop\Order\Order
     {
-        $totalAmount  = (int) round($magentoOrder->getGrandTotal() * 100);
-        $deliveryCost = (int) round((float) $magentoOrder->getBaseShippingInclTax() * 100);
-        $paymentInfo  = $magentoOrder->getPayment();
-        $loanTerm     = (int) $paymentInfo->getAdditionalInformation('loanTerm');
-        $loanType     = (string) $paymentInfo->getAdditionalInformation('loanType');
+        /* Build the Comfino cart from the persisted order (the source quote is no longer reliable after placement).
+           This provides the full cart items (category path, EAN, image, per-item tax) and the delivery cost breakdown
+           (net cost, tax rate, tax value) in a single, currency-consistent place. */
+        $orderCart = OrderManager::getShopCartFromOrder($magentoOrder);
 
-        $cartItems = [];
-
-        foreach ($magentoOrder->getAllItems() as $item) {
-            /** @var \Magento\Sales\Model\Order\Item $item */
-            $product    = $item->getProduct();
-            $grossPrice = (int) round((float) $item->getPriceInclTax() * 100);
-            $netPrice   = (int) round((float) $item->getPrice() * 100);
-            $quantity   = (int) $item->getQtyOrdered();
-
-            $cartItems[] = new CartItem(
-                new Product(
-                    (string) $item->getName(),
-                    $grossPrice,
-                    $product ? (string) $product->getId() : null,
-                    null,  // category
-                    null,  // ean
-                    null,  // photoUrl
-                    null,  // categoryIds
-                    $netPrice,
-                    null,  // taxRate
-                    $grossPrice - $netPrice // taxValue
-                ),
-                $quantity
-            );
-        }
+        $paymentInfo = $magentoOrder->getPayment();
+        $loanTerm = (int) $paymentInfo->getAdditionalInformation('loanTerm');
+        $loanType = (string) $paymentInfo->getAdditionalInformation('loanType');
 
         $customer = OrderManager::getShopCustomerFromOrder(
             $magentoOrder,
@@ -253,10 +225,9 @@ class ApplicationService implements ApplicationServiceInterface
         $allowedProductTypes = null;
 
         try {
-            $shopCart = OrderManager::getShopCart($this->session->getQuote());
             $allowedProductTypes = SettingsManager::getAllowedProductTypes(
                 ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
-                $shopCart
+                $orderCart
             );
         } catch (\Throwable $e) {
             // Ignore - proceed without product type filter
@@ -264,15 +235,18 @@ class ApplicationService implements ApplicationServiceInterface
 
         return (new OrderFactory())->createOrder(
             $externalId,
-            $totalAmount,
-            $deliveryCost,
+            $orderCart->getTotalValue(),
+            $orderCart->getDeliveryCost(),
             $loanTerm,
             LoanTypeEnum::from($loanType),
-            $cartItems,
+            $orderCart->getCartItems(),
             $customer,
             rtrim($this->urlBuilder->getUrl('checkout/onepage/success'), '/'),
             rtrim($this->urlBuilder->getUrl('comfino/transactionstatus'), '/'),
-            $allowedProductTypes
+            $allowedProductTypes,
+            $orderCart->getDeliveryNetCost(),
+            $orderCart->getDeliveryTaxRate(),
+            $orderCart->getDeliveryTaxValue()
         );
     }
 
@@ -288,28 +262,28 @@ class ApplicationService implements ApplicationServiceInterface
         $customer = $orderDto->getCustomer();
 
         // 1. Customer e-mail.
-        $email = $customer !== null ? $customer->getEmail() : '';
+        $email = $customer->getEmail();
 
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = (string) __('Invalid customer e-mail address. Please check your account contact data.');
         }
 
         // 2. Phone number.
-        if ($customer === null || empty($customer->getPhoneNumber())) {
+        if (empty($customer->getPhoneNumber())) {
             $errors[] = (string) __('Phone number is required. Please add a phone number to your billing or delivery address.');
         }
 
         // 3. Customer names.
-        if ($customer === null || empty(trim($customer->getFirstName()))) {
+        if (empty(trim($customer->getFirstName()))) {
             $errors[] = (string) __('First name is required.');
         }
 
-        if ($customer === null || empty(trim($customer->getLastName()))) {
+        if (empty(trim($customer->getLastName()))) {
             $errors[] = (string) __('Last name is required.');
         }
 
         // 4. Delivery address.
-        $address = $customer !== null ? $customer->getAddress() : null;
+        $address = $customer->getAddress();
 
         if ($address === null) {
             $errors[] = (string) __('Delivery address is required.');
@@ -340,13 +314,13 @@ class ApplicationService implements ApplicationServiceInterface
      * Marks the order with the configured initial Comfino order status after successful API submission.
      * Uses COMFINO_INITIAL_ORDER_STATUS config value; defaults to comfino_created.
      *
-     * @param \Magento\Sales\Model\Order $order
+     * @param Order $order
      */
-    private function setComfinoCreatedStatus(\Magento\Sales\Model\Order $order): void
+    private function setComfinoCreatedStatus(Order $order): void
     {
         try {
             $initialStatus = ConfigManager::getInitialOrderStatus();
-            $initialState  = ShopStatusManager::CUSTOM_STATUS_LABELS[$initialStatus]['state']
+            $initialState = ShopStatusManager::CUSTOM_STATUS_LABELS[$initialStatus]['state']
                 ?? Order::STATE_PENDING_PAYMENT;
 
             $order->setState($initialState)->setStatus($initialStatus);
@@ -361,20 +335,41 @@ class ApplicationService implements ApplicationServiceInterface
     }
 
     /**
-     * Sets the order to pending_payment state on application creation failure.
+     * Restores the customer's cart after an application creation failure and cancels the orphaned order.
+     *
+     * In Magento the order is placed (and the source quote deactivated) by the standard checkout flow before this
+     * service runs, so a failure here would otherwise leave the customer with an empty cart on a generic failure page.
+     * Mirroring the PrestaShop/WooCommerce behavior, the cart contents are preserved and the customer is shown the
+     * error message instead:
+     *
+     *  - The orphaned Magento order is canceled (releases reserved stock; no Comfino order was created);
+     *  - The source quote is reactivated via {@see Session::restoreQuote()} so the cart can be retried.
+     *
+     * @param string $reason Human-readable failure reason recorded in the order status history.
      */
-    private function setOrderFailureStatus(): void
+    private function restoreCartAfterFailure(string $reason): void
     {
         try {
+            // Cancel the orphaned order (placed before the Comfino application) to release reserved stock.
             $order = $this->session->getLastRealOrder();
-            $order->setStatus(Order::STATE_PENDING_PAYMENT)->setState(Order::STATE_PENDING_PAYMENT);
-            $order->addStatusToHistory(
-                Order::STATE_PENDING_PAYMENT,
-                __('Unsuccessful attempt to open the application. Communication error with Comfino API.')
-            );
-            $this->orderRepository->save($order);
+
+            if ($order->getId() && $order->canCancel()) {
+                $order->cancel();
+                $order->addStatusToHistory(
+                    $order->getStatus(),
+                    (string) __('Comfino application creation failed: %1', $reason)
+                );
+                $this->orderRepository->save($order);
+            }
         } catch (\Throwable $e) {
-            ErrorLogger::sendError($e, 'Order failure status update error', (string) $e->getCode(), $e->getMessage());
+            ErrorLogger::sendError($e, 'Order cancellation error', (string) $e->getCode(), $e->getMessage());
+        }
+
+        try {
+            // Reactivate the source quote so the customer keeps the cart contents and can retry the payment.
+            $this->session->restoreQuote();
+        } catch (\Throwable $e) {
+            ErrorLogger::sendError($e, 'Cart restore error', (string) $e->getCode(), $e->getMessage());
         }
     }
 }

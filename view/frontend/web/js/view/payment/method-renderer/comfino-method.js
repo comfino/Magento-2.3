@@ -10,8 +10,9 @@ define([
     'mage/storage',
     'Magento_Checkout/js/model/full-screen-loader',
     'Magento_Checkout/js/model/error-processor',
-    'mage/url'
-], function (Component, quote, storage, fullScreenLoader, errorProcessor, url) {
+    'mage/url',
+    'Magento_Customer/js/customer-data'
+], function (Component, quote, storage, fullScreenLoader, errorProcessor, url, customerData) {
     'use strict';
 
     /* Cache the SDK-load promise on a window so repeated payment-method renders (KO re-mount on quote refresh)
@@ -221,9 +222,20 @@ define([
 
                     if (data && data.redirectUrl) {
                         window.location.replace(data.redirectUrl);
-                    } else {
-                        self.isPlaceOrderActionAllowed(true);
+
+                        return;
                     }
+
+                    /* Application creation failed server-side: the backend has canceled the orphaned order and restored
+                       the source quote, so the cart is preserved. Refresh the cart section to reflect the restored
+                       quote, show the error message inline, and re-enable Place Order so the customer can retry instead
+                       of landing on a generic failure page. */
+                    if (data && data.error) {
+                        customerData.reload(['cart'], true);
+                        self.messageContainer.addErrorMessage({ message: data.error });
+                    }
+
+                    self.isPlaceOrderActionAllowed(true);
                 }).fail(function (response) {
                     fullScreenLoader.stopLoader();
                     errorProcessor.process(response, self.messageContainer);
