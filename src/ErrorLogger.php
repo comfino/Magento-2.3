@@ -65,8 +65,8 @@ final class ErrorLogger
 
         self::getLoggerInstance()->sendError(
             Common\Backend\ErrorLogger::classifyException($exception),
-            ErrorSeverity::Error,
-            $context,
+            ErrorSeverity::from(ErrorSeverity::Error),
+            OperationContext::from($context),
             $errorCode,
             $errorMessage,
             $apiRequestUrl,

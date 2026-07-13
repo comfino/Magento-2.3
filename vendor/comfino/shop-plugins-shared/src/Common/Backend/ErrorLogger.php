@@ -292,22 +292,24 @@ final class ErrorLogger extends Logger
      */
     public static function classifyException($exception): ErrorCategory
     {
-        switch (true) {
-            case $exception instanceof \ArgumentCountError:
-                return ErrorCategory::ExceptionArgCount;
-            case $exception instanceof \TypeError:
-                return ErrorCategory::ExceptionTypeError;
-            case $exception instanceof \ParseError:
-                return ErrorCategory::ExceptionParseError;
-            case $exception instanceof \DivisionByZeroError:
-                return ErrorCategory::ExceptionDivision;
-            case $exception instanceof \LogicException:
-                return ErrorCategory::ExceptionLogicError;
-            case $exception instanceof \Error:
-                return ErrorCategory::ExceptionError;
-            default:
-                return ErrorCategory::ExceptionGeneric;
-        }
+        return ErrorCategory::from((function () use ($exception) {
+            switch (true) {
+                case $exception instanceof \ArgumentCountError:
+                    return ErrorCategory::ExceptionArgCount;
+                case $exception instanceof \TypeError:
+                    return ErrorCategory::ExceptionTypeError;
+                case $exception instanceof \ParseError:
+                    return ErrorCategory::ExceptionParseError;
+                case $exception instanceof \DivisionByZeroError:
+                    return ErrorCategory::ExceptionDivision;
+                case $exception instanceof \LogicException:
+                    return ErrorCategory::ExceptionLogicError;
+                case $exception instanceof \Error:
+                    return ErrorCategory::ExceptionError;
+                default:
+                    return ErrorCategory::ExceptionGeneric;
+            }
+        })());
     }
 
     /**
@@ -326,9 +328,9 @@ final class ErrorLogger extends Logger
         $errorLevel = $this->getErrorTypeName($errorType);
 
         $this->sendError(
-            ErrorCategory::PhpError,
+            ErrorCategory::from(ErrorCategory::PhpError),
             $this->mapErrorSeverity($errorType),
-            OperationContext::Unknown,
+            OperationContext::from(OperationContext::Unknown),
             (string) $errorType,
             "Error $errorLevel in $file:$line: $errorMessage"
         );
@@ -345,8 +347,8 @@ final class ErrorLogger extends Logger
 
         $this->sendError(
             self::classifyException($exception),
-            ErrorSeverity::Error,
-            OperationContext::Unknown,
+            ErrorSeverity::from(ErrorSeverity::Error),
+            OperationContext::from(OperationContext::Unknown),
             $exceptionClass,
             sprintf('Exception %s in %s:%d: %s', $exceptionClass, $exception->getFile(), $exception->getLine(), $exception->getMessage()),
             null,
@@ -379,9 +381,9 @@ final class ErrorLogger extends Logger
             $errorLevel = $this->getErrorTypeName($error['type']);
 
             $this->sendError(
-                ErrorCategory::PhpError,
+                ErrorCategory::from(ErrorCategory::PhpError),
                 $this->mapErrorSeverity($error['type']),
-                OperationContext::Unknown,
+                OperationContext::from(OperationContext::Unknown),
                 (string) $error['type'],
                 "Error $errorLevel in $error[file]:$error[line]: $error[message]"
             );
@@ -411,27 +413,29 @@ final class ErrorLogger extends Logger
      */
     private function mapErrorSeverity(int $errorType): ErrorSeverity
     {
-        switch ($errorType) {
-            case E_ERROR:
-            case E_CORE_ERROR:
-            case E_COMPILE_ERROR:
-            case E_RECOVERABLE_ERROR:
-            case E_PARSE:
-            case E_USER_ERROR:
-                return ErrorSeverity::Error;
-            case E_WARNING:
-            case E_CORE_WARNING:
-            case E_COMPILE_WARNING:
-            case E_USER_WARNING:
-                return ErrorSeverity::Warning;
-            case E_NOTICE:
-            case E_USER_NOTICE:
-            case E_DEPRECATED:
-            case E_USER_DEPRECATED:
-                return ErrorSeverity::Notice;
-            default:
-                return ErrorSeverity::Error;
-        }
+        return ErrorSeverity::from((function () use ($errorType) {
+            switch ($errorType) {
+                case E_ERROR:
+                case E_CORE_ERROR:
+                case E_COMPILE_ERROR:
+                case E_RECOVERABLE_ERROR:
+                case E_PARSE:
+                case E_USER_ERROR:
+                    return ErrorSeverity::Error;
+                case E_WARNING:
+                case E_CORE_WARNING:
+                case E_COMPILE_WARNING:
+                case E_USER_WARNING:
+                    return ErrorSeverity::Warning;
+                case E_NOTICE:
+                case E_USER_NOTICE:
+                case E_DEPRECATED:
+                case E_USER_DEPRECATED:
+                    return ErrorSeverity::Notice;
+                default:
+                    return ErrorSeverity::Error;
+            }
+        })());
     }
 
     /**

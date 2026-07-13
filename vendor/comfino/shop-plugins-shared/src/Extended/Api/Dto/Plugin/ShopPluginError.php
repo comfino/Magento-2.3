@@ -80,9 +80,9 @@ final class ShopPluginError
      * @param string $pluginVersion
      * @param string $platformVersion
      * @param string $phpVersion
-     * @param mixed $category
-     * @param mixed $severity
-     * @param mixed $context
+     * @param ErrorCategory $category
+     * @param ErrorSeverity $severity
+     * @param OperationContext $context
      * @param string $errorCode
      * @param string $errorMessage
      * @param string|null $apiEndpoint
@@ -91,11 +91,8 @@ final class ShopPluginError
      * @param string|null $apiResponse
      * @param string|null $stackTrace
      * @param int|null $occurredAt
-     * @param \Comfino\Extended\Api\Dto\Plugin\ErrorCategory::* $category
-     * @param \Comfino\Extended\Api\Dto\Plugin\ErrorSeverity::* $severity
-     * @param \Comfino\Extended\Api\Dto\Plugin\OperationContext::* $context
      */
-    public function __construct(string $host, string $platform, string $pluginVersion, string $platformVersion, string $phpVersion, $category, $severity, $context, string $errorCode, string $errorMessage, array $environment = [], ?string $apiEndpoint = null, ?string $apiRequestUrl = null, ?string $apiRequest = null, ?string $apiResponse = null, ?string $stackTrace = null, ?int $occurredAt = null)
+    public function __construct(string $host, string $platform, string $pluginVersion, string $platformVersion, string $phpVersion, ErrorCategory $category, ErrorSeverity $severity, OperationContext $context, string $errorCode, string $errorMessage, array $environment = [], ?string $apiEndpoint = null, ?string $apiRequestUrl = null, ?string $apiRequest = null, ?string $apiResponse = null, ?string $stackTrace = null, ?int $occurredAt = null)
     {
         $this->host = $host;
         $this->platform = $platform;

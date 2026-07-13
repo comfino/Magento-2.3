@@ -21,10 +21,10 @@ final class ErrorMessageNormalizer
      * @var string[]
      */
     private const PLUGIN_ROOT_PATTERNS = [
-        '~/\S*/wp-content/plugins/comfino-payment-gateway/~',
-        '~/\S*/modules/comfino/~',
-        '~/\S*/app/code/Comfino/ComfinoGateway/~',
-        '~/\S*/vendor/comfino/[^/\s]+/~',
+        '~/\S*/(wp-content/plugins/comfino-payment-gateway/)~',
+        '~/\S*/(modules/comfino/)~',
+        '~/\S*/(app/code/Comfino/ComfinoGateway/)~',
+        '~/\S*/(vendor/comfino/[^/\s]+/)~',
     ];
 
     /**
@@ -37,6 +37,7 @@ final class ErrorMessageNormalizer
         $message = self::pregReplace(self::PATTERN_TIMEOUT, self::REPLACE_TIMEOUT, $message);
         $message = self::pregReplace(self::PATTERN_BYTES, self::REPLACE_BYTES, $message);
         $message = self::pregReplace(self::PATTERN_CALLED_IN, '', $message);
+        $message = self::stripServerPathPrefix($message);
 
         return trim($message);
     }
@@ -47,11 +48,16 @@ final class ErrorMessageNormalizer
      */
     public function normalizeStackTrace(string $stackTrace): string
     {
+        return self::stripServerPathPrefix($stackTrace);
+    }
+
+    private static function stripServerPathPrefix(string $subject): string
+    {
         foreach (self::PLUGIN_ROOT_PATTERNS as $pattern) {
-            $stackTrace = self::pregReplace($pattern, '', $stackTrace);
+            $subject = self::pregReplace($pattern, '$1', $subject);
         }
 
-        return $stackTrace;
+        return $subject;
     }
 
     private static function pregReplace(string $pattern, string $replacement, string $subject): string
