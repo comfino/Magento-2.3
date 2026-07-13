@@ -18,7 +18,11 @@ use Comfino\Api\Dto\Plugin\ShopTheme;
 use Comfino\Frontend\AbstractShopEnvironmentBuilder;
 use Comfino\Frontend\ThemeFamilyRules;
 use Comfino\Platform\PlatformInfoInterface;
+use Magento\Framework\App\Area;
+use Magento\Framework\View\Design\Theme\ThemeProviderInterface;
+use Magento\Framework\View\Design\ThemeInterface;
 use Magento\Framework\View\DesignInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Magento\Theme\Model\Theme;
 use Throwable;
 
@@ -36,11 +40,29 @@ class MagentoShopEnvironmentBuilder extends AbstractShopEnvironmentBuilder
      */
     private $design;
 
-    public function __construct(PlatformInfoInterface $platformInfo, ThemeFamilyRules $rules, DesignInterface $design)
-    {
+    /**
+     * @var ThemeProviderInterface
+     */
+    private $themeProvider;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    public function __construct(
+        PlatformInfoInterface $platformInfo,
+        ThemeFamilyRules $rules,
+        DesignInterface $design,
+        ThemeProviderInterface $themeProvider,
+        StoreManagerInterface $storeManager
+    ) {
         parent::__construct($platformInfo, $rules);
 
         $this->design = $design;
+        $this->themeProvider = $themeProvider;
+        $this->storeManager = $storeManager;
+
         $this->registerThemeRules();
     }
 
@@ -80,22 +102,58 @@ class MagentoShopEnvironmentBuilder extends AbstractShopEnvironmentBuilder
     /**
      * {@inheritDoc}
      *
-     * Reads the active design theme from Magento's DesignInterface, walks the parent chain, and resolves the normalized
-     * family via ThemeFamilyRules.
+     * Resolves the storefront (frontend) theme, walks the parent chain, and resolves the normalized family via
+     * ThemeFamilyRules.
+     *
+     * The backend report is triggered from the admin area (config save), where DesignInterface::getDesignTheme() would
+     * return the adminhtml theme (Magento/backend) instead of the storefront theme. To report the theme the customer
+     * actually sees, we read the configured frontend theme for the current store scope regardless of the active area.
      */
     protected function detectTheme(): ShopTheme
     {
         try {
-            $theme = $this->design->getDesignTheme();
-            $code = (string) $theme->getCode();
+            $theme = $this->resolveFrontendTheme();
+            $code = $theme !== null ? (string) $theme->getCode() : '';
             $parents = $theme instanceof Theme ? $this->collectThemeParents($theme) : [];
         } catch (Throwable $e) {
+            return new ShopTheme('', 'custom', []);
+        }
+
+        if ($code === '') {
             return new ShopTheme('', 'custom', []);
         }
 
         $family = $this->rules->resolveFamily(array_map('strtolower', array_merge([$code], $parents)));
 
         return new ShopTheme($code, $family, $parents);
+    }
+
+    /**
+     * Resolves the theme configured for the storefront (frontend area) in the current store scope.
+     *
+     * DesignInterface::getConfigurationDesignTheme() returns either a numeric theme id (when a theme is selected in the
+     * admin) or a theme path such as "Magento/luma" (when falling back to the default). Both forms are resolved to a
+     * loaded Theme model here.
+     *
+     * @return ThemeInterface|null Loaded frontend theme, or null when it cannot be resolved.
+     */
+    private function resolveFrontendTheme(): ?ThemeInterface
+    {
+        $storeId = $this->storeManager->getStore()->getId();
+        $configuredTheme = $this->design->getConfigurationDesignTheme(
+            Area::AREA_FRONTEND,
+            ['store' => $storeId]
+        );
+
+        if ($configuredTheme === null || $configuredTheme === '') {
+            return null;
+        }
+
+        if (is_numeric($configuredTheme)) {
+            return $this->themeProvider->getThemeById((int) $configuredTheme);
+        }
+
+        return $this->themeProvider->getThemeByFullPath(Area::AREA_FRONTEND . '/' . $configuredTheme);
     }
 
     /**

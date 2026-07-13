@@ -416,7 +416,7 @@ final class ConfigManager
                 self::getInstance()->setConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT', strtotime($response->expiresAt));
                 self::getInstance()->persist();
             }
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
             // Silently ignore — CETS token claim is best-effort.
         }
     }
