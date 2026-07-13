@@ -6,7 +6,9 @@ use Comfino\Api\ApiClient;
 use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\AuthorizationError;
 use Comfino\ComfinoGateway\Helper\Data;
+use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
@@ -108,16 +110,18 @@ class ConfigObserver implements ObserverInterface
                 $widgetKey = $apiClient->getWidgetKey();
                 $this->configWriter->save(Data::XML_PATH_WIDGET_KEY, $widgetKey);
             } catch (\Throwable $e) {
-                ApiClient::processApiError('ConfigObserver: get widget key error', $e);
+                ApiClient::processApiError('ConfigObserver: get widget key error', $e, OperationContext::Configuration);
 
                 $this->messageManager->addErrorMessage($e->getMessage());
             }
+
+            ConfigManager::refreshErrorLoggingTokenIfNeeded();
         } catch (AuthorizationError | AccessDenied $e) {
-            ApiClient::processApiError('ConfigObserver: API key validation error', $e);
+            ApiClient::processApiError('ConfigObserver: API key validation error', $e, OperationContext::Configuration);
 
             $this->messageManager->addWarningMessage(__('API key %1 is not valid.', $activeApiKey));
         } catch (\Throwable $e) {
-            ApiClient::processApiError('ConfigObserver: config save error', $e);
+            ApiClient::processApiError('ConfigObserver: config save error', $e, OperationContext::Configuration);
 
             $this->messageManager->addErrorMessage($e->getMessage());
         }

@@ -4,10 +4,10 @@
         <!-- Comfino CDN scripts (comfino-sdk.min.js, widget-frontend.min.js) -->
         <policy id="script-src">
             <values>
-                <value id="comfino-prod-cdn" type="host">widget.comfino.pl</value>
+                <value id="comfino-sdk-prod-cdn" type="host">sdk.comfino.pl</value>
             </values>
             <values>
-                <value id="comfino-sandbox-cdn" type="host">widget.craty.pl</value>
+                <value id="comfino-sdk-sandbox-cdn" type="host">sdk.craty.pl</value>
             </values>
             <values>
                 <value id="comfino-dev-cdn" type="host">widget-comfino.test:8080</value>
@@ -27,13 +27,13 @@
             </values>
         </policy>
 
-        <!-- Paywall CSS + widget CSS from Comfino CDN -->
+        <!-- Paywall CSS from SDK CDN -->
         <policy id="style-src">
             <values>
-                <value id="comfino-prod-cdn" type="host">widget.comfino.pl</value>
+                <value id="comfino-sdk-prod-cdn" type="host">sdk.comfino.pl</value>
             </values>
             <values>
-                <value id="comfino-sandbox-cdn" type="host">widget.craty.pl</value>
+                <value id="comfino-sdk-sandbox-cdn" type="host">sdk.craty.pl</value>
             </values>
             <values>
                 <value id="comfino-dev-cdn" type="host">widget-comfino.test:8080</value>
@@ -43,10 +43,10 @@
         <!-- Images from Comfino CDN and API (logo endpoint: /v1/get-logo-url) -->
         <policy id="img-src">
             <values>
-                <value id="comfino-prod-cdn" type="host">widget.comfino.pl</value>
+                <value id="comfino-sdk-prod-cdn" type="host">sdk.comfino.pl</value>
             </values>
             <values>
-                <value id="comfino-sandbox-cdn" type="host">widget.craty.pl</value>
+                <value id="comfino-sdk-sandbox-cdn" type="host">sdk.craty.pl</value>
             </values>
             <values>
                 <value id="comfino-dev-cdn" type="host">widget-comfino.test:8080</value>
@@ -74,10 +74,10 @@
                 <value id="comfino-dev-api" type="host">ecommerce</value>
             </values>
             <values>
-                <value id="comfino-prod-cdn" type="host">widget.comfino.pl</value>
+                <value id="comfino-sdk-prod-cdn" type="host">sdk.comfino.pl</value>
             </values>
             <values>
-                <value id="comfino-sandbox-cdn" type="host">widget.craty.pl</value>
+                <value id="comfino-sdk-sandbox-cdn" type="host">sdk.craty.pl</value>
             </values>
             <values>
                 <value id="comfino-dev-cdn" type="host">widget-comfino.test:8080</value>

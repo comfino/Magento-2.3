@@ -2,7 +2,6 @@
 
 namespace Comfino\ComfinoGateway\Helper;
 
-use Comfino\Configuration\ConfigManager;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\ProductMetadataInterface;
@@ -28,7 +27,6 @@ class Data extends AbstractHelper
     public const XML_PATH_WIDGET_TYPE = 'payment/comfino/widget_type';
     public const XML_PATH_WIDGET_OFFER_TYPE = 'payment/comfino/widget_offer_type';
     public const XML_PATH_WIDGET_EMBED_METHOD = 'payment/comfino/widget_embed_method';
-    public const XML_PATH_WIDGET_CODE = 'payment/comfino/widget_code';
     public const XML_PATH_SANDBOX_ENABLED = 'payment/comfino/sandbox';
     public const XML_PATH_SANDBOX_API_KEY = 'payment/comfino/sandbox_api_key';
     public const XML_PATH_PAYWALL_TITLE = 'payment/comfino/paywall_title';
@@ -46,20 +44,13 @@ class Data extends AbstractHelper
     public const XML_PATH_API_CONNECT_TIMEOUT = 'payment/comfino/api_connect_timeout';
     public const XML_PATH_API_TIMEOUT = 'payment/comfino/api_timeout';
     public const XML_PATH_API_CONNECT_NUM_ATTEMPTS = 'payment/comfino/api_connect_num_attempts';
-    public const XML_PATH_WIDGET_PROD_SCRIPT_VERSION = 'payment/comfino/widget_prod_script_version';
-    public const XML_PATH_WIDGET_DEV_SCRIPT_VERSION = 'payment/comfino/widget_dev_script_version';
     public const XML_PATH_CAT_FILTER_AVAIL_PROD_TYPES = 'payment/comfino/cat_filter_avail_prod_types';
     public const XML_PATH_PROD_CAT_CACHE_TTL = 'payment/comfino/prod_cat_cache_ttl';
     public const XML_PATH_INITIAL_ORDER_STATUS = 'payment/comfino/initial_order_status';
+    public const XML_PATH_ERROR_LOGGING_ACCESS_TOKEN = 'payment/comfino/error_logging_access_token';
+    public const XML_PATH_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT = 'payment/comfino/error_logging_access_token_expires_at';
 
-    public const BUILD_TS = 1780985072;
-
-    /**
-     * md5 of the default widget init script template, baked at build time by the lib-builder
-     * (bin/update-widget-init-script-hash.php). Build-time marker mirroring the WC/PS plugins;
-     * the runtime regenerate-on-change check is handled live by WidgetInitScriptHelper::initScriptRequiresUpdate().
-     */
-    public const WIDGET_INIT_SCRIPT_HASH = 'f3c470be6afdb86ca1e87096f8eed622';
+    public const BUILD_TS = 1783864367;
 
     private const MODULE_NAME = 'Comfino_ComfinoGateway';
 
@@ -146,14 +137,5 @@ class Data extends AbstractHelper
     public function getShopLanguage(): string
     {
         return substr($this->localeResolver->getLocale(), 0, 2);
-    }
-
-    /**
-     * Returns widget JS URL (for product page widget). Delegates to ConfigManager.
-     * Called from view/frontend/templates/widget/init.phtml.
-     */
-    public function getWidgetFrontendScriptUrl(): string
-    {
-        return ConfigManager::getWidgetScriptUrl();
     }
 }

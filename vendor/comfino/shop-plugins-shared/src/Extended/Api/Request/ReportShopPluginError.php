@@ -19,6 +19,10 @@ class ReportShopPluginError extends Request
      */
     private $hashKey;
 
+    public const MESSAGE_VERSION = 1;
+
+    private const MESSAGE_VERSION_HEADER = 'Comfino-Message-Version';
+
     private const MIN_HASH_KEY_LENGTH = 16;
 
     private const MAX_ERROR_MESSAGE_LENGTH = 2000;
@@ -59,6 +63,28 @@ class ReportShopPluginError extends Request
         $this->hashKey = $hashKey;
         $this->setRequestMethod('POST');
         $this->setApiEndpointPath('log-plugin-error');
+        $this->setRequestHeaders([self::MESSAGE_VERSION_HEADER => (string) self::MESSAGE_VERSION]);
+    }
+
+    /**
+     * @param string|null $apiRequestUrl
+     * @return string|null
+     */
+    public static function extractApiEndpoint($apiRequestUrl): ?string
+    {
+        if ($apiRequestUrl === null || $apiRequestUrl === '') {
+            return null;
+        }
+
+        $path = parse_url($apiRequestUrl, PHP_URL_PATH);
+
+        if (!is_string($path) || $path === '') {
+            return null;
+        }
+
+        $path = trim($path, '/');
+
+        return $path !== '' ? $path : null;
     }
 
     protected function prepareRequestBody(): ?array
@@ -66,11 +92,20 @@ class ReportShopPluginError extends Request
         $errorDetailsArray = [
             'host' => $this->shopPluginError->host,
             'platform' => $this->shopPluginError->platform,
+            'plugin_version' => $this->shopPluginError->pluginVersion,
+            'platform_version' => $this->shopPluginError->platformVersion,
+            'php_version' => $this->shopPluginError->phpVersion,
+            'category' => $this->shopPluginError->category->value,
+            'severity' => $this->shopPluginError->severity->value,
+            'context' => $this->shopPluginError->context->value,
             'environment' => self::sanitizeEnvironment($this->shopPluginError->environment),
             'error_code' => $this->shopPluginError->errorCode,
             'error_message' => self::filterPaths(
                 self::truncate($this->shopPluginError->errorMessage, self::MAX_ERROR_MESSAGE_LENGTH)
             ),
+            'api_endpoint' => $this->shopPluginError->apiEndpoint !== null
+                ? self::truncate($this->shopPluginError->apiEndpoint, self::MAX_URL_LENGTH)
+                : null,
             'api_request_url' => $this->shopPluginError->apiRequestUrl !== null
                 ? self::truncate($this->shopPluginError->apiRequestUrl, self::MAX_URL_LENGTH)
                 : null,
@@ -91,6 +126,7 @@ class ReportShopPluginError extends Request
                     self::truncate($this->shopPluginError->stackTrace, self::MAX_STACK_TRACE_LENGTH)
                 )
                 : null,
+            'occurred_at' => $this->shopPluginError->occurredAt,
         ];
 
         if (strlen($this->hashKey) < self::MIN_HASH_KEY_LENGTH) {

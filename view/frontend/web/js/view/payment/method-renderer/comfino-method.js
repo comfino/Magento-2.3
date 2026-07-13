@@ -1,7 +1,7 @@
 /**
  * Comfino payment method renderer for Luma checkout theme
  *
- * Injects the Comfino SDK script and passes paywall data directly to bootstrapPaywall() in the onload callback.
+ * Loads the Comfino SDK via native dynamic import() and passes paywall data to bootstrapPaywall().
  * The SDK handles all paywall lifecycle logic (init, iframe, offer selection) via MagentoPaywallController.
  */
 define([
@@ -15,63 +15,33 @@ define([
 ], function (Component, quote, storage, fullScreenLoader, errorProcessor, url, customerData) {
     'use strict';
 
-    /* Cache the SDK-load promise on a window so repeated payment-method renders (KO re-mount on quote refresh)
-       reuse the existing script tag instead of re-injecting.
+    /* Cache the SDK-load promise on window so repeated KO re-mounts share a single fetch. */
+    let cachedSdk = null;
 
-       The SDK is a UMD bundle. When RequireJS's global define() is present, UMD takes the AMD branch - it calls
-       define() and returns its export to RequireJS, but skips the global assignment (window.Comfino.*). We hide
-       window.define for the duration of the script load, so the bundle takes the global-assignment branch and
-       restores it in both onload and onerror. (sdkScriptKind is always 'umd' in 3.0.1; the 'module' branch is
-       kept for forward-compatibility if an ESM bundle URL is ever supplied.) */
     function loadComfinoSdk(cfg)
     {
-        if (window.Comfino && typeof window.Comfino.bootstrapPaywall === 'function') {
-            return Promise.resolve(window.Comfino);
-        }
-
         if (window.__comfinoSdkPromise) {
             return window.__comfinoSdkPromise;
         }
 
-        const kind = cfg.sdkScriptKind === 'module' ? 'module' : 'umd';
-        const sdkUrl = kind === 'module' ? (cfg.sdkScriptUrlEsm || cfg.sdkScriptUrl) : cfg.sdkScriptUrl;
+        window.__comfinoSdkPromise = import(cfg.sdkScriptUrl)
+            .then(function (ns) {
+                cachedSdk = ns;
 
-        window.__comfinoSdkPromise = new Promise(function (resolve, reject) {
-            const script = document.createElement('script');
-            script.src = sdkUrl;
-            script.setAttribute('data-comfino-sdk', '1');
+                return ns;
+            })
+            .catch(function (error) {
+                window.__comfinoSdkPromise = null;
 
-            if (kind === 'module') {
-                script.type = 'module';
-                script.onload = function () { resolve(window.Comfino); };
-                script.onerror = function (error) {
-                    window.__comfinoSdkPromise = null;
-                    reject(error);
-                };
-            } else {
-                const _amdDefine = window.define;
-                window.define = undefined;
-
-                script.onload = function () {
-                    window.define = _amdDefine;
-                    resolve(window.Comfino);
-                };
-                script.onerror = function (error) {
-                    window.define = _amdDefine;
-                    window.__comfinoSdkPromise = null;
-                    reject(error);
-                };
-            }
-
-            document.head.appendChild(script);
-        });
+                return Promise.reject(error);
+            });
 
         return window.__comfinoSdkPromise;
     }
 
     function resolveComfinoSdk()
     {
-        return window.Comfino || null;
+        return cachedSdk;
     }
 
     return Component.extend({
@@ -84,6 +54,12 @@ define([
             this._super();
 
             const config = (window.checkoutConfig.payment || {}).comfino || {};
+
+            /* Standard-rendering Comfino logo placeholder: a static CDN SVG the KO template binds via getDefaultLogoUrl(),
+               marked data-comfino-logo so the SDK's DefaultPaymentMethodItemRenderer adopts this same <img> and swaps
+               its src to the auth API logo. Plain component method (not an observable) — the value never changes after
+               mount, matching getTitle()/getCode(). */
+            this.defaultLogoUrl = config.defaultLogoUrl || '';
 
             // allowedProductTypes: null = no filter active, [] = all filtered (don't load SDK),
             // [...] = filtered subset to pass to bootstrapPaywall().
@@ -125,7 +101,7 @@ define([
                 paywallSettings: config.paywallSettings,
                 productTypeNames: config.productTypeNames,
                 creditors: config.creditors,
-                paymentMethodItem: { auth: config.paymentMethodAuth || '' }
+                paymentMethodItem: { auth: config.paymentMethodAuth || '', label: config.paymentMethodLabel || undefined }
             };
 
             if (cart) {
@@ -180,6 +156,11 @@ define([
             }
 
             return this;
+        },
+
+        /** Static CDN URL of the default Comfino logo placeholder, bound by the KO template's <img data-bind>. */
+        getDefaultLogoUrl: function () {
+            return this.defaultLogoUrl || '';
         },
 
         /** Called by Magento on order placement to collect payment data.

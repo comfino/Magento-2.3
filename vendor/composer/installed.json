@@ -34,11 +34,7 @@
                 }
             },
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Cache\\Adapter\\Common\\": ""
-                }
-            },
+            "autoload": [],
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -106,9 +102,6 @@
             },
             "installation-source": "dist",
             "autoload": {
-                "psr-4": {
-                    "Cache\\Adapter\\PHPArray\\": ""
-                },
                 "exclude-from-classmap": [
                     "/Tests/"
                 ]
@@ -181,9 +174,6 @@
             },
             "installation-source": "dist",
             "autoload": {
-                "psr-4": {
-                    "Cache\\Adapter\\Filesystem\\": ""
-                },
                 "exclude-from-classmap": [
                     "/Tests/"
                 ]
@@ -249,9 +239,6 @@
             },
             "installation-source": "dist",
             "autoload": {
-                "psr-4": {
-                    "Cache\\Hierarchy\\": ""
-                },
                 "exclude-from-classmap": [
                     "/Tests/"
                 ]
@@ -312,11 +299,7 @@
                 }
             },
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Cache\\TagInterop\\": ""
-                }
-            },
+            "autoload": [],
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -354,12 +337,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:comfino/shop-plugins-shared.git",
-                "reference": "587702b8660530adf286c91333229f2517ecc9b0"
+                "reference": "5992900ea1ebf5d502997089924a061d5c0419cd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/comfino/shop-plugins-shared/zipball/587702b8660530adf286c91333229f2517ecc9b0",
-                "reference": "587702b8660530adf286c91333229f2517ecc9b0",
+                "url": "https://api.github.com/repos/comfino/shop-plugins-shared/zipball/5992900ea1ebf5d502997089924a061d5c0419cd",
+                "reference": "5992900ea1ebf5d502997089924a061d5c0419cd",
                 "shasum": ""
             },
             "require": {
@@ -381,7 +364,7 @@
                 "phpspec/prophecy-phpunit": "^1.1",
                 "phpunit/phpunit": "^5.7"
             },
-            "time": "2026-06-09T06:03:29+00:00",
+            "time": "2026-07-12T13:51:28+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "source",
@@ -438,11 +421,7 @@
                 }
             },
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Fig\\Http\\Message\\": "src/"
-                }
-            },
+            "autoload": [],
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -518,11 +497,7 @@
                 }
             },
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "League\\Flysystem\\": "src/"
-                }
-            },
+            "autoload": [],
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -615,11 +590,7 @@
             "time": "2022-06-09T08:53:42+00:00",
             "type": "library",
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Monolog\\": "src/Monolog"
-                }
-            },
+            "autoload": [],
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -680,11 +651,7 @@
                 }
             },
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Cache\\": "src/"
-                }
-            },
+            "autoload": [],
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -733,11 +700,7 @@
                 }
             },
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Http\\Client\\": "src/"
-                }
-            },
+            "autoload": [],
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -788,11 +751,7 @@
                 }
             },
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Http\\Message\\": "src/"
-                }
-            },
+            "autoload": [],
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -845,11 +804,7 @@
                 }
             },
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Http\\Message\\": "src/"
-                }
-            },
+            "autoload": [],
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -901,11 +856,7 @@
                 }
             },
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Log\\": "Psr/Log/"
-                }
-            },
+            "autoload": [],
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -954,11 +905,7 @@
                 }
             },
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Psr\\SimpleCache\\": "src/"
-                }
-            },
+            "autoload": [],
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -1009,11 +956,7 @@
             },
             "type": "library",
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Sunrise\\Http\\Client\\Curl\\": "src/"
-                }
-            },
+            "autoload": [],
             "scripts": {
                 "test": [
                     "phpcs",
@@ -1035,7 +978,7 @@
                     "homepage": "https://github.com/fenric"
                 },
                 {
-                    "name": "李昀陞 (Peter)",
+                    "name": "\u674e\u6600\u965e (Peter)",
                     "email": "peter279k@gmail.com",
                     "homepage": "https://github.com/peter279k"
                 }
@@ -1082,11 +1025,7 @@
             },
             "type": "library",
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Sunrise\\Http\\Factory\\": "src/"
-                }
-            },
+            "autoload": [],
             "scripts": {
                 "test": [
                     "phpcs",
@@ -1140,11 +1079,7 @@
             },
             "type": "library",
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Sunrise\\Http\\Header\\": "src/"
-                }
-            },
+            "autoload": [],
             "scripts": {
                 "test": [
                     "phpcs",
@@ -1201,10 +1136,7 @@
             "autoload": {
                 "files": [
                     "constants/REASON_PHRASES.php"
-                ],
-                "psr-4": {
-                    "Sunrise\\Http\\Message\\": "src/"
-                }
+                ]
             },
             "scripts": {
                 "test": [
@@ -1271,9 +1203,6 @@
             "type": "library",
             "installation-source": "dist",
             "autoload": {
-                "psr-4": {
-                    "Sunrise\\Http\\ServerRequest\\": "src/"
-                },
                 "files": [
                     "constants/UPLOAD_ERRORS.php",
                     "functions/request_body.php",
@@ -1310,7 +1239,7 @@
                     "homepage": "https://github.com/fenric"
                 },
                 {
-                    "name": "李昀陞 (Peter)",
+                    "name": "\u674e\u6600\u965e (Peter)",
                     "email": "peter279k@gmail.com",
                     "homepage": "https://github.com/peter279k"
                 }
@@ -1354,11 +1283,7 @@
             },
             "type": "library",
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Sunrise\\Stream\\": "src/"
-                }
-            },
+            "autoload": [],
             "scripts": {
                 "test": [
                     "phpcs",
@@ -1380,7 +1305,7 @@
                     "homepage": "https://github.com/fenric"
                 },
                 {
-                    "name": "李昀陞 (Peter)",
+                    "name": "\u674e\u6600\u965e (Peter)",
                     "email": "peter279k@gmail.com",
                     "homepage": "https://github.com/peter279k"
                 }
@@ -1423,11 +1348,7 @@
             },
             "type": "library",
             "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Sunrise\\Uri\\": "src/"
-                }
-            },
+            "autoload": [],
             "scripts": {
                 "test": [
                     "phpcs",
@@ -1449,7 +1370,7 @@
                     "homepage": "https://github.com/fenric"
                 },
                 {
-                    "name": "李昀陞 (Peter)",
+                    "name": "\u674e\u6600\u965e (Peter)",
                     "email": "peter279k@gmail.com",
                     "homepage": "https://github.com/peter279k"
                 }
@@ -1564,9 +1485,6 @@
             "type": "library",
             "installation-source": "dist",
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\OptionsResolver\\": ""
-                },
                 "exclude-from-classmap": [
                     "/Tests/"
                 ]
@@ -1647,10 +1565,7 @@
             "autoload": {
                 "files": [
                     "bootstrap.php"
-                ],
-                "psr-4": {
-                    "Symfony\\Polyfill\\Ctype\\": ""
-                }
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -1728,9 +1643,6 @@
                 "files": [
                     "bootstrap.php"
                 ],
-                "psr-4": {
-                    "Symfony\\Polyfill\\Php80\\": ""
-                },
                 "classmap": [
                     "Resources/stubs"
                 ]
@@ -1812,9 +1724,6 @@
             "type": "library",
             "installation-source": "dist",
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Yaml\\": ""
-                },
                 "exclude-from-classmap": [
                     "/Tests/"
                 ]

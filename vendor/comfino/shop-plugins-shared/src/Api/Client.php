@@ -83,6 +83,8 @@ class Client
     public const PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     public const SANDBOX_HOST = 'https://api-ecommerce.craty.pl';
 
+    public const TRACK_ID_PATTERN = '/^[A-Za-z0-9_.:-]{1,128}$/';
+
     protected $apiLanguage = 'pl';
 
     protected $apiCurrency = 'PLN';
@@ -540,6 +542,18 @@ class Client
     }
 
     /**
+     * @param string|null $trackId
+     */
+    public function setTrackId($trackId): void
+    {
+        if ($this->trackId !== null || $trackId === null || preg_match(self::TRACK_ID_PATTERN, $trackId) !== 1) {
+            return;
+        }
+
+        $this->trackId = $trackId;
+    }
+
+    /**
      * @throws RequestValidationError
      * @throws ClientExceptionInterface
      * @param \Comfino\Api\Request $request
@@ -584,9 +598,9 @@ class Client
         $base = !empty($this->clientHostName) ? $this->clientHostName : gethostname();
 
         if ($base === false) {
-            return 'trid-' . uniqid('', true);
+            return 'trid-' . bin2hex(random_bytes(8));
         }
 
-        return $base . '-' . microtime(true);
+        return $base . '-' . microtime(true) . '-' . bin2hex(random_bytes(4));
     }
 }

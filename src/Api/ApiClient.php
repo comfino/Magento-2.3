@@ -8,6 +8,7 @@ use Comfino\Configuration\ConfigManager;
 use Comfino\ComfinoGateway\Helper\Data;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
 use Magento\Framework\App\ObjectManager;
 
@@ -16,6 +17,10 @@ use Magento\Framework\App\ObjectManager;
  */
 final class ApiClient
 {
+    private const CHECKOUT_TRACK_ID_COOKIE = 'comfino_checkout_track_id';
+    private const CHECKOUT_TRACK_ID_COOKIE_TTL = 900;
+    private const CHECKOUT_TRACK_ID_PATTERN = '/^[A-Za-z0-9_.:-]{1,128}$/';
+
     private static ?\Comfino\Common\Api\Client $apiClient = null;
 
     public static function getInstance(?bool $sandboxMode = null, ?string $apiKey = null): \Comfino\Common\Api\Client
@@ -64,17 +69,53 @@ final class ApiClient
     }
 
     /**
+     * Pins this instance's trackId to the checkout-scoped cookie value, so a checkout-page paywall render and the later
+     * separate order-create request share the same trackId. Checkout-only: never call this from product-page rendering,
+     * where a fresh trackId per page load is still correct behavior.
+     */
+    public static function pinCheckoutTrackId(): void
+    {
+        $client = self::getInstance();
+
+        if (isset($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]) &&
+            preg_match(self::CHECKOUT_TRACK_ID_PATTERN, $_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]) === 1
+        ) {
+            $client->setTrackId($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]);
+        }
+
+        $trackId = $client->getTrackId();
+
+        if (!headers_sent()) {
+            setcookie(
+                self::CHECKOUT_TRACK_ID_COOKIE,
+                $trackId,
+                [
+                    'expires' => time() + self::CHECKOUT_TRACK_ID_COOKIE_TTL,
+                    'path' => '/',
+                    'secure' => true,
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                ]
+            );
+        }
+    }
+
+    /**
      * Processes an API exception: logs rich context to DebugLogger and sends the error via ErrorLogger.
      *
      * Handles HttpErrorExceptionInterface (including ConnectionTimeout) and NetworkExceptionInterface
-     * specially to extract URL, request/response bodies and timeout details.
+     * specially to extract URL, request/response bodies, and timeout details.
      * For all other exceptions a generic [API_ERROR] debug event is emitted.
      *
      * @param string $errorPrefix Context label shown in log entries (e.g. "Cancel order error")
      * @param \Throwable $exception
+     * @param string $context What the plugin was doing when the error occurred
      */
-    public static function processApiError(string $errorPrefix, \Throwable $exception): void
-    {
+    public static function processApiError(
+        string $errorPrefix,
+        \Throwable $exception,
+        string $context = OperationContext::ApiCommunication
+    ): void {
         $url = null;
         $requestBody = null;
         $responseBody = null;
@@ -121,7 +162,7 @@ final class ApiClient
 
         ErrorLogger::sendError(
             $exception,
-            $errorPrefix,
+            $context,
             (string) $exception->getCode(),
             $exception->getMessage(),
             $url !== null && $url !== '' ? $url : null,

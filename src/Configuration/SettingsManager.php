@@ -11,6 +11,7 @@ use Comfino\Common\Backend\Payment\ProductTypeFilterManager;
 use Comfino\Common\Shop\Cart;
 use Comfino\Common\Shop\Product\CategoryFilter;
 use Comfino\DebugLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\PluginShared\CacheManager;
 use Magento\Framework\App\ObjectManager;
@@ -84,7 +85,7 @@ class SettingsManager
 
             return $productTypesList;
         } catch (\Throwable $e) {
-            ApiClient::processApiError('Product types error (Comfino API).', $e);
+            ApiClient::processApiError('Product types error (Comfino API).', $e, OperationContext::Configuration);
 
             if ($returnErrors) {
                 return ['error' => $e->getMessage()];
@@ -121,7 +122,7 @@ class SettingsManager
 
             return $creditorsList;
         } catch (\Throwable $e) {
-            ApiClient::processApiError('Creditors error (Comfino API).', $e);
+            ApiClient::processApiError('Creditors error (Comfino API).', $e, OperationContext::Configuration);
         }
 
         return [];
@@ -183,7 +184,7 @@ class SettingsManager
 
             return $widgetTypesList;
         } catch (\Throwable $e) {
-            ApiClient::processApiError('Widget types error (Comfino API).', $e);
+            ApiClient::processApiError('Widget types error (Comfino API).', $e, OperationContext::Configuration);
 
             if ($returnErrors) {
                 return ['error' => $e->getMessage()];

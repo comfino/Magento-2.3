@@ -12,6 +12,7 @@ use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
@@ -67,7 +68,7 @@ class ApplicationService implements ApplicationServiceInterface
 
             return [['error' => $e->getMessage()]];
         } catch (\Throwable $e) {
-            ApiClient::processApiError('Communication error with Comfino API', $e);
+            ApiClient::processApiError('Communication error with Comfino API', $e, OperationContext::OrderCreation);
 
             $errorMessage = (string) __('Unsuccessful attempt to open the application. Please try again later.');
 
@@ -94,7 +95,7 @@ class ApplicationService implements ApplicationServiceInterface
 
             DebugLogger::logEvent('[APPLICATION_SERVICE]', "cancelApplicationTransaction: Order $orderId cancelled successfully.");
         } catch (\Throwable $e) {
-            ApiClient::processApiError('Cancel order error', $e);
+            ApiClient::processApiError('Cancel order error', $e, OperationContext::OrderCancellation);
         }
     }
 
@@ -106,7 +107,7 @@ class ApplicationService implements ApplicationServiceInterface
         try {
             return ApiClient::getInstance()->getWidgetKey();
         } catch (\Throwable $e) {
-            ApiClient::processApiError('Get widget key error', $e);
+            ApiClient::processApiError('Get widget key error', $e, OperationContext::WidgetRendering);
 
             return '';
         }
@@ -124,7 +125,7 @@ class ApplicationService implements ApplicationServiceInterface
 
             return $response->productTypesWithNames;
         } catch (\Throwable $e) {
-            ApiClient::processApiError('Get product types error', $e);
+            ApiClient::processApiError('Get product types error', $e, OperationContext::PaymentProcessing);
 
             return null;
         }
@@ -178,6 +179,9 @@ class ApplicationService implements ApplicationServiceInterface
 
             throw new \InvalidArgumentException(implode(' ', $errors));
         }
+
+        // Reuse the trackId minted during this checkout session's paywall render, if any.
+        ApiClient::pinCheckoutTrackId();
 
         // Step 2: API-side validation (simulation=true, no order created yet).
         $validationResult = ApiClient::getInstance()->validateOrder($orderDto);
@@ -342,7 +346,7 @@ class ApplicationService implements ApplicationServiceInterface
             );
             $this->orderRepository->save($order);
         } catch (\Throwable $e) {
-            ErrorLogger::sendError($e, 'Comfino created status update error', (string) $e->getCode(), $e->getMessage());
+            ErrorLogger::sendError($e, OperationContext::OrderStatusChange, (string) $e->getCode(), $e->getMessage());
         }
     }
 
@@ -374,14 +378,14 @@ class ApplicationService implements ApplicationServiceInterface
                 $this->orderRepository->save($order);
             }
         } catch (\Throwable $e) {
-            ErrorLogger::sendError($e, 'Order cancellation error', (string) $e->getCode(), $e->getMessage());
+            ErrorLogger::sendError($e, OperationContext::OrderCancellation, (string) $e->getCode(), $e->getMessage());
         }
 
         try {
             // Reactivate the source quote so the customer keeps the cart contents and can retry the payment.
             $this->session->restoreQuote();
         } catch (\Throwable $e) {
-            ErrorLogger::sendError($e, 'Cart restore error', (string) $e->getCode(), $e->getMessage());
+            ErrorLogger::sendError($e, OperationContext::OrderCancellation, (string) $e->getCode(), $e->getMessage());
         }
     }
 }

@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Comfino\Common\Backend;
 
+use Comfino\Common\Backend\Log\ErrorMessageNormalizer;
 use Comfino\Common\Backend\Log\LoggerFactory;
 use Comfino\Extended\Api\Client;
+use Comfino\Extended\Api\Dto\Plugin\ErrorCategory;
+use Comfino\Extended\Api\Dto\Plugin\ErrorSeverity;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\Extended\Api\Dto\Plugin\ShopPluginError;
+use Comfino\Extended\Api\Request\ReportShopPluginError;
 use ComfinoExternal\Monolog\Logger as MonologLogger;
 
 final class ErrorLogger extends Logger
@@ -35,6 +40,22 @@ final class ErrorLogger extends Logger
      * @var array
      */
     private $environment;
+    /**
+     * @var string
+     */
+    private $pluginVersion;
+    /**
+     * @var string
+     */
+    private $platformVersion;
+    /**
+     * @var string
+     */
+    private $phpVersion;
+    /**
+     * @var ErrorMessageNormalizer
+     */
+    private $normalizer;
     private const CATCHED_ERRORS_MASK = E_ERROR | E_RECOVERABLE_ERROR | E_PARSE;
     private const ERROR_TYPES = [
         E_ERROR => 'E_ERROR',
@@ -52,6 +73,8 @@ final class ErrorLogger extends Logger
         E_DEPRECATED => 'E_DEPRECATED',
         E_USER_DEPRECATED => 'E_USER_DEPRECATED',
     ];
+
+    private const VERSION_ENV_KEYS = ['plugin_version', 'platform_version', 'shop_version', 'php_version'];
 
     /**
      * @var $this|null
@@ -74,7 +97,24 @@ final class ErrorLogger extends Logger
     public static function getInstance($apiClient, $logFilePath, $host, $platform, $modulePath, $environment): self
     {
         if (self::$instance === null) {
-            self::$instance = new self($apiClient, $logFilePath, $host, $platform, $modulePath, $environment);
+            $pluginVersion = (string) ($environment['plugin_version'] ?? '');
+            $platformVersion = (string) ($environment['platform_version'] ?? $environment['shop_version'] ?? '');
+            $phpVersion = (string) ($environment['php_version'] ?? '');
+
+            $supplementaryEnv = array_diff_key($environment, array_flip(self::VERSION_ENV_KEYS));
+
+            self::$instance = new self(
+                $apiClient,
+                $logFilePath,
+                $host,
+                $platform,
+                $modulePath,
+                $supplementaryEnv,
+                $pluginVersion,
+                $platformVersion,
+                $phpVersion,
+                new ErrorMessageNormalizer()
+            );
         }
 
         return self::$instance;
@@ -87,8 +127,12 @@ final class ErrorLogger extends Logger
      * @param string $platform
      * @param string $modulePath
      * @param array $environment
+     * @param string $pluginVersion
+     * @param string $platformVersion
+     * @param string $phpVersion
+     * @param ErrorMessageNormalizer $normalizer
      */
-    private function __construct(Client $apiClient, string $logFilePath, string $host, string $platform, string $modulePath, array $environment)
+    private function __construct(Client $apiClient, string $logFilePath, string $host, string $platform, string $modulePath, array $environment, string $pluginVersion, string $platformVersion, string $phpVersion, ErrorMessageNormalizer $normalizer)
     {
         $this->apiClient = $apiClient;
         $this->logFilePath = $logFilePath;
@@ -96,6 +140,10 @@ final class ErrorLogger extends Logger
         $this->platform = $platform;
         $this->modulePath = $modulePath;
         $this->environment = $environment;
+        $this->pluginVersion = $pluginVersion;
+        $this->platformVersion = $platformVersion;
+        $this->phpVersion = $phpVersion;
+        $this->normalizer = $normalizer;
     }
 
     /**
@@ -112,7 +160,9 @@ final class ErrorLogger extends Logger
     }
 
     /**
-     * @param string $errorPrefix
+     * @param ErrorCategory $category
+     * @param ErrorSeverity $severity
+     * @param OperationContext $context
      * @param string $errorCode
      * @param string $errorMessage
      * @param string|null $apiRequestUrl
@@ -121,7 +171,9 @@ final class ErrorLogger extends Logger
      * @param string|null $stackTrace
      */
     public function sendError(
-        $errorPrefix,
+        $category,
+        $severity,
+        $context,
         $errorCode,
         $errorMessage,
         $apiRequestUrl = null,
@@ -129,9 +181,7 @@ final class ErrorLogger extends Logger
         $apiResponse = null,
         $stackTrace = null
     ): void {
-        $formattedErrorMessage = "$errorPrefix: $errorMessage";
-
-        if (preg_match('/Error .*in |Exception .*in /', $formattedErrorMessage) && strpos($formattedErrorMessage, $this->modulePath) === false) {
+        if (preg_match('/Error .*in |Exception .*in /', $errorMessage) && strpos($errorMessage, $this->modulePath) === false) {
             return;
         }
 
@@ -141,17 +191,34 @@ final class ErrorLogger extends Logger
             $errorsSendingDisabled = false;
         }
 
+        $callEnv = array_merge($this->environment, [
+            'caller' => $this->formatContext($this->extractCallerContext()),
+        ]);
+
+        $normalizedMessage = $this->normalizer->normalizeMessage($errorMessage);
+        $normalizedTrace = $stackTrace !== null ? $this->normalizer->normalizeStackTrace($stackTrace) : null;
+
         $error = new ShopPluginError(
             $this->host,
             $this->platform,
-            $this->environment,
+            $this->pluginVersion,
+            $this->platformVersion,
+            $this->phpVersion,
+            $category,
+            $severity,
+            $context,
             $errorCode,
-            $formattedErrorMessage,
+            $normalizedMessage,
+            $callEnv,
+            ReportShopPluginError::extractApiEndpoint($apiRequestUrl),
             $apiRequestUrl,
             $apiRequest,
             $apiResponse,
-            $stackTrace
+            $normalizedTrace,
+            time()
         );
+
+        $logPrefix = "[{$category->value}][{$context->value}]";
 
         if ($errorsSendingDisabled || !$this->apiClient->sendLoggedError($error)) {
             $requestInfo = [];
@@ -176,7 +243,7 @@ final class ErrorLogger extends Logger
                 $errorMessage .= "\nStack trace: $stackTrace";
             }
 
-            $this->logError($errorPrefix, $errorMessage);
+            $this->logError($logPrefix, $errorMessage);
         }
     }
 
@@ -220,6 +287,30 @@ final class ErrorLogger extends Logger
     }
 
     /**
+     * @param \Throwable $exception
+     * @return ErrorCategory
+     */
+    public static function classifyException($exception): ErrorCategory
+    {
+        switch (true) {
+            case $exception instanceof \ArgumentCountError:
+                return ErrorCategory::ExceptionArgCount;
+            case $exception instanceof \TypeError:
+                return ErrorCategory::ExceptionTypeError;
+            case $exception instanceof \ParseError:
+                return ErrorCategory::ExceptionParseError;
+            case $exception instanceof \DivisionByZeroError:
+                return ErrorCategory::ExceptionDivision;
+            case $exception instanceof \LogicException:
+                return ErrorCategory::ExceptionLogicError;
+            case $exception instanceof \Error:
+                return ErrorCategory::ExceptionError;
+            default:
+                return ErrorCategory::ExceptionGeneric;
+        }
+    }
+
+    /**
      * @param int $errorType
      * @param string $errorMessage
      * @param string $file
@@ -232,7 +323,15 @@ final class ErrorLogger extends Logger
             return false;
         }
 
-        $this->sendError("Error {$this->getErrorTypeName($errorType)} in $file:$line", (string) $errorType, $errorMessage);
+        $errorLevel = $this->getErrorTypeName($errorType);
+
+        $this->sendError(
+            ErrorCategory::PhpError,
+            $this->mapErrorSeverity($errorType),
+            OperationContext::Unknown,
+            (string) $errorType,
+            "Error $errorLevel in $file:$line: $errorMessage"
+        );
 
         return false;
     }
@@ -242,10 +341,14 @@ final class ErrorLogger extends Logger
      */
     public function exceptionHandler($exception): void
     {
+        $exceptionClass = (new \ReflectionClass($exception))->getShortName();
+
         $this->sendError(
-            'Exception ' . get_class($exception) . " in {$exception->getFile()}:{$exception->getLine()}",
-            (string) $exception->getCode(),
-            $exception->getMessage(),
+            self::classifyException($exception),
+            ErrorSeverity::Error,
+            OperationContext::Unknown,
+            $exceptionClass,
+            sprintf('Exception %s in %s:%d: %s', $exceptionClass, $exception->getFile(), $exception->getLine(), $exception->getMessage()),
             null,
             null,
             null,
@@ -273,7 +376,15 @@ final class ErrorLogger extends Logger
     public function shutdown(): void
     {
         if (($error = error_get_last()) !== null && ($error['type'] & self::CATCHED_ERRORS_MASK)) {
-            $this->sendError("Error {$this->getErrorTypeName($error['type'])} in $error[file]:$error[line]", (string) $error['type'], $error['message']);
+            $errorLevel = $this->getErrorTypeName($error['type']);
+
+            $this->sendError(
+                ErrorCategory::PhpError,
+                $this->mapErrorSeverity($error['type']),
+                OperationContext::Unknown,
+                (string) $error['type'],
+                "Error $errorLevel in $error[file]:$error[line]: $error[message]"
+            );
         }
 
         restore_error_handler();
@@ -292,5 +403,68 @@ final class ErrorLogger extends Logger
             $errorType === E_STRICT
                 ? 'E_STRICT'
                 : $errorTypeName;
+    }
+
+    /**
+     * @param int $errorType
+     * @return ErrorSeverity
+     */
+    private function mapErrorSeverity(int $errorType): ErrorSeverity
+    {
+        switch ($errorType) {
+            case E_ERROR:
+            case E_CORE_ERROR:
+            case E_COMPILE_ERROR:
+            case E_RECOVERABLE_ERROR:
+            case E_PARSE:
+            case E_USER_ERROR:
+                return ErrorSeverity::Error;
+            case E_WARNING:
+            case E_CORE_WARNING:
+            case E_COMPILE_WARNING:
+            case E_USER_WARNING:
+                return ErrorSeverity::Warning;
+            case E_NOTICE:
+            case E_USER_NOTICE:
+            case E_DEPRECATED:
+            case E_USER_DEPRECATED:
+                return ErrorSeverity::Notice;
+            default:
+                return ErrorSeverity::Error;
+        }
+    }
+
+    /**
+     * @return array<string,
+     */
+    private function extractCallerContext(): array
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+        $caller = $trace[2] ?? [];
+
+        return [
+            'class' => $caller['class'] ?? null,
+            'function' => $caller['function'] ?? null,
+            'file' => basename($caller['file'] ?? ''),
+            'line' => $caller['line'] ?? 0,
+        ];
+    }
+
+    /**
+     * @return string
+     */
+    private function formatContext(array $context): string
+    {
+        if (!empty($context['class'])) {
+            return sprintf(
+                '[%s::%s@%s:%d]',
+                substr(strrchr($context['class'], '\\'), 1),
+                $context['function'],
+                $context['file'],
+                $context['line']
+            );
+        }
+
+        return sprintf('[%s@%s:%d]', $context['function'], $context['file'], $context['line']);
     }
 }

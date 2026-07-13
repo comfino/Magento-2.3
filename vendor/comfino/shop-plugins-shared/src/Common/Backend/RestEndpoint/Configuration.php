@@ -47,6 +47,10 @@ class Configuration extends RestEndpoint
      * @var mixed[]|null
      */
     private $shopExtraVariables;
+    /**
+     * @var \Closure|null
+     */
+    private $shopEnvironmentReportProvider;
     public function __construct(
         string $name,
         string $endpointUrl,
@@ -58,7 +62,8 @@ class Configuration extends RestEndpoint
         int $pluginBuildTs,
         string $databaseVersion,
         int $debugLogNumLines,
-        ?array $shopExtraVariables = null
+        ?array $shopExtraVariables = null,
+        ?\Closure $shopEnvironmentReportProvider = null
     ) {
         $this->configurationManager = $configurationManager;
         $this->debugLogger = $debugLogger;
@@ -69,6 +74,7 @@ class Configuration extends RestEndpoint
         $this->databaseVersion = $databaseVersion;
         $this->debugLogNumLines = $debugLogNumLines;
         $this->shopExtraVariables = $shopExtraVariables;
+        $this->shopEnvironmentReportProvider = $shopEnvironmentReportProvider;
         parent::__construct($name, $endpointUrl);
 
         $this->methods = ['GET', 'POST', 'PUT', 'PATCH'];
@@ -100,7 +106,7 @@ class Configuration extends RestEndpoint
                 return ['debug_log' => $this->debugLogger->getDebugLog($this->debugLogNumLines)];
             }
 
-            return [
+            $response = [
                 'shop_info' => [
                     'platform' => $this->platformName,
                     'platform_version' => $this->platformVersion,
@@ -119,6 +125,12 @@ class Configuration extends RestEndpoint
                 ],
                 'shop_configuration' => $this->configurationManager->returnConfigurationOptions(),
             ];
+
+            if ($this->shopEnvironmentReportProvider !== null) {
+                $response['shop_environment'] = ($this->shopEnvironmentReportProvider)();
+            }
+
+            return $response;
         }
 
         $this->configurationManager->updateConfigurationOptions(parent::processRequest($serverRequest, $endpointName));

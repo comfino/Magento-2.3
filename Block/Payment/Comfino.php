@@ -55,6 +55,14 @@ class Comfino extends Template
     }
 
     /**
+     * Returns CDN URL of the checkout gate CSS (comfino-item-gate-magento.css).
+     */
+    public function getCheckoutCssUrl(): string
+    {
+        return ConfigManager::getCheckoutCssUrl();
+    }
+
+    /**
      * Returns SDK environment string for sdk.init().
      */
     public function getEnvironment(): string

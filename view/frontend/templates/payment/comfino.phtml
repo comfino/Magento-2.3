@@ -1,22 +1,5 @@
 <?php
 /** @var \Comfino\ComfinoGateway\Block\Payment\Comfino $block */
 /** @var \Magento\Framework\Escaper $escaper */
-/** @var string[]|null $allowedProductTypes null = no filter, [] = all filtered (hidden), [...] = filtered list */
-
-$allowedProductTypes = $block->getAllowedProductTypeStrings();
-
-if ($allowedProductTypes === []) {
-    // All product types filtered out - hide paywall entirely
-    return;
-}
 ?>
-<!-- Markup only. SDK loading and bootstrapPaywall() are owned by the KO renderer (comfino-method.js), which reads
-     these elements by id. A single bootstrap path avoids injecting the SDK twice. -->
-<!-- Server-authoritative cart total in grosze. Seeded server-side; read by the SDK on every paywall reload via
-     loanAmountInputId, and kept in sync by the renderer's quote.totals subscription. -->
-<input id="comfino-loan-amount" name="comfino_loan_amount" type="hidden" value="<?= (int) $block->getLoanAmount() ?>" />
-<!-- Loan parameters written by MagentoAdapter.updatePaymentState(), read on order submit -->
-<input id="comfino-loan-type" name="comfino_loan_type" type="hidden" />
-<input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
-<!-- Comfino web frontend SDK renders paywall iframe here -->
-<div id="comfino-paywall-container"></div>
+<link rel="stylesheet" href="<?= $escaper->escapeHtmlAttr($block->getCheckoutCssUrl()) ?>" crossorigin="anonymous" />

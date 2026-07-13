@@ -40,6 +40,8 @@ class ConfigProvider implements ConfigProviderInterface
      */
     public function getConfig(): array
     {
+        ApiClient::pinCheckoutTrackId();
+
         $quote = $this->checkoutSession->getQuote();
         $loanAmount = (int) round($quote->getGrandTotal() * 100);
 
@@ -101,9 +103,9 @@ class ConfigProvider implements ConfigProviderInterface
                     'trackId' => ApiClient::getInstance()->getTrackId(),
                     'loanAmount' => $loanAmount,
                     'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
-                    // This module ships only the UMD bundle; the renderer keeps the define()-suppression path for it.
-                    'sdkScriptKind' => 'umd',
                     'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
+                    'paymentMethodLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') ?: null,
+                    'defaultLogoUrl' => ConfigManager::getDefaultLogoUrl(),
                     'allowedProductTypes' => $allowedProductTypes,
                     'cart' => $paywallCart,
                     'paywallSettings' => [

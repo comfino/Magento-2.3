@@ -134,10 +134,6 @@
                             <config_path>payment/comfino/widget_custom_calculator_css_url</config_path>
                             <comment>URL to a custom CSS file overriding the calculator widget styles.</comment>
                         </field>
-                        <field id="widget_code" translate="label" type="textarea" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
-                            <label>Widget initialization code</label>
-                            <config_path>payment/comfino/widget_code</config_path>
-                        </field>
                     </group>
                 </group>
 

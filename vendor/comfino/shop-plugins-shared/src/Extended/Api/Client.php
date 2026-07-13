@@ -7,9 +7,15 @@ namespace Comfino\Extended\Api;
 use Comfino\Api\Response\Base as BaseApiResponse;
 use Comfino\Api\SerializerInterface;
 use Comfino\Extended\Api\Dto\Plugin\ShopPluginError;
+use Comfino\Extended\Api\Request\ClaimErrorLoggingToken as ClaimErrorLoggingTokenRequest;
+use Comfino\Extended\Api\Request\GetLatestPluginRelease as GetLatestPluginReleaseRequest;
+use Comfino\Extended\Api\Request\GetSupportedPlatforms as GetSupportedPlatformsRequest;
 use Comfino\Extended\Api\Request\NotifyAbandonedCart;
 use Comfino\Extended\Api\Request\NotifyShopPluginRemoval;
 use Comfino\Extended\Api\Request\ReportShopPluginError;
+use Comfino\Extended\Api\Response\ClaimErrorLoggingToken as ClaimErrorLoggingTokenResponse;
+use Comfino\Extended\Api\Response\GetLatestPluginRelease as GetLatestPluginReleaseResponse;
+use Comfino\Extended\Api\Response\GetSupportedPlatforms as GetSupportedPlatformsResponse;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use ComfinoExternal\Psr\Http\Client\ClientInterface;
 use ComfinoExternal\Psr\Http\Message\RequestFactoryInterface;
@@ -76,5 +82,48 @@ class Client extends \Comfino\Api\Client
         }
 
         return true;
+    }
+
+    /**
+     * @return ClaimErrorLoggingTokenResponse|null
+     */
+    public function claimErrorLoggingToken(): ?ClaimErrorLoggingTokenResponse
+    {
+        try {
+            $this->request = (new ClaimErrorLoggingTokenRequest())->setSerializer($this->serializer);
+
+            return new ClaimErrorLoggingTokenResponse($this->request, $this->sendRequest($this->request), $this->serializer);
+        } catch (\Throwable $exception) {
+            return null;
+        }
+    }
+
+    /**
+     * @return GetSupportedPlatformsResponse|null
+     */
+    public function getSupportedPlatforms(): ?GetSupportedPlatformsResponse
+    {
+        try {
+            $this->request = (new GetSupportedPlatformsRequest())->setSerializer($this->serializer);
+
+            return new GetSupportedPlatformsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
+        } catch (\Throwable $exception) {
+            return null;
+        }
+    }
+
+    /**
+     * @param string $platform
+     * @return GetLatestPluginReleaseResponse|null
+     */
+    public function getLatestPluginRelease($platform): ?GetLatestPluginReleaseResponse
+    {
+        try {
+            $this->request = (new GetLatestPluginReleaseRequest($platform))->setSerializer($this->serializer);
+
+            return new GetLatestPluginReleaseResponse($this->request, $this->sendRequest($this->request), $this->serializer);
+        } catch (\Throwable $exception) {
+            return null;
+        }
     }
 }
