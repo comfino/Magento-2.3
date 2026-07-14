@@ -44,6 +44,7 @@ final class CapabilityResolver
                 ];
             case 'classic':
             case 'storefront':
+            case 'blocks':
                 return [
                     'knockout' => false,
                     'alpine'   => false,
