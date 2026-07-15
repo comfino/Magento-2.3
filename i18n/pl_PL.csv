@@ -20,6 +20,8 @@
 "Show logos of financial services providers","Pokaż loga dostawców usług finansowych"
 "Advanced settings","Ustawienia zaawansowane"
 "Widget price element selector","Selektor elementu ceny widgetu"
+"Widget price element attribute","Atrybut elementu ceny widgetu"
+"Attribute of the price element holding the numeric price (e.g., data-price-amount). Takes priority over the element's text, avoiding a race with themes that render the price text asynchronously.","Atrybut elementu ceny zawierający liczbową wartość ceny (np. data-price-amount). Ma priorytet nad tekstem elementu, co pozwala uniknąć sytuacji wyścigu w motywach renderujących tekst ceny asynchronicznie."
 "Widget anchor element selector","Selektor elementu zakotwiczenia widgetu"
 "Price change detection - container selector","Wykrywanie zmian ceny - selektor kontenera"
 "Selector of observed parent element which contains price element.","Selektor obserwowanego elementu nadrzędnego, który zawiera element ceny."

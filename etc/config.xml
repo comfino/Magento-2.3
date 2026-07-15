@@ -12,7 +12,8 @@
                 <can_use_checkout>1</can_use_checkout>
                 <min_order_total>30</min_order_total>
                 <widget_enabled>0</widget_enabled>
-                <widget_price_selector>span.price</widget_price_selector>
+                <widget_price_selector>[data-price-type="finalPrice"]</widget_price_selector>
+                <widget_price_attribute>data-price-amount</widget_price_attribute>
                 <widget_target_selector>div.product-info-main</widget_target_selector>
                 <widget_price_observer_selector />
                 <widget_price_observer_level>0</widget_price_observer_level>

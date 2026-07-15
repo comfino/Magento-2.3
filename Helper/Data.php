@@ -21,6 +21,7 @@ class Data extends AbstractHelper
     public const XML_PATH_WIDGET_ENABLED = 'payment/comfino/widget_enabled';
     public const XML_PATH_WIDGET_KEY = 'payment/comfino/widget_key';
     public const XML_PATH_WIDGET_PRICE_SELECTOR = 'payment/comfino/widget_price_selector';
+    public const XML_PATH_WIDGET_PRICE_ATTRIBUTE = 'payment/comfino/widget_price_attribute';
     public const XML_PATH_WIDGET_TARGET_SELECTOR = 'payment/comfino/widget_target_selector';
     public const XML_PATH_WIDGET_PRICE_OBSERVER_SELECTOR = 'payment/comfino/widget_price_observer_selector';
     public const XML_PATH_WIDGET_PRICE_OBSERVER_LEVEL = 'payment/comfino/widget_price_observer_level';
