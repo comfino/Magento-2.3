@@ -370,7 +370,7 @@ final class ConfigManager
         /** @var Data $dataHelper */
         $dataHelper = ObjectManager::getInstance()->get(Data::class);
 
-        return FrontendHelper::getPaywallLogoAuthHash(
+        return FrontendHelper::getPaywallLogoAuthHashRaw(
             'MG',
             $dataHelper->getShopVersion(),
             $dataHelper->getModuleVersion(),

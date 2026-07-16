@@ -37,8 +37,6 @@ class SystemInfo extends Field
 
     public function render(AbstractElement $element): string
     {
-        CacheManager::init($this->dirList->getPath('var'));
-
         $infoMessages = [];
         $successMessages = [];
         $warningMessages = [];

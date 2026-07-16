@@ -32,13 +32,16 @@ class ComfinoLogo extends Field
     {
         $logoUrl = ConfigManager::getLogoUrl();
 
-        $blockHtml = $logoUrl !== ''
-            ? '<img style="width: 300px" src="' . htmlspecialchars($logoUrl, ENT_QUOTES) . '" alt="Comfino logo"> '
+        $logoImg = $logoUrl !== ''
+            ? '<img style="width: 300px; display: block" src="' . htmlspecialchars($logoUrl, ENT_QUOTES) . '" alt="Comfino logo">'
             : '';
 
-        $blockHtml .= '<span style="font-weight: bold; font-size: 16px; vertical-align: bottom">'
+        /* Logo + version in a flex row, mirroring the PrestaShop config header (views/templates/admin/configuration.tpl). */
+        $blockHtml = '<div style="display: flex; align-items: center; overflow: hidden">'
+            . $logoImg
+            . '<span style="font-weight: bold; font-size: 16px; margin-left: 10px">'
             . htmlspecialchars($this->helper->getModuleVersion(), ENT_QUOTES)
-            . '</span>';
+            . '</span></div>';
 
         return $blockHtml . $this->renderReleaseDescription();
     }
@@ -59,7 +62,7 @@ class ComfinoLogo extends Field
         $currentVersion = $this->helper->getModuleVersion();
         $newVersion = $updateInfo['github_version'] ?? '';
 
-        $blockHtml = '<div class="comfino-update-available-message" style="margin-top: 10px; font-weight: bold">' .
+        $blockHtml = '<div class="message message-warning comfino-update-available-message" style="margin-top: 10px">' .
             $this->escapeHtml((string) __(
                 'New Comfino %1 module version is available. You are using %2 version. Please update your Comfino module.',
                 $newVersion,

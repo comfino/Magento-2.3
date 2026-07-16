@@ -51,7 +51,7 @@ class Data extends AbstractHelper
     public const XML_PATH_ERROR_LOGGING_ACCESS_TOKEN = 'payment/comfino/error_logging_access_token';
     public const XML_PATH_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT = 'payment/comfino/error_logging_access_token_expires_at';
 
-    public const BUILD_TS = 1784011676;
+    public const BUILD_TS = 1784185020;
 
     private const MODULE_NAME = 'Comfino_ComfinoGateway';
 
