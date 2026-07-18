@@ -1,5 +1,4 @@
 <?php
 /** @var \Comfino\ComfinoGateway\Block\Payment\Comfino $block */
-/** @var \Magento\Framework\Escaper $escaper */
 ?>
-<link rel="stylesheet" href="<?= $escaper->escapeHtmlAttr($block->getCheckoutCssUrl()) ?>" crossorigin="anonymous" />
+<link rel="stylesheet" href="<?= $block->escapeHtmlAttr($block->getCheckoutCssUrl()) ?>" crossorigin="anonymous" />
