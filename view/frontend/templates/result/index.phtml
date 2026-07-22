@@ -1,9 +1,6 @@
 <?php
-/** @var Escaper $escaper */
-
-use Magento\Framework\Escaper;
-
+/** @var \Magento\Framework\View\Element\Template $block */
 ?>
-<h2><?= $escaper->escapeHtml(__('Thank you for your order')); ?></h2>
-<p><?= $escaper->escapeHtml(__('Your application is being processed by Comfino.')); ?></p>
-<p><?= $escaper->escapeHtml(__('You will be informed about the change of the order status.')); ?></p>
+<h2><?= $block->escapeHtml(__('Thank you for your order')); ?></h2>
+<p><?= $block->escapeHtml(__('Your application is being processed by Comfino.')); ?></p>
+<p><?= $block->escapeHtml(__('You will be informed about the change of the order status.')); ?></p>

@@ -2,6 +2,10 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+        <!-- Comfino checkout gate CSS (comfino-item-gate-magento.css) from SDK CDN -->
+        <referenceBlock name="head.additional">
+            <block class="Comfino\ComfinoGateway\Block\Payment\Comfino" name="comfino-checkout-css" template="Comfino_ComfinoGateway::payment/comfino.phtml" />
+        </referenceBlock>
         <!-- Register Comfino payment method renderer in Magento checkout JS layout -->
         <referenceBlock name="checkout.root">
             <arguments>

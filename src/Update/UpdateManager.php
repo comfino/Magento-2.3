@@ -2,27 +2,30 @@
 
 namespace Comfino\Update;
 
+use Comfino\Api\ApiClient;
 use Comfino\PluginShared\CacheManager;
 
 class UpdateManager
 {
-    private const GITHUB_REPOSITORY = 'comfino/Magento-2.3';
-    private const GITHUB_URL = 'https://github.com/' . self::GITHUB_REPOSITORY;
-    private const GITHUB_API_URL = 'https://api.github.com/repos/' . self::GITHUB_REPOSITORY;
+    /**
+     * Base canonical platform slug polled on the Comfino release API. This is the legacy Magento 2.3 line; the API
+     * resolves the concrete compatible line (2.3, PHP 7.4) from the client User-Agent.
+     */
+    private const PLATFORM = 'magento-2.3';
     private const CACHE_KEY = 'comfino_github_version_check';
     private const CACHE_TTL = 86400; // 24 hours
-    private const CONNECT_TIMEOUT = 5;
-    private const TRANSFER_TIMEOUT = 10;
 
     /**
-     * Check for available updates on GitHub.
+     * Check for available updates via the Comfino release API.
      *
      * @param string $currentVersion
      * @return array{
      *     update_available: bool,
      *     current_version: string,
      *     github_version?: string,
+     *     download_url?: string,
      *     release_notes_url?: string,
+     *     description_html?: string,
      *     checked_at?: int,
      *     error?: string
      * }
@@ -59,54 +62,32 @@ class UpdateManager
     private static function fetchLatestRelease(string $currentVersion): array
     {
         try {
-            $client = new \ComfinoExternal\Sunrise\Http\Client\Curl\Client(
-                new \ComfinoExternal\Sunrise\Http\Factory\ResponseFactory(),
-                [CURLOPT_CONNECTTIMEOUT => self::CONNECT_TIMEOUT, CURLOPT_TIMEOUT => self::TRANSFER_TIMEOUT]
-            );
-
-            $request = (new \ComfinoExternal\Sunrise\Http\Factory\RequestFactory())
-                ->createRequest('GET', self::GITHUB_API_URL . '/releases/latest')
-                ->withHeader('Accept', 'application/vnd.github.v3+json')
-                ->withHeader('User-Agent', 'Comfino-Magento-Plugin/' . $currentVersion);
-
-            $response = $client->sendRequest($request);
+            $release = ApiClient::getInstance()->getLatestPluginRelease(self::PLATFORM);
         } catch (\Throwable $e) {
             return [
                 'update_available' => false,
                 'current_version' => $currentVersion,
-                'error' => 'Failed to connect to GitHub: ' . $e->getMessage(),
+                'error' => 'Failed to fetch release information from Comfino API: ' . $e->getMessage(),
                 'checked_at' => time(),
             ];
         }
 
-        if ($response->getStatusCode() !== 200) {
+        if ($release === null) {
             return [
                 'update_available' => false,
                 'current_version' => $currentVersion,
-                'error' => 'Failed to fetch release information from GitHub.',
+                'error' => 'No release information available from Comfino API.',
                 'checked_at' => time(),
             ];
         }
-
-        $response->getBody()->rewind();
-        $releaseInfo = json_decode($response->getBody()->getContents(), true);
-
-        if (!is_array($releaseInfo) || !isset($releaseInfo['tag_name'])) {
-            return [
-                'update_available' => false,
-                'current_version' => $currentVersion,
-                'error' => 'Invalid GitHub API response.',
-                'checked_at' => time(),
-            ];
-        }
-
-        $githubVersion = ltrim($releaseInfo['tag_name'], 'v');
 
         return [
-            'update_available' => version_compare($githubVersion, $currentVersion, '>'),
+            'update_available' => version_compare($release->version, $currentVersion, '>'),
             'current_version' => $currentVersion,
-            'github_version' => $githubVersion,
-            'release_notes_url' => $releaseInfo['html_url'] ?? self::GITHUB_URL . '/releases',
+            'github_version' => $release->version,
+            'download_url' => $release->downloadUrl,
+            'release_notes_url' => $release->releaseUrl,
+            'description_html' => $release->descriptionHtml,
             'checked_at' => time(),
         ];
     }

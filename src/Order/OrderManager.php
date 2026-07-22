@@ -53,14 +53,17 @@ final class OrderManager
         foreach ($quote->getAllVisibleItems() as $item) {
             $product = $item->getProduct();
 
+            /* When taxPercent is null, the product is VAT-free (taxRate = null); when it is 0, the rate is explicit
+               0% VAT (taxRate = 0). In both cases net price equals gross price and tax value is 0. */
             $taxPercent = $item->getTaxPercent();
-            $hasTax = $taxPercent > 0.0;
+            $hasTax = ($taxPercent !== null && (float) $taxPercent > 0.0);
+            $isVatFree = ($taxPercent === null);
 
             $productName = $item->getName();
             $grossPrice = (int) round(round($item->getPriceInclTax(), 2) * 100);
-            $netPrice = $hasTax ? (int) round(round((float) $item->getPrice(), 2) * 100) : null;
-            $taxValue = $hasTax ? $grossPrice - $netPrice : null;
-            $taxRate = $hasTax ? (int) $taxPercent : null;
+            $netPrice = $hasTax ? (int) round(round((float) $item->getPrice(), 2) * 100) : $grossPrice;
+            $taxValue = $hasTax ? $grossPrice - $netPrice : 0;
+            $taxRate = $isVatFree ? null : ($hasTax ? (int) $taxPercent : 0);
             $quantity = (int) $item->getQty();
 
             $productId = (string) $product->getId();
@@ -87,34 +90,7 @@ final class OrderManager
             );
         }
 
-        $totalNetValue = 0;
-        $totalTaxValue = 0;
-
-        foreach ($cartItems as $cartItem) {
-            if ($cartItem->getProduct()->getNetPrice() !== null) {
-                $totalNetValue += $cartItem->getProduct()->getNetPrice() * $cartItem->getQuantity();
-            }
-
-            if ($cartItem->getProduct()->getTaxValue() !== null) {
-                $totalTaxValue += $cartItem->getProduct()->getTaxValue() * $cartItem->getQuantity();
-            }
-        }
-
-        if (is_float($totalNetValue) || $totalNetValue > PHP_INT_MAX) {
-            throw new \InvalidArgumentException('Total net value must be integer not greater than PHP_INT_MAX.');
-        }
-
-        if (is_float($totalTaxValue) || $totalTaxValue > PHP_INT_MAX) {
-            throw new \InvalidArgumentException('Total tax value must be integer not greater than PHP_INT_MAX.');
-        }
-
-        if ($totalNetValue === 0) {
-            $totalNetValue = null;
-        }
-
-        if ($totalTaxValue === 0) {
-            $totalTaxValue = null;
-        }
+        [$totalNetValue, $totalTaxValue] = self::sumCartTaxTotals($cartItems);
 
         $shippingAddress = $quote->getShippingAddress();
         $deliveryCost = 0;
@@ -123,19 +99,94 @@ final class OrderManager
         $deliveryTaxRate = null;
 
         if ($shippingAddress !== null) {
-            $deliveryCost = (int) round(round($shippingAddress->getShippingInclTax(), 2) * 100);
-
-            if ($shippingAddress->getShippingTaxAmount() > 0.0) {
-                $deliveryNetCost = (int) round(round($shippingAddress->getShippingAmount(), 2) * 100);
-                $deliveryTaxValue = $deliveryCost - $deliveryNetCost;
-
-                if ($deliveryNetCost > 0) {
-                    $deliveryTaxRate = (int) round($deliveryTaxValue / $deliveryNetCost * 100);
-                } elseif ($deliveryCost !== 0) {
-                    $deliveryTaxRate = (int) round($deliveryTaxValue / $deliveryCost * 100);
-                }
-            }
+            [$deliveryCost, $deliveryNetCost, $deliveryTaxRate, $deliveryTaxValue] = self::calculateDelivery(
+                (float) $shippingAddress->getShippingInclTax(),
+                (float) $shippingAddress->getShippingAmount(),
+                (float) $shippingAddress->getShippingTaxAmount()
+            );
         }
+
+        return new Cart(
+            $totalValue,
+            $totalNetValue,
+            $totalTaxValue,
+            $deliveryCost,
+            $deliveryNetCost,
+            $deliveryTaxRate,
+            $deliveryTaxValue,
+            $cartItems
+        );
+    }
+
+    /**
+     * Converts a Magento Order to a Comfino Cart structure.
+     *
+     * Order-side counterpart of getShopCart(): used after order placement (e.g., in ApplicationService), when the
+     * source quote is no longer reliable. Produces the same rich cart items (category path, EAN, image, per-item
+     * tax) and delivery cost breakdown as getShopCart(), derived from the persisted order instead of the quote.
+     *
+     * @param MagentoOrder $order Magento order entity
+     *
+     * @return Cart Comfino cart structure
+     *
+     * @throws LocalizedException
+     */
+    public static function getShopCartFromOrder(MagentoOrder $order): Cart
+    {
+        $totalValue = (int) round(round((float) $order->getGrandTotal(), 2) * 100);
+
+        if ($totalValue < 0) {
+            throw new \InvalidArgumentException('Total value must be greater than 0.');
+        }
+
+        $cartItems = [];
+
+        foreach ($order->getAllVisibleItems() as $item) {
+            /** @var \Magento\Sales\Model\Order\Item $item */
+            $product = $item->getProduct();
+
+            /* When taxPercent is null, the product is VAT-free (taxRate = null); when it is 0, the rate is explicit
+               0% VAT (taxRate = 0). In both cases net price equals gross price and tax value is 0. */
+            $taxPercent = $item->getTaxPercent();
+            $hasTax = ($taxPercent !== null && (float) $taxPercent > 0.0);
+            $isVatFree = ($taxPercent === null);
+
+            $grossPrice = (int) round(round((float) $item->getPriceInclTax(), 2) * 100);
+            $netPrice = $hasTax ? (int) round(round((float) $item->getPrice(), 2) * 100) : $grossPrice;
+            $taxValue = $hasTax ? $grossPrice - $netPrice : 0;
+            $taxRate = $isVatFree ? null : ($hasTax ? (int) $taxPercent : 0);
+            $quantity = (int) $item->getQtyOrdered();
+
+            $productId = $product !== null ? (string) $product->getId() : null;
+            $categoryIds = $product !== null ? self::getProductCategoryIds($product) : [];
+            $categoryNames = self::getProductCategoryNames($categoryIds);
+            $categories = !empty($categoryNames) ? implode('→', $categoryNames) : null;
+            $ean = $product !== null ? $product->getSku() : null;
+            $imageUrl = $product !== null ? self::getProductImageUrl($product) : null;
+
+            $cartItems[] = new CartItem(
+                new Product(
+                    (string) $item->getName(),
+                    $grossPrice,
+                    $productId,
+                    $categories,
+                    $ean,
+                    $imageUrl,
+                    $categoryIds,
+                    $netPrice,
+                    $taxRate,
+                    $taxValue
+                ),
+                $quantity
+            );
+        }
+
+        [$totalNetValue, $totalTaxValue] = self::sumCartTaxTotals($cartItems);
+        [$deliveryCost, $deliveryNetCost, $deliveryTaxRate, $deliveryTaxValue] = self::calculateDelivery(
+            (float) $order->getShippingInclTax(),
+            (float) $order->getShippingAmount(),
+            (float) $order->getShippingTaxAmount()
+        );
 
         return new Cart(
             $totalValue,
@@ -155,9 +206,9 @@ final class OrderManager
      * Collects customer data from shipping and billing addresses with fallback logic:
      * - Names taken from billing address (fallback to shipping when billing has no firstname).
      * - Phone taken from billing address, overridden by shipping phone if available.
-     * - Delivery address fields taken from shipping address (fallback to billing for virtual orders).
+     * - Delivery address fields taken from the shipping address (fallback to billing for virtual orders).
      * - Street line 1 is parsed to separate street name and building number.
-     * - Street line 2 (if present) is used as apartment number.
+     * - Street line 2 (if present) is used as an apartment number.
      *
      * @param MagentoOrder $order Magento order entity
      * @param string $remoteAddress Customer IP address
@@ -235,6 +286,78 @@ final class OrderManager
                 $deliveryAddress->getCountryId() ?? 'PL'
             )
         );
+    }
+
+    /**
+     * Sums the per-item net and tax values across all cart items.
+     *
+     * @param CartItem[] $cartItems
+     *
+     * @return array{0: int|null, 1: int|null} [totalNetValue, totalTaxValue]; null when the sum is zero.
+     */
+    private static function sumCartTaxTotals(array $cartItems): array
+    {
+        $totalNetValue = 0;
+        $totalTaxValue = 0;
+
+        foreach ($cartItems as $cartItem) {
+            if ($cartItem->getProduct()->getNetPrice() !== null) {
+                $totalNetValue += $cartItem->getProduct()->getNetPrice() * $cartItem->getQuantity();
+            }
+
+            if ($cartItem->getProduct()->getTaxValue() !== null) {
+                $totalTaxValue += $cartItem->getProduct()->getTaxValue() * $cartItem->getQuantity();
+            }
+        }
+
+        if (is_float($totalNetValue) || $totalNetValue > PHP_INT_MAX) {
+            throw new \InvalidArgumentException('Total net value must be integer not greater than PHP_INT_MAX.');
+        }
+
+        if (is_float($totalTaxValue) || $totalTaxValue > PHP_INT_MAX) {
+            throw new \InvalidArgumentException('Total tax value must be integer not greater than PHP_INT_MAX.');
+        }
+
+        return [
+            $totalNetValue === 0 ? null : $totalNetValue,
+            $totalTaxValue === 0 ? null : $totalTaxValue,
+        ];
+    }
+
+    /**
+     * Computes the delivery cost breakdown (in grosz) from gross/net/tax shipping amounts.
+     *
+     * @return array{0: int, 1: int|null, 2: int|null, 3: int|null}
+     *         [deliveryCost, deliveryNetCost, deliveryTaxRate, deliveryTaxValue]
+     */
+    private static function calculateDelivery(float $shippingGross, float $shippingNet, float $shippingTaxAmount): array
+    {
+        $deliveryCost = (int) round(round($shippingGross, 2) * 100);
+
+        if ($deliveryCost === 0) {
+            // Free delivery - no cost breakdown.
+            return [0, null, null, null];
+        }
+
+        /* Paid delivery with no VAT (explicit 0% or VAT-free): net equals gross, tax value is 0 and the rate is
+           null. When VAT applies, use the actual net shipping amount and derive the rate from net (or gross). */
+        if ($shippingTaxAmount > 0.0) {
+            $deliveryNetCost = (int) round(round($shippingNet, 2) * 100);
+        } else {
+            $deliveryNetCost = $deliveryCost;
+        }
+
+        $deliveryTaxValue = $deliveryCost - $deliveryNetCost;
+
+        if ($deliveryNetCost >= $deliveryCost) {
+            $deliveryTaxRate = null;
+        } elseif ($deliveryNetCost > 0) {
+            $deliveryTaxRate = (int) round($deliveryTaxValue / $deliveryNetCost * 100);
+        } else {
+            $deliveryTaxRate = (int) round($deliveryTaxValue / $deliveryCost * 100);
+        }
+
+        return [$deliveryCost, $deliveryNetCost, $deliveryTaxRate, $deliveryTaxValue];
     }
 
     /**
@@ -352,10 +475,13 @@ final class OrderManager
         $grossPrice = (int) round(round((float) $catalogHelper->getTaxPrice($product, $finalPrice, true), 2) * 100);
         $netPriceInt = (int) round(round((float) $catalogHelper->getTaxPrice($product, $finalPrice, false), 2) * 100);
 
+        /* The catalog helper exposes gross vs. net price but cannot distinguish explicit 0% VAT from VAT-exempt;
+           taxRate is therefore null whenever gross equals net, covering both no-VAT cases uniformly. Net price
+           equals gross price and tax value is 0 when there is no tax. */
         $hasTax = $netPriceInt > 0 && $netPriceInt !== $grossPrice;
-        $netPrice = $hasTax ? $netPriceInt : null;
-        $taxValue = $hasTax ? $grossPrice - $netPriceInt : null;
+        $taxValue = $hasTax ? $grossPrice - $netPriceInt : 0;
         $taxRate = $hasTax ? (int) round(($grossPrice - $netPriceInt) / $netPriceInt * 100) : null;
+        $netPrice = $hasTax ? $netPriceInt : $grossPrice;
 
         $categoryIds = self::getProductCategoryIds($product);
         $categoryNames = self::getProductCategoryNames($categoryIds);

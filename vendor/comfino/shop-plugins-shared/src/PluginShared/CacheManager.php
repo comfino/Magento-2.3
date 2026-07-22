@@ -18,13 +18,21 @@ final class CacheManager
      */
     private static $cacheRootPath;
     /**
+     * @var string
+     */
+    private static $cacheScope = '';
+    /**
      * @var \ComfinoExternal\Cache\Adapter\Filesystem\FilesystemCachePool|\ComfinoExternal\Cache\Adapter\PHPArray\ArrayCachePool|null
      */
     private static $cache;
 
-    public static function init(string $cacheRootPath): void
+    /**
+     * @param string $cacheScope
+     */
+    public static function init(string $cacheRootPath, string $cacheScope = ''): void
     {
         self::$cacheRootPath = $cacheRootPath;
+        self::$cacheScope = $cacheScope;
         self::$cache = null;
     }
 
@@ -78,7 +86,7 @@ final class CacheManager
             }
 
             try {
-                self::$cache = new FilesystemCachePool(new Filesystem(new Local(self::$cacheRootPath)), self::CACHE_FOLDER);
+                self::$cache = new FilesystemCachePool(new Filesystem(new Local(self::$cacheRootPath)), self::getCacheFolder());
             } catch (\Throwable $exception) {
                 self::$cache = new ArrayCachePool();
             }
@@ -89,6 +97,15 @@ final class CacheManager
 
     public static function getCacheFullPath(): string
     {
-        return self::$cacheRootPath . DIRECTORY_SEPARATOR . self::CACHE_FOLDER;
+        return self::$cacheRootPath . DIRECTORY_SEPARATOR . self::getCacheFolder();
+    }
+
+    private static function getCacheFolder(): string
+    {
+        if (self::$cacheScope === '') {
+            return self::CACHE_FOLDER;
+        }
+
+        return self::CACHE_FOLDER . DIRECTORY_SEPARATOR . preg_replace('/[^A-Za-z0-9_-]/', '_', self::$cacheScope);
     }
 }

@@ -24,6 +24,17 @@ class StorageAdapter implements StorageAdapterInterface
     private TypeListInterface $cacheTypeList;
     /** @var int[] */
     private array $optTypeFlags;
+    /**
+     * Explicit scope type for load()/save() (e.g., ScopeInterface::SCOPE_STORE / SCOPE_WEBSITES).
+     * Defaults to ScopeInterface::SCOPE_STORE, matching the previous hard-coded behavior.
+     */
+    private string $scope = ScopeInterface::SCOPE_STORE;
+    /**
+     * Explicit store/website ID used for scoped load()/save() calls. When null, load() relies on
+     * Magento's ambient current-store resolution (unchanged legacy behavior) and save() writes to
+     * the default (global) scope (unchanged legacy behavior).
+     */
+    private ?int $storeId = null;
 
     /** Maps COMFINO_* key names -> Magento XML config paths */
     private static array $keyToXmlPath = [
@@ -40,6 +51,7 @@ class StorageAdapter implements StorageAdapterInterface
         'COMFINO_WIDGET_ENABLED' => Data::XML_PATH_WIDGET_ENABLED,
         'COMFINO_WIDGET_KEY' => Data::XML_PATH_WIDGET_KEY,
         'COMFINO_WIDGET_PRICE_SELECTOR' => Data::XML_PATH_WIDGET_PRICE_SELECTOR,
+        'COMFINO_WIDGET_PRICE_ATTRIBUTE' => Data::XML_PATH_WIDGET_PRICE_ATTRIBUTE,
         'COMFINO_WIDGET_TARGET_SELECTOR' => Data::XML_PATH_WIDGET_TARGET_SELECTOR,
         'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => Data::XML_PATH_WIDGET_PRICE_OBSERVER_SELECTOR,
         'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => Data::XML_PATH_WIDGET_PRICE_OBSERVER_LEVEL,
@@ -49,9 +61,6 @@ class StorageAdapter implements StorageAdapterInterface
         'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => Data::XML_PATH_WIDGET_SHOW_PROVIDER_LOGOS,
         'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL' => Data::XML_PATH_WIDGET_CUSTOM_BANNER_CSS_URL,
         'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL' => Data::XML_PATH_WIDGET_CUSTOM_CALCULATOR_CSS_URL,
-        'COMFINO_WIDGET_CODE' => Data::XML_PATH_WIDGET_CODE,
-        'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => Data::XML_PATH_WIDGET_PROD_SCRIPT_VERSION,
-        'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => Data::XML_PATH_WIDGET_DEV_SCRIPT_VERSION,
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => Data::XML_PATH_CAT_FILTER_AVAIL_PROD_TYPES,
         'COMFINO_PROD_CAT_CACHE_TTL' => Data::XML_PATH_PROD_CAT_CACHE_TTL,
         'COMFINO_INITIAL_ORDER_STATUS' => Data::XML_PATH_INITIAL_ORDER_STATUS,
@@ -61,14 +70,41 @@ class StorageAdapter implements StorageAdapterInterface
         'COMFINO_API_CONNECT_TIMEOUT' => Data::XML_PATH_API_CONNECT_TIMEOUT,
         'COMFINO_API_TIMEOUT' => Data::XML_PATH_API_TIMEOUT,
         'COMFINO_API_CONNECT_NUM_ATTEMPTS' => Data::XML_PATH_API_CONNECT_NUM_ATTEMPTS,
+        'COMFINO_ERROR_LOGGING_ACCESS_TOKEN' => Data::XML_PATH_ERROR_LOGGING_ACCESS_TOKEN,
+        'COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT' => Data::XML_PATH_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT,
     ];
 
-    public function __construct(ScopeConfigInterface $scopeConfig, WriterInterface $configWriter, TypeListInterface $cacheTypeList)
-    {
+    /**
+     * @param int|null $storeId Explicit store/website ID to scope load()/save() to. When omitted (null,
+     *                          the default), behavior is unchanged from before this parameter existed:
+     *                          load() relies on Magento's ambient current-store resolution and save()
+     *                          always writes to the default (global) scope.
+     * @param string $scope Scope type used together with $storeId (e.g. ScopeInterface::SCOPE_STORE or
+     *                      ScopeInterface::SCOPE_WEBSITES). Ignored when $storeId is null.
+     */
+    public function __construct(
+        ScopeConfigInterface $scopeConfig,
+        WriterInterface $configWriter,
+        TypeListInterface $cacheTypeList,
+        ?int $storeId = null,
+        string $scope = ScopeInterface::SCOPE_STORE
+    ) {
         $this->scopeConfig = $scopeConfig;
         $this->configWriter = $configWriter;
         $this->cacheTypeList = $cacheTypeList;
         $this->optTypeFlags = array_merge(array_merge(...array_values(ConfigManager::CONFIG_OPTIONS)));
+        $this->storeId = $storeId;
+        $this->scope = $scope;
+    }
+
+    /**
+     * Sets (or clears, when $storeId is null) the explicit store scope used by load()/save().
+     * Allows scoping an already-constructed adapter instance without rebuilding it.
+     */
+    public function setStoreScope(?int $storeId, string $scope = ScopeInterface::SCOPE_STORE): void
+    {
+        $this->storeId = $storeId;
+        $this->scope = $scope;
     }
 
     /**
@@ -83,7 +119,12 @@ class StorageAdapter implements StorageAdapterInterface
             $xmlPath = self::$keyToXmlPath[$optName] ?? null;
 
             if ($xmlPath !== null) {
-                $value = $this->scopeConfig->getValue($xmlPath, ScopeInterface::SCOPE_STORE);
+                if ($this->storeId !== null) {
+                    $value = $this->scopeConfig->getValue($xmlPath, $this->scope, (string) $this->storeId);
+                } else {
+                    $value = $this->scopeConfig->getValue($xmlPath, ScopeInterface::SCOPE_STORE);
+                }
+
                 $configuration[$optName] = $value ?? ($defaults[$optName] ?? null);
             } else {
                 $configuration[$optName] = $defaults[$optName] ?? null;
@@ -108,7 +149,12 @@ class StorageAdapter implements StorageAdapterInterface
             $xmlPath = self::$keyToXmlPath[$optName] ?? null;
 
             if ($xmlPath !== null) {
-                $this->configWriter->save($xmlPath, $optValue);
+                if ($this->storeId !== null) {
+                    $this->configWriter->save($xmlPath, $optValue, $this->scope, $this->storeId);
+                } else {
+                    $this->configWriter->save($xmlPath, $optValue);
+                }
+
                 $saved = true;
             }
         }

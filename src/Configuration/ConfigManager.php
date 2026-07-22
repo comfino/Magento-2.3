@@ -5,13 +5,15 @@ namespace Comfino\Configuration;
 use Comfino\Api\ApiClient;
 use Comfino\CategoryTree\BuildStrategy;
 use Comfino\ComfinoGateway\Helper\Data;
+use Comfino\ComfinoGateway\Helper\PaywallAuthTokenGenerator;
 use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\Common\Frontend\FrontendHelper;
-use Comfino\Common\Frontend\WidgetInitScriptHelper;
+use Comfino\Common\Frontend\ProductWidgetScriptHelper;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Common\Shop\Product\CategoryTree;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Frontend\AbstractShopEnvironmentBuilder;
 use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -27,8 +29,8 @@ use Magento\Framework\App\ObjectManager;
  */
 final class ConfigManager
 {
-    private const COMFINO_SDK_JS_PRODUCTION  = 'https://widget.comfino.pl/sdk/v1/comfino-sdk.min.js';
-    private const COMFINO_SDK_JS_SANDBOX     = 'https://widget.craty.pl/sdk/v1/comfino-sdk.min.js';
+    private const COMFINO_SDK_CDN_PRODUCTION = 'https://sdk.comfino.pl';
+    private const COMFINO_SDK_CDN_SANDBOX = 'https://sdk.craty.pl';
 
     public const CONFIG_OPTIONS = [
         'payment_settings' => [
@@ -44,6 +46,7 @@ final class ConfigManager
             'COMFINO_WIDGET_ENABLED' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_WIDGET_KEY' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_PRICE_SELECTOR' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_WIDGET_PRICE_ATTRIBUTE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_TARGET_SELECTOR' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => ConfigurationManager::OPT_VALUE_TYPE_INT,
@@ -53,7 +56,6 @@ final class ConfigManager
             'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
-            'COMFINO_WIDGET_CODE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
         ],
         'developer_settings' => [
             'COMFINO_IS_SANDBOX' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
@@ -63,8 +65,6 @@ final class ConfigManager
             'COMFINO_DEV_ENV_VARS' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
         ],
         'hidden_settings' => [
-            'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
-            'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_IGNORED_STATUSES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_FORBIDDEN_STATUSES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
@@ -74,6 +74,8 @@ final class ConfigManager
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_PROD_CAT_CACHE_TTL' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_INITIAL_ORDER_STATUS' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_ERROR_LOGGING_ACCESS_TOKEN' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
         ],
     ];
 
@@ -88,6 +90,7 @@ final class ConfigManager
         'COMFINO_WIDGET_ENABLED',
         'COMFINO_WIDGET_KEY',
         'COMFINO_WIDGET_PRICE_SELECTOR',
+        'COMFINO_WIDGET_PRICE_ATTRIBUTE',
         'COMFINO_WIDGET_TARGET_SELECTOR',
         'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR',
         'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL',
@@ -97,15 +100,12 @@ final class ConfigManager
         'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS',
         'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL',
         'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL',
-        'COMFINO_WIDGET_CODE',
         // Developer settings
         'COMFINO_IS_SANDBOX',
         'COMFINO_DEBUG',
         'COMFINO_SERVICE_MODE',
         'COMFINO_DEV_ENV_VARS',
         // Hidden settings
-        'COMFINO_WIDGET_PROD_SCRIPT_VERSION',
-        'COMFINO_WIDGET_DEV_SCRIPT_VERSION',
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES',
         'COMFINO_IGNORED_STATUSES',
         'COMFINO_FORBIDDEN_STATUSES',
@@ -225,13 +225,131 @@ final class ConfigManager
         return $apiHost;
     }
 
+    public static function getSdkCdnBaseUrl(): string
+    {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_SDK_CDN_BASE_URL')) {
+            return getenv('COMFINO_DEV_SDK_CDN_BASE_URL');
+        }
+
+        return self::isSandboxMode() ? self::COMFINO_SDK_CDN_SANDBOX : self::COMFINO_SDK_CDN_PRODUCTION;
+    }
+
+    public static function getCheckoutCssUrl(): string
+    {
+        return self::getSdkCdnBaseUrl() . '/checkout/v1/css/comfino-item-gate-magento.css';
+    }
+
+    /**
+     * CDN URL of the single, SDK-hosted Comfino brand logo used as the default payment-tile placeholder across all
+     * shop plugins/platforms. Rendered by the KO template as the tile's initial logo; the SDK renderer adopts it and
+     * swaps its `src` at runtime (to the auth-gated API Comfino logo). Hosting it centrally on the SDK CDN keeps the
+     * asset controllable without plugin updates.
+     */
+    public static function getDefaultLogoUrl(): string
+    {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_DEFAULT_LOGO_URL')) {
+            return getenv('COMFINO_DEV_DEFAULT_LOGO_URL');
+        }
+
+        return self::getSdkCdnBaseUrl() . '/images/comfino/comfino_logo.svg';
+    }
+
     public static function getSdkScriptUrl(): string
     {
         if (self::useDevEnvVars() && getenv('COMFINO_DEV_SDK_SCRIPT_URL')) {
             return getenv('COMFINO_DEV_SDK_SCRIPT_URL');
         }
 
-        return self::isSandboxMode() ? self::COMFINO_SDK_JS_SANDBOX : self::COMFINO_SDK_JS_PRODUCTION;
+        return self::getSdkCdnBaseUrl() . '/sdk/v1/comfino-sdk.min.js';
+    }
+
+    /**
+     * CDN URL of the Magento product-page widget script served from the SDK host at /product/v1/. The classic-IIFE
+     * script reads the `#comfino-widget-config` JSON block and calls sdk.bootstrapWidget().
+     */
+    public static function getProductWidgetScriptUrl(): string
+    {
+        return self::getSdkCdnBaseUrl() . '/product/v1/comfino-magento-widget.min.js';
+    }
+
+    /**
+     * Assembles the product-page widget config consumed by the CDN product widget script — the WidgetConfig contract
+     * emitted into the `#comfino-widget-config` JSON block. Filtered against the shared `ProductWidgetScriptHelper::WIDGET_CONFIG_KEYS`
+     * allowlist, which also drops nulls so omitted options fall through to the SDK / CDN-profile defaults.
+     *
+     * @return array<string, mixed>
+     */
+    public static function getWidgetConfig(?int $productId): array
+    {
+        $settings = self::getConfigurationValues(
+            'widget_settings',
+            [
+                'COMFINO_WIDGET_KEY',
+                'COMFINO_WIDGET_PRICE_SELECTOR',
+                'COMFINO_WIDGET_PRICE_ATTRIBUTE',
+                'COMFINO_WIDGET_TARGET_SELECTOR',
+                'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR',
+                'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL',
+                'COMFINO_WIDGET_TYPE',
+                'COMFINO_WIDGET_OFFER_TYPES',
+                'COMFINO_WIDGET_EMBED_METHOD',
+                'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS',
+                'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL',
+                'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL',
+            ]
+        );
+
+        $variables = self::getWidgetVariables($productId);
+
+        $notNull = static function ($value) {
+            return $value === 'null' ? null : $value;
+        };
+
+        // Magento reports the product price as a major-unit float; the SDK expects grosze (smallest unit).
+        $priceValue = $notNull($variables['PRODUCT_PRICE'] ?? null);
+        $price = $priceValue === null ? null : (int) round(((float) $priceValue) * 100);
+
+        // COMFINO_WIDGET_OFFER_TYPES may be a string[] or a comma-separated string depending on storage.
+        $rawOfferTypes = $settings['COMFINO_WIDGET_OFFER_TYPES'] ?? null;
+        $offerTypes = is_array($rawOfferTypes)
+            ? array_values($rawOfferTypes)
+            : array_values(array_filter(array_map('trim', explode(',', (string) $rawOfferTypes)), 'strlen'));
+
+        $config = [
+            'sdkScriptUrl' => self::getSdkScriptUrl(),
+            'environment' => self::isSandboxMode() ? 'sandbox' : 'production',
+            'widgetKey' => $settings['COMFINO_WIDGET_KEY'] ?? null,
+            'loggingToken' => $variables['LOGGING_TOKEN'] ?? null,
+            'trackId' => $variables['TRACK_ID'] ?? null,
+            'widgetTargetSelector' => $settings['COMFINO_WIDGET_TARGET_SELECTOR'] ?? null,
+            'priceSelector' => $settings['COMFINO_WIDGET_PRICE_SELECTOR'] ?? null,
+            'priceAttribute' => ($settings['COMFINO_WIDGET_PRICE_ATTRIBUTE'] ?? '') ?: null,
+            'priceObserverSelector' => ($settings['COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR'] ?? '') ?: null,
+            'priceObserverLevel' => (int) ($settings['COMFINO_WIDGET_PRICE_OBSERVER_LEVEL'] ?? 0),
+            'embedMethod' => $settings['COMFINO_WIDGET_EMBED_METHOD'] ?? null,
+            'widgetType' => $settings['COMFINO_WIDGET_TYPE'] ?? null,
+            'offerTypes' => $offerTypes !== [] ? $offerTypes : null,
+            'showProviderLogos' => (bool) ($settings['COMFINO_WIDGET_SHOW_PROVIDER_LOGOS'] ?? false),
+            'hasPriceInput' => false,
+            'bannerCssUrl' => ($settings['COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL'] ?? '') ?: null,
+            'calculatorCssUrl' => ($settings['COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL'] ?? '') ?: null,
+            'price' => $price,
+            'productId' => $notNull($variables['PRODUCT_ID'] ?? null),
+            'availableProductTypes' => $variables['AVAILABLE_PRODUCT_TYPES'] ?? null,
+            'productCartDetails' => $notNull($variables['PRODUCT_CART_DETAILS'] ?? null),
+            'language' => $variables['LANGUAGE'] ?? null,
+            'currency' => $variables['CURRENCY'] ?? null,
+            'shopEnvironment' => array_merge(
+                ObjectManager::getInstance()->get(AbstractShopEnvironmentBuilder::class)
+                    ->buildForFrontend(['type' => 'product']),
+                [
+                    'language' => $variables['LANGUAGE'] ?? 'pl',
+                    'currency' => $variables['CURRENCY'] ?? 'PLN',
+                ]
+            ),
+        ];
+
+        return ProductWidgetScriptHelper::buildConfig($config);
     }
 
     public static function getLogoUrl(): string
@@ -241,6 +359,25 @@ final class ConfigManager
 
         return self::getApiHost(ApiClient::getInstance()->getApiHost()) . '/v1/get-logo-url?auth='
             . FrontendHelper::getLogoAuthHash('MG', $dataHelper->getShopVersion(), $dataHelper->getModuleVersion(), Data::BUILD_TS);
+    }
+
+    /**
+     * HMAC-SHA3-256 authentication hash for the paywall creditor-logo endpoint, consumed by the SDK
+     * (bootstrapPaywall paymentMethodItem.auth). Mirrors getLogoUrl() but binds the api/widget keys too.
+     */
+    public static function getPaywallLogoAuthHash(): string
+    {
+        /** @var Data $dataHelper */
+        $dataHelper = ObjectManager::getInstance()->get(Data::class);
+
+        return FrontendHelper::getPaywallLogoAuthHashRaw(
+            'MG',
+            $dataHelper->getShopVersion(),
+            $dataHelper->getModuleVersion(),
+            (string) self::getApiKey(),
+            (string) self::getWidgetKey(),
+            Data::BUILD_TS
+        );
     }
 
     public static function getApiKey(): ?string
@@ -253,6 +390,39 @@ final class ConfigManager
     public static function getWidgetKey(): ?string
     {
         return self::getConfigurationValue('COMFINO_WIDGET_KEY');
+    }
+
+    public static function getErrorLoggingAccessToken(): string
+    {
+        return (string) (self::getConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN') ?? '');
+    }
+
+    public static function getErrorLoggingAccessTokenExpiresAt(): int
+    {
+        return (int) (self::getConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT') ?? 0);
+    }
+
+    public static function refreshErrorLoggingTokenIfNeeded(): void
+    {
+        if (empty(self::getApiKey())) {
+            return;
+        }
+
+        if (self::getErrorLoggingAccessToken() !== '' && self::getErrorLoggingAccessTokenExpiresAt() > time() + 3600) {
+            return;
+        }
+
+        try {
+            $response = ApiClient::getInstance()->claimErrorLoggingToken();
+
+            if ($response !== null) {
+                self::getInstance()->setConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN', $response->accessToken);
+                self::getInstance()->setConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT', strtotime($response->expiresAt));
+                self::getInstance()->persist();
+            }
+        } catch (\Throwable $e) {
+            // Silently ignore — CETS token claim is best-effort.
+        }
     }
 
     /**
@@ -316,52 +486,6 @@ final class ConfigManager
             : self::getInstance()->getConfigurationValues(array_keys(self::CONFIG_OPTIONS[$optionsGroup]));
     }
 
-    public static function getWidgetScriptUrl(): string
-    {
-        if (self::useDevEnvVars() && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL')) {
-            return getenv('COMFINO_DEV_WIDGET_SCRIPT_URL');
-        }
-
-        $widgetScriptUrl = self::isSandboxMode() ? 'https://widget.craty.pl' : 'https://widget.comfino.pl';
-        $widgetProdScriptVersion = self::getConfigurationValue('COMFINO_WIDGET_PROD_SCRIPT_VERSION');
-
-        if (empty($widgetProdScriptVersion)) {
-            $widgetScriptUrl .= '/v2/widget-frontend.min.js';
-        } else {
-            $widgetScriptUrl .= ('/' . trim($widgetProdScriptVersion, '/'));
-        }
-
-        return $widgetScriptUrl;
-    }
-
-    public static function getCurrentWidgetCode(?int $productId = null): string
-    {
-        $widgetCode = trim(str_replace("\r", '', (string) self::getConfigurationValue('COMFINO_WIDGET_CODE')));
-
-        if ($widgetCode === '' || WidgetInitScriptHelper::initScriptRequiresUpdate($widgetCode)) {
-            $widgetCode = WidgetInitScriptHelper::getInitialWidgetCode();
-        }
-
-        $productData = self::getProductData($productId);
-
-        $optionsToInject = [];
-
-        if (strpos($widgetCode, 'productId') === false) {
-            $optionsToInject[] = "        productId: {$productData['product_id']}";
-        }
-        if (strpos($widgetCode, 'availableProductTypes') === false) {
-            $optionsToInject[] = '        availableProductTypes: ' . implode(',', $productData['available_product_types']);
-        }
-
-        if (count($optionsToInject) > 0) {
-            $injectedInitOptions = implode(",\n", $optionsToInject) . ",\n";
-
-            return preg_replace('/\{\n(.*widgetKey:)/', "{\n{$injectedInitOptions}\$1", $widgetCode);
-        }
-
-        return $widgetCode;
-    }
-
     public static function getWidgetVariables(?int $productId = null): array
     {
         /** @var Data $dataHelper */
@@ -378,7 +502,6 @@ final class ConfigManager
         }
 
         return [
-            'WIDGET_SCRIPT_URL' => self::getWidgetScriptUrl(),
             'PRODUCT_ID' => $productData['product_id'],
             'PRODUCT_PRICE' => $productData['price'],
             'PLATFORM' => 'magento',
@@ -390,6 +513,8 @@ final class ConfigManager
             'PRODUCT_CART_DETAILS' => $productData['product_cart_details'],
             'LANGUAGE' => $dataHelper->getShopLanguage(),
             'CURRENCY' => $currency,
+            'LOGGING_TOKEN' => ObjectManager::getInstance()->get(PaywallAuthTokenGenerator::class)->generateLoggingToken(),
+            'TRACK_ID' => ApiClient::getInstance()->getTrackId(),
         ];
     }
 
@@ -407,7 +532,8 @@ final class ConfigManager
             'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER,COMPANY_BNPL,COMPANY_INSTALLMENTS,LEASING,PAY_IN_PARTS',
             'COMFINO_WIDGET_ENABLED' => false,
             'COMFINO_WIDGET_KEY' => '',
-            'COMFINO_WIDGET_PRICE_SELECTOR' => 'span.price',
+            'COMFINO_WIDGET_PRICE_SELECTOR' => '[data-price-type="finalPrice"]',
+            'COMFINO_WIDGET_PRICE_ATTRIBUTE' => 'data-price-amount',
             'COMFINO_WIDGET_TARGET_SELECTOR' => 'div.product-add-form',
             'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => '',
             'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 0,
@@ -417,9 +543,6 @@ final class ConfigManager
             'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => false,
             'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL' => '',
             'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL' => '',
-            'COMFINO_WIDGET_CODE' => '',
-            'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => '',
-            'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => '',
             'COMFINO_PROD_CAT_CACHE_TTL' => 3600,
             'COMFINO_INITIAL_ORDER_STATUS' => ShopStatusManager::CUSTOM_STATUS_MAP[StatusManager::STATUS_CREATED],
             'COMFINO_IGNORED_STATUSES' => implode(',', StatusManager::DEFAULT_IGNORED_STATUSES),

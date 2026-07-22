@@ -50,5 +50,6 @@
             "XDEBUG_MODE=coverage phpunit --coverage-html coverage/"
         ]
     },
-    "abandoned": "sunrise/http-message"
+    "abandoned": "sunrise/http-message",
+    "version": "v2.0.3"
 }

@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Comfino\Common\Shop;
 
 use Comfino\Shop\Order\Cart\CartItemInterface;
+use Comfino\Shop\Order\CartInterface;
 
-class Cart
+class Cart implements CartInterface
 {
     /**
      * @var int
@@ -119,6 +120,31 @@ class Cart
         }
 
         return ($this->cartCategoryIds = array_unique(array_merge([], ...$categoryIds), SORT_NUMERIC));
+    }
+
+    public function getItems(): array
+    {
+        return $this->cartItems;
+    }
+
+    public function getTotalAmount(): int
+    {
+        return $this->totalValue;
+    }
+
+    public function getDeliveryCostTaxRate(): ?int
+    {
+        return $this->deliveryTaxRate;
+    }
+
+    public function getDeliveryCostTaxValue(): ?int
+    {
+        return $this->deliveryTaxValue;
+    }
+
+    public function getCategory(): ?string
+    {
+        return null;
     }
 
     /**

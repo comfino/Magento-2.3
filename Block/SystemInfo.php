@@ -16,6 +16,14 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 
 class SystemInfo extends Field
 {
+    /**
+     * Allow-list for the release "what's new" HTML, mirroring the server-side sanitizer. Magento's escapeHtml keeps
+     * these tags (and their safe attributes) and escapes everything else.
+     */
+    private const RELEASE_DESCRIPTION_ALLOWED_TAGS = [
+        'p', 'br', 'strong', 'em', 'b', 'i', 'ul', 'ol', 'li', 'h3', 'h4', 'code', 'pre', 'a', 'span', 'div', 'img'
+    ];
+
     private Data $helper;
     private DirectoryList $dirList;
 
@@ -29,8 +37,6 @@ class SystemInfo extends Field
 
     public function render(AbstractElement $element): string
     {
-        CacheManager::init($this->dirList->getPath('var'));
-
         $infoMessages = [];
         $successMessages = [];
         $warningMessages = [];
@@ -73,6 +79,7 @@ class SystemInfo extends Field
                 htmlspecialchars($githubVersion),
                 $versionNote
             );
+
             if (!empty($updateInfo['checked_at'])) {
                 $versionInfo .= sprintf(
                     ' <small style="color: #666">%s: %s UTC</small>',
@@ -80,6 +87,22 @@ class SystemInfo extends Field
                     \DateTime::createFromFormat('U', (string) $updateInfo['checked_at'])->format('Y-m-d H:i:s')
                 );
             }
+
+            if ($isNewer) {
+                $versionInfo .= '<div class="comfino-update-available-message" style="margin-top: 10px; color: #666">' .
+                    $this->escapeHtml((string) __(
+                        'New Comfino %1 module version is available. You are using %2 version. Please update your Comfino module.',
+                        $githubVersion,
+                        $moduleVersion
+                    )) . '</div>';
+
+                if (!empty($updateInfo['description_html'])) {
+                    /* "What's new" HTML of the available release. Server-sanitized; re-escaped with Magento's allow-list. */
+                    $versionInfo .= '<div class="comfino-release-description" style="margin-top: 10px">' .
+                        $this->escapeHtml($updateInfo['description_html'], self::RELEASE_DESCRIPTION_ALLOWED_TAGS) . '</div>';
+                }
+            }
+
             $infoMessages[] = $versionInfo;
         } elseif (!empty($updateInfo['error'])) {
             $infoMessages[] = sprintf('<b>%s:</b> <span style="color: #888">%s</span>', __('Latest available version'), htmlspecialchars($updateInfo['error']));
@@ -145,7 +168,7 @@ class SystemInfo extends Field
                 'COMFINO_DEV_ENV',
                 'COMFINO_DEV_API_HOST',
                 'COMFINO_DEV_SDK_SCRIPT_URL',
-                'COMFINO_DEV_WIDGET_SCRIPT_URL',
+                'COMFINO_DEV_SDK_CDN_BASE_URL',
             ];
 
             $devEnvVars = [];

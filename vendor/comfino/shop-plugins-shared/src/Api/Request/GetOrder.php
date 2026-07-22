@@ -14,7 +14,7 @@ class GetOrder extends Request
     public function __construct(string $orderId)
     {
         $this->setRequestMethod('GET');
-        $this->setApiEndpointPath(sprintf('orders/%s', $orderId));
+        $this->setApiEndpointPath(sprintf('orders/%s', rawurlencode($orderId)));
     }
 
     protected function prepareRequestBody(): ?array

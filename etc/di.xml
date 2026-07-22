@@ -4,6 +4,12 @@
     <preference for="Comfino\ComfinoGateway\Api\ApplicationServiceInterface"
                 type="Comfino\ComfinoGateway\Model\Connector\Service\ApplicationService"/>
 
+    <!-- Shop environment reporting (selector auto-detection knowledge base) -->
+    <preference for="Comfino\Platform\PlatformInfoInterface"
+                type="Comfino\ComfinoGateway\Model\Telemetry\MagentoPlatformInfo"/>
+    <preference for="Comfino\Frontend\AbstractShopEnvironmentBuilder"
+                type="Comfino\ComfinoGateway\Model\Telemetry\MagentoShopEnvironmentBuilder"/>
+
     <!-- Payment method integration -->
     <virtualType name="ComfinoFacade" type="Magento\Payment\Model\Method\Adapter">
         <arguments>

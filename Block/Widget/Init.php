@@ -2,6 +2,7 @@
 
 namespace Comfino\ComfinoGateway\Block\Widget;
 
+use Comfino\Common\Frontend\ProductWidgetScriptHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
@@ -21,7 +22,12 @@ class Init extends Template
         $this->registry = $registry;
     }
 
-    public function getWidgetInitScriptUrl(): string
+    /**
+     * Builds the JSON config for the `#comfino-widget-config` block consumed by the CDN product widget script. Returns
+     * an empty string — suppressing the widget — when it is disabled, the widget key is missing, or all product types
+     * are filtered out for the viewed product.
+     */
+    public function getWidgetConfigJson(): string
     {
         if (!ConfigManager::isWidgetEnabled() || ConfigManager::getWidgetKey() === '') {
             return '';
@@ -46,6 +52,29 @@ class Init extends Template
             }
         }
 
-        return $this->getUrl('comfino/script/index', ['product_id' => $productId]);
+        $json = json_encode(
+            ConfigManager::getWidgetConfig($productId ?: null),
+            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES
+        );
+
+        return $json === false ? '' : $json;
+    }
+
+    /**
+     * URL of the CDN-hosted per-platform product widget script (comfino-magento-widget.min.js) that reads the
+     * config block, imports the SDK, and calls sdk.bootstrapWidget().
+     */
+    public function getProductWidgetScriptUrl(): string
+    {
+        return ConfigManager::getProductWidgetScriptUrl();
+    }
+
+    /**
+     * Element id of the `<script type="application/json">` config block, shared with the CDN widget script's
+     * own reader via `ProductWidgetScriptHelper::CONFIG_ELEMENT_ID`.
+     */
+    public function getWidgetConfigElementId(): string
+    {
+        return ProductWidgetScriptHelper::CONFIG_ELEMENT_ID;
     }
 }

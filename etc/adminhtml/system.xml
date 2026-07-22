@@ -104,39 +104,40 @@
                             <label>Widget price element selector</label>
                             <config_path>payment/comfino/widget_price_selector</config_path>
                         </field>
-                        <field id="widget_target_selector" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <field id="widget_price_attribute" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Widget price element attribute</label>
+                            <config_path>payment/comfino/widget_price_attribute</config_path>
+                            <comment>Attribute of the price element holding the numeric price (e.g., data-price-amount). Takes priority over the element's text, avoiding a race with themes that render the price text asynchronously.</comment>
+                        </field>
+                        <field id="widget_target_selector" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Widget anchor element selector</label>
                             <config_path>payment/comfino/widget_target_selector</config_path>
                         </field>
-                        <field id="widget_price_observer_selector" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <field id="widget_price_observer_selector" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Price change detection - container selector</label>
                             <config_path>payment/comfino/widget_price_observer_selector</config_path>
                             <comment>Selector of observed parent element which contains price element.</comment>
                         </field>
-                        <field id="widget_price_observer_level" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <field id="widget_price_observer_level" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Price change detection - container hierarchy level</label>
                             <config_path>payment/comfino/widget_price_observer_level</config_path>
                             <validate>validate-number validate-zero-or-greater</validate>
                             <comment>Hierarchy level of observed parent element relative to the price element.</comment>
                         </field>
-                        <field id="widget_embed_method" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <field id="widget_embed_method" translate="label" type="select" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Embedding method</label>
                             <config_path>payment/comfino/widget_embed_method</config_path>
                             <source_model>Comfino\ComfinoGateway\Model\Adminhtml\System\Config\Source\WidgetEmbedMethod</source_model>
                         </field>
-                        <field id="widget_custom_banner_css_url" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <field id="widget_custom_banner_css_url" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Custom banner CSS style URL</label>
                             <config_path>payment/comfino/widget_custom_banner_css_url</config_path>
                             <comment>URL to a custom CSS file overriding the banner widget styles.</comment>
                         </field>
-                        <field id="widget_custom_calculator_css_url" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <field id="widget_custom_calculator_css_url" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Custom calculator CSS style URL</label>
                             <config_path>payment/comfino/widget_custom_calculator_css_url</config_path>
                             <comment>URL to a custom CSS file overriding the calculator widget styles.</comment>
-                        </field>
-                        <field id="widget_code" translate="label" type="textarea" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
-                            <label>Widget initialization code</label>
-                            <config_path>payment/comfino/widget_code</config_path>
                         </field>
                     </group>
                 </group>

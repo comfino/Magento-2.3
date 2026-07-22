@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Comfino\Shop\Order;
 
+use Comfino\Api\Dto\Payment\AllowedProductConfig;
+
 class Order implements OrderInterface
 {
     /**
@@ -43,6 +45,10 @@ class Order implements OrderInterface
      */
     private $transferTitle;
     /**
+     * @var AllowedProductConfig[]|null
+     */
+    private $allowedProductsConfig;
+    /**
      * @param string $id
      * @param string $returnUrl
      * @param LoanParametersInterface $loanParameters
@@ -52,8 +58,9 @@ class Order implements OrderInterface
      * @param SellerInterface|null $seller
      * @param string|null $accountNumber
      * @param string|null $transferTitle
+     * @param AllowedProductConfig[]|null $allowedProductsConfig
      */
-    public function __construct(string $id, string $returnUrl, LoanParametersInterface $loanParameters, CartInterface $cart, CustomerInterface $customer, ?string $notifyUrl = null, ?SellerInterface $seller = null, ?string $accountNumber = null, ?string $transferTitle = null)
+    public function __construct(string $id, string $returnUrl, LoanParametersInterface $loanParameters, CartInterface $cart, CustomerInterface $customer, ?string $notifyUrl = null, ?SellerInterface $seller = null, ?string $accountNumber = null, ?string $transferTitle = null, ?array $allowedProductsConfig = null)
     {
         $this->id = $id;
         $this->returnUrl = $returnUrl;
@@ -64,6 +71,7 @@ class Order implements OrderInterface
         $this->seller = $seller;
         $this->accountNumber = $accountNumber;
         $this->transferTitle = $transferTitle;
+        $this->allowedProductsConfig = $allowedProductsConfig;
     }
 
     public function getId(): string
@@ -109,5 +117,10 @@ class Order implements OrderInterface
     public function getTransferTitle(): ?string
     {
         return $this->transferTitle !== null ? trim(html_entity_decode(strip_tags($this->transferTitle))) : null;
+    }
+
+    public function getAllowedProductsConfig(): ?array
+    {
+        return $this->allowedProductsConfig;
     }
 }

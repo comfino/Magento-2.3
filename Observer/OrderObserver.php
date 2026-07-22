@@ -56,6 +56,18 @@ class OrderObserver implements ObserverInterface
             }
 
             if ($payment->getMethod() === 'comfino') {
+                /* Skip the cancel API call if this order was never successfully submitted to Comfino. Orphaned orders
+                   cleaned up by restoreCartAfterFailure() go pending_payment → canceled without ever passing through a
+                   comfino_* status; sending a cancel for them produces a 404 on the Comfino side. Two signals together
+                   cover new and pre-existing orders:
+                    - comfino_order_created flag: set by setComfinoCreatedStatus() on new orders.
+                    - previous status prefix: backward-compatible fallback for orders created before the flag. */
+                $hadComfinoStatus = strncmp((string) $order->getOrigData('status'), 'comfino_', 8) === 0;
+
+                if (!$hadComfinoStatus && !$payment->getAdditionalInformation('comfino_order_created')) {
+                    return;
+                }
+
                 $currentState = $order->getState();
                 $previousState = $order->getOrigData('state');
 

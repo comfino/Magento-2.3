@@ -21,6 +21,10 @@ class Json implements SerializerInterface
             throw new RequestValidationError("Invalid request data: {$e->getMessage()}", 0, $e);
         }
 
+        if ($serializedRequestBody === false) {
+            throw new RequestValidationError('Invalid request data: ' . json_last_error_msg(), 0);
+        }
+
         return $serializedRequestBody;
     }
 
@@ -34,6 +38,17 @@ class Json implements SerializerInterface
             $deserializedResponseBody = json_decode($responseBody, true, 512, 0);
         } catch (\JsonException $e) {
             throw new ResponseValidationError("Invalid response data: {$e->getMessage()}", 0, $e, '', '', $responseBody);
+        }
+
+        if ($deserializedResponseBody === null && json_last_error() !== JSON_ERROR_NONE) {
+            throw new ResponseValidationError(
+                'Invalid response data: ' . json_last_error_msg(),
+                0,
+                null,
+                '',
+                '',
+                $responseBody
+            );
         }
 
         return $deserializedResponseBody;

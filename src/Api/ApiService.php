@@ -2,6 +2,7 @@
 
 namespace Comfino\Api;
 
+use Comfino\ComfinoGateway\Model\Telemetry\ShopEnvironmentReporter;
 use Comfino\Common\Backend\Factory\ApiServiceFactory;
 use Comfino\Common\Backend\RestEndpoint\CacheInvalidate;
 use Comfino\Common\Backend\RestEndpoint\Configuration;
@@ -19,6 +20,7 @@ use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Filesystem\DirectoryList;
 use Magento\Framework\UrlInterface;
 use Magento\Sales\Model\OrderRepository;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Central REST endpoint manager for module API.
@@ -69,7 +71,13 @@ final class ApiService
                 $pluginVersion,
                 Data::BUILD_TS,
                 ConfigManager::getEnvironmentInfo(['database_version'])['database_version'],
-                200
+                200,
+                null, // $shopExtraVariables
+                static function (): ?array {
+                    return ObjectManager::getInstance()
+                        ->get(ShopEnvironmentReporter::class)
+                        ->getReportArray();
+                } // $shopEnvironmentReportProvider
             )
         );
 
@@ -110,7 +118,13 @@ final class ApiService
         /** @var SearchCriteriaBuilder $searchCriteriaBuilder */
         $searchCriteriaBuilder = $om->get(SearchCriteriaBuilder::class);
 
-        CacheManager::init($dirList->getPath('var'));
+        /** @var StoreManagerInterface $storeManager */
+        $storeManager = $om->get(StoreManagerInterface::class);
+
+        /* Isolate cached API responses (creditors, product/widget types) per store view - a single Magento
+           installation can serve stores with different API keys/environments, and the cache must not leak data
+           between them. */
+        CacheManager::init($dirList->getPath('var'), (string) $storeManager->getStore()->getId());
 
         self::init(
             rtrim($urlBuilder->getUrl('comfino/transactionstatus'), '/'),

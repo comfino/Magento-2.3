@@ -15,9 +15,29 @@ final class ShopPluginError
      */
     public $platform;
     /**
-     * @var mixed[]
+     * @var string
      */
-    public $environment;
+    public $pluginVersion;
+    /**
+     * @var string
+     */
+    public $platformVersion;
+    /**
+     * @var string
+     */
+    public $phpVersion;
+    /**
+     * @var ErrorCategory
+     */
+    public $category;
+    /**
+     * @var ErrorSeverity
+     */
+    public $severity;
+    /**
+     * @var OperationContext
+     */
+    public $context;
     /**
      * @var string
      */
@@ -26,6 +46,14 @@ final class ShopPluginError
      * @var string
      */
     public $errorMessage;
+    /**
+     * @var array<array-key,
+     */
+    public $environment = [];
+    /**
+     * @var string|null
+     */
+    public $apiEndpoint;
     /**
      * @var string|null
      */
@@ -42,26 +70,46 @@ final class ShopPluginError
      * @var string|null
      */
     public $stackTrace;
-
-    public function __construct(
-        string $host,
-        string $platform,
-        array $environment,
-        string $errorCode,
-        string $errorMessage,
-        ?string $apiRequestUrl = null,
-        ?string $apiRequest = null,
-        ?string $apiResponse = null,
-        ?string $stackTrace = null
-    ) {
+    /**
+     * @var int|null
+     */
+    public $occurredAt;
+    /**
+     * @param string $host
+     * @param string $platform
+     * @param string $pluginVersion
+     * @param string $platformVersion
+     * @param string $phpVersion
+     * @param ErrorCategory $category
+     * @param ErrorSeverity $severity
+     * @param OperationContext $context
+     * @param string $errorCode
+     * @param string $errorMessage
+     * @param string|null $apiEndpoint
+     * @param string|null $apiRequestUrl
+     * @param string|null $apiRequest
+     * @param string|null $apiResponse
+     * @param string|null $stackTrace
+     * @param int|null $occurredAt
+     */
+    public function __construct(string $host, string $platform, string $pluginVersion, string $platformVersion, string $phpVersion, ErrorCategory $category, ErrorSeverity $severity, OperationContext $context, string $errorCode, string $errorMessage, array $environment = [], ?string $apiEndpoint = null, ?string $apiRequestUrl = null, ?string $apiRequest = null, ?string $apiResponse = null, ?string $stackTrace = null, ?int $occurredAt = null)
+    {
         $this->host = $host;
         $this->platform = $platform;
-        $this->environment = $environment;
+        $this->pluginVersion = $pluginVersion;
+        $this->platformVersion = $platformVersion;
+        $this->phpVersion = $phpVersion;
+        $this->category = $category;
+        $this->severity = $severity;
+        $this->context = $context;
         $this->errorCode = $errorCode;
         $this->errorMessage = $errorMessage;
+        $this->environment = $environment;
+        $this->apiEndpoint = $apiEndpoint;
         $this->apiRequestUrl = $apiRequestUrl;
         $this->apiRequest = $apiRequest;
         $this->apiResponse = $apiResponse;
         $this->stackTrace = $stackTrace;
+        $this->occurredAt = $occurredAt;
     }
 }

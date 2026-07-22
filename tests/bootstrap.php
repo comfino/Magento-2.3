@@ -94,6 +94,36 @@ namespace Magento\Framework\App\Config\Storage
     }
 }
 
+// ─── Magento\Framework\App\Helper ────────────────────────────────────────────
+
+namespace Magento\Framework\App\Helper
+{
+    /**
+     * Minimal stub allowing Comfino\ComfinoGateway\Helper\Data to be declared/autoloaded.
+     * Tests never instantiate Data directly, so no constructor behavior is needed here.
+     */
+    abstract class AbstractHelper
+    {
+    }
+
+    class Context
+    {
+    }
+}
+
+// ─── Magento\Framework\App\Cache ─────────────────────────────────────────────
+
+namespace Magento\Framework\App\Cache
+{
+    interface TypeListInterface
+    {
+        /**
+         * @param string $typeCode
+         */
+        public function cleanType($typeCode): void;
+    }
+}
+
 // ─── Magento\Framework\Filesystem ────────────────────────────────────────────
 
 namespace Magento\Framework\Filesystem

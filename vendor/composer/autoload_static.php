@@ -2,7 +2,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
+class ComposerStaticInit9e26be868de8e3fb47440d08c61e8064
 {
     public static $files = array (
         'e90b514f516f456feec46b4f674e0f58' => __DIR__ . '/..' . '/sunrise/http-message/constants/REASON_PHRASES.php',
@@ -19,40 +19,6 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
     );
 
     public static $prefixLengthsPsr4 = array (
-        'S' => 
-        array (
-            'Symfony\\Polyfill\\Php80\\' => 23,
-            'Symfony\\Polyfill\\Ctype\\' => 23,
-            'Symfony\\Component\\Yaml\\' => 23,
-            'Symfony\\Component\\OptionsResolver\\' => 34,
-            'Sunrise\\Uri\\' => 12,
-            'Sunrise\\Stream\\' => 15,
-            'Sunrise\\Http\\ServerRequest\\' => 27,
-            'Sunrise\\Http\\Message\\' => 21,
-            'Sunrise\\Http\\Header\\' => 20,
-            'Sunrise\\Http\\Factory\\' => 21,
-            'Sunrise\\Http\\Client\\Curl\\' => 25,
-        ),
-        'P' => 
-        array (
-            'Psr\\SimpleCache\\' => 16,
-            'Psr\\Log\\' => 8,
-            'Psr\\Http\\Message\\' => 17,
-            'Psr\\Http\\Client\\' => 16,
-            'Psr\\Cache\\' => 10,
-        ),
-        'M' => 
-        array (
-            'Monolog\\' => 8,
-        ),
-        'L' => 
-        array (
-            'League\\Flysystem\\' => 17,
-        ),
-        'F' => 
-        array (
-            'Fig\\Http\\Message\\' => 17,
-        ),
         'C' => 
         array (
             'Comfino\\ComfinoGateway\\' => 23,
@@ -81,92 +47,10 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
             'ComfinoExternal\\Cache\\Adapter\\PHPArray\\' => 39,
             'ComfinoExternal\\Cache\\Adapter\\Filesystem\\' => 41,
             'ComfinoExternal\\Cache\\Adapter\\Common\\' => 37,
-            'Cache\\TagInterop\\' => 17,
-            'Cache\\Hierarchy\\' => 16,
-            'Cache\\Adapter\\PHPArray\\' => 23,
-            'Cache\\Adapter\\Filesystem\\' => 25,
-            'Cache\\Adapter\\Common\\' => 21,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Symfony\\Polyfill\\Php80\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
-        ),
-        'Symfony\\Polyfill\\Ctype\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
-        ),
-        'Symfony\\Component\\Yaml\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/yaml',
-        ),
-        'Symfony\\Component\\OptionsResolver\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/options-resolver',
-        ),
-        'Sunrise\\Uri\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/sunrise/uri/src',
-        ),
-        'Sunrise\\Stream\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/sunrise/stream/src',
-        ),
-        'Sunrise\\Http\\ServerRequest\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/sunrise/http-server-request/src',
-        ),
-        'Sunrise\\Http\\Message\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/sunrise/http-message/src',
-        ),
-        'Sunrise\\Http\\Header\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/sunrise/http-header/src',
-        ),
-        'Sunrise\\Http\\Factory\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/sunrise/http-factory/src',
-        ),
-        'Sunrise\\Http\\Client\\Curl\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/sunrise/http-client-curl/src',
-        ),
-        'Psr\\SimpleCache\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/psr/simple-cache/src',
-        ),
-        'Psr\\Log\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
-        ),
-        'Psr\\Http\\Message\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/psr/http-factory/src',
-            1 => __DIR__ . '/..' . '/psr/http-message/src',
-        ),
-        'Psr\\Http\\Client\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/psr/http-client/src',
-        ),
-        'Psr\\Cache\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/psr/cache/src',
-        ),
-        'Monolog\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
-        ),
-        'League\\Flysystem\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/league/flysystem/src',
-        ),
-        'Fig\\Http\\Message\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/fig/http-message-util/src',
-        ),
         'Comfino\\ComfinoGateway\\' => 
         array (
             0 => __DIR__ . '/../..' . '/',
@@ -270,26 +154,6 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
             0 => __DIR__ . '/..' . '/cache/filesystem-adapter',
         ),
         'ComfinoExternal\\Cache\\Adapter\\Common\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/cache/adapter-common',
-        ),
-        'Cache\\TagInterop\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/cache/tag-interop',
-        ),
-        'Cache\\Hierarchy\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/cache/hierarchical-cache',
-        ),
-        'Cache\\Adapter\\PHPArray\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/cache/array-adapter',
-        ),
-        'Cache\\Adapter\\Filesystem\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/cache/filesystem-adapter',
-        ),
-        'Cache\\Adapter\\Common\\' => 
         array (
             0 => __DIR__ . '/..' . '/cache/adapter-common',
         ),
@@ -494,10 +358,13 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\Api\\Dto\\Order\\Customer' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Order/Customer.php',
         'Comfino\\Api\\Dto\\Order\\Customer\\Address' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Order/Customer/Address.php',
         'Comfino\\Api\\Dto\\Order\\LoanParameters' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Order/LoanParameters.php',
+        'Comfino\\Api\\Dto\\Payment\\AllowedProductConfig' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Payment/AllowedProductConfig.php',
         'Comfino\\Api\\Dto\\Payment\\FinancialProduct' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Payment/FinancialProduct.php',
         'Comfino\\Api\\Dto\\Payment\\LoanParameters' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Payment/LoanParameters.php',
         'Comfino\\Api\\Dto\\Payment\\LoanQueryCriteria' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Payment/LoanQueryCriteria.php',
         'Comfino\\Api\\Dto\\Payment\\LoanTypeEnum' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Payment/LoanTypeEnum.php',
+        'Comfino\\Api\\Dto\\Plugin\\ShopEnvironmentReport' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Plugin/ShopEnvironmentReport.php',
+        'Comfino\\Api\\Dto\\Plugin\\ShopTheme' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Plugin/ShopTheme.php',
         'Comfino\\Api\\Exception\\AccessDenied' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Exception/AccessDenied.php',
         'Comfino\\Api\\Exception\\AuthorizationError' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Exception/AuthorizationError.php',
         'Comfino\\Api\\Exception\\Conflict' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Exception/Conflict.php',
@@ -506,11 +373,13 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\Api\\Exception\\NotFound' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Exception/NotFound.php',
         'Comfino\\Api\\Exception\\RequestValidationError' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Exception/RequestValidationError.php',
         'Comfino\\Api\\Exception\\ResponseValidationError' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Exception/ResponseValidationError.php',
+        'Comfino\\Api\\Exception\\SensitiveHttpExceptionTrait' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Exception/SensitiveHttpExceptionTrait.php',
         'Comfino\\Api\\Exception\\ServiceUnavailable' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Exception/ServiceUnavailable.php',
         'Comfino\\Api\\HttpErrorExceptionInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/HttpErrorExceptionInterface.php',
         'Comfino\\Api\\Request' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Request.php',
         'Comfino\\Api\\Request\\CancelOrder' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Request/CancelOrder.php',
         'Comfino\\Api\\Request\\CreateOrder' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Request/CreateOrder.php',
+        'Comfino\\Api\\Request\\GetCreditors' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Request/GetCreditors.php',
         'Comfino\\Api\\Request\\GetFinancialProductDetails' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Request/GetFinancialProductDetails.php',
         'Comfino\\Api\\Request\\GetFinancialProducts' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Request/GetFinancialProducts.php',
         'Comfino\\Api\\Request\\GetOrder' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Request/GetOrder.php',
@@ -520,9 +389,11 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\Api\\Request\\GetWidgetKey' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Request/GetWidgetKey.php',
         'Comfino\\Api\\Request\\GetWidgetTypes' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Request/GetWidgetTypes.php',
         'Comfino\\Api\\Request\\IsShopAccountActive' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Request/IsShopAccountActive.php',
+        'Comfino\\Api\\Request\\ReportShopEnvironment' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Request/ReportShopEnvironment.php',
         'Comfino\\Api\\Response' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Response.php',
         'Comfino\\Api\\Response\\Base' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Response/Base.php',
         'Comfino\\Api\\Response\\CreateOrder' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Response/CreateOrder.php',
+        'Comfino\\Api\\Response\\GetCreditors' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Response/GetCreditors.php',
         'Comfino\\Api\\Response\\GetFinancialProductDetails' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Response/GetFinancialProductDetails.php',
         'Comfino\\Api\\Response\\GetFinancialProducts' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Response/GetFinancialProducts.php',
         'Comfino\\Api\\Response\\GetOrder' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Response/GetOrder.php',
@@ -533,8 +404,10 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\Api\\Response\\GetWidgetTypes' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Response/GetWidgetTypes.php',
         'Comfino\\Api\\Response\\IsShopAccountActive' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Response/IsShopAccountActive.php',
         'Comfino\\Api\\Response\\ValidateOrder' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Response/ValidateOrder.php',
+        'Comfino\\Api\\SensitiveDataRedactor' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/SensitiveDataRedactor.php',
         'Comfino\\Api\\SerializerInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/SerializerInterface.php',
         'Comfino\\Api\\Serializer\\Json' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Serializer/Json.php',
+        'Comfino\\Api\\UrlValidator' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/UrlValidator.php',
         'Comfino\\CategoryTree\\BuildStrategy' => __DIR__ . '/../..' . '/src/CategoryTree/BuildStrategy.php',
         'Comfino\\ComfinoGateway\\Api\\ApplicationServiceInterface' => __DIR__ . '/../..' . '/Api/ApplicationServiceInterface.php',
         'Comfino\\ComfinoGateway\\Block\\Adminhtml\\System\\Config\\DevEnvField' => __DIR__ . '/../..' . '/Block/Adminhtml/System/Config/DevEnvField.php',
@@ -544,24 +417,33 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\ComfinoGateway\\Block\\Payment\\Comfino' => __DIR__ . '/../..' . '/Block/Payment/Comfino.php',
         'Comfino\\ComfinoGateway\\Block\\SaleSettings' => __DIR__ . '/../..' . '/Block/SaleSettings.php',
         'Comfino\\ComfinoGateway\\Block\\SystemInfo' => __DIR__ . '/../..' . '/Block/SystemInfo.php',
+        'Comfino\\ComfinoGateway\\Block\\Widget\\Init' => __DIR__ . '/../..' . '/Block/Widget/Init.php',
+        'Comfino\\ComfinoGateway\\Controller\\AbstractApiEndpoint' => __DIR__ . '/../..' . '/Controller/AbstractApiEndpoint.php',
         'Comfino\\ComfinoGateway\\Controller\\Adminhtml\\Log\\Clear' => __DIR__ . '/../..' . '/Controller/Adminhtml/Log/Clear.php',
-        'Comfino\\ComfinoGateway\\Controller\\Api\\AbstractApiEndpoint' => __DIR__ . '/../..' . '/Controller/Api/AbstractApiEndpoint.php',
-        'Comfino\\ComfinoGateway\\Controller\\Api\\CacheInvalidate' => __DIR__ . '/../..' . '/Controller/Api/CacheInvalidate.php',
-        'Comfino\\ComfinoGateway\\Controller\\Api\\Configuration' => __DIR__ . '/../..' . '/Controller/Api/Configuration.php',
-        'Comfino\\ComfinoGateway\\Controller\\Api\\TransactionStatus' => __DIR__ . '/../..' . '/Controller/Api/TransactionStatus.php',
+        'Comfino\\ComfinoGateway\\Controller\\Adminhtml\\Update\\Dismiss' => __DIR__ . '/../..' . '/Controller/Adminhtml/Update/Dismiss.php',
+        'Comfino\\ComfinoGateway\\Controller\\CacheInvalidate\\Index' => __DIR__ . '/../..' . '/Controller/CacheInvalidate/Index.php',
+        'Comfino\\ComfinoGateway\\Controller\\Configuration\\Index' => __DIR__ . '/../..' . '/Controller/Configuration/Index.php',
         'Comfino\\ComfinoGateway\\Controller\\Result\\Index' => __DIR__ . '/../..' . '/Controller/Result/Index.php',
-        'Comfino\\ComfinoGateway\\Controller\\Widget\\Index' => __DIR__ . '/../..' . '/Controller/Widget/Index.php',
+        'Comfino\\ComfinoGateway\\Controller\\TransactionStatus\\Index' => __DIR__ . '/../..' . '/Controller/TransactionStatus/Index.php',
         'Comfino\\ComfinoGateway\\Helper\\Data' => __DIR__ . '/../..' . '/Helper/Data.php',
         'Comfino\\ComfinoGateway\\Helper\\PaywallAuthTokenGenerator' => __DIR__ . '/../..' . '/Helper/PaywallAuthTokenGenerator.php',
         'Comfino\\ComfinoGateway\\Model\\Adminhtml\\System\\Config\\Source\\WidgetEmbedMethod' => __DIR__ . '/../..' . '/Model/Adminhtml/System/Config/Source/WidgetEmbedMethod.php',
         'Comfino\\ComfinoGateway\\Model\\Adminhtml\\System\\Config\\Source\\WidgetOfferType' => __DIR__ . '/../..' . '/Model/Adminhtml/System/Config/Source/WidgetOfferType.php',
         'Comfino\\ComfinoGateway\\Model\\Adminhtml\\System\\Config\\Source\\WidgetType' => __DIR__ . '/../..' . '/Model/Adminhtml/System/Config/Source/WidgetType.php',
         'Comfino\\ComfinoGateway\\Model\\Connector\\Service\\ApplicationService' => __DIR__ . '/../..' . '/Model/Connector/Service/ApplicationService.php',
+        'Comfino\\ComfinoGateway\\Model\\System\\Message\\UpdateAvailable' => __DIR__ . '/../..' . '/Model/System/Message/UpdateAvailable.php',
+        'Comfino\\ComfinoGateway\\Model\\Telemetry\\MagentoPlatformInfo' => __DIR__ . '/../..' . '/Model/Telemetry/MagentoPlatformInfo.php',
+        'Comfino\\ComfinoGateway\\Model\\Telemetry\\MagentoShopEnvironmentBuilder' => __DIR__ . '/../..' . '/Model/Telemetry/MagentoShopEnvironmentBuilder.php',
+        'Comfino\\ComfinoGateway\\Model\\Telemetry\\ShopEnvironmentReporter' => __DIR__ . '/../..' . '/Model/Telemetry/ShopEnvironmentReporter.php',
+        'Comfino\\ComfinoGateway\\Model\\Telemetry\\TestProductUrlResolver' => __DIR__ . '/../..' . '/Model/Telemetry/TestProductUrlResolver.php',
         'Comfino\\ComfinoGateway\\Model\\Ui\\ConfigProvider' => __DIR__ . '/../..' . '/Model/Ui/ConfigProvider.php',
+        'Comfino\\ComfinoGateway\\Observer\\AdminConfigSaveObserver' => __DIR__ . '/../..' . '/Observer/AdminConfigSaveObserver.php',
+        'Comfino\\ComfinoGateway\\Observer\\BootstrapObserver' => __DIR__ . '/../..' . '/Observer/BootstrapObserver.php',
         'Comfino\\ComfinoGateway\\Observer\\ConfigObserver' => __DIR__ . '/../..' . '/Observer/ConfigObserver.php',
         'Comfino\\ComfinoGateway\\Observer\\DataAssignObserver' => __DIR__ . '/../..' . '/Observer/DataAssignObserver.php',
         'Comfino\\ComfinoGateway\\Observer\\OrderObserver' => __DIR__ . '/../..' . '/Observer/OrderObserver.php',
         'Comfino\\ComfinoGateway\\Setup\\Patch\\Data\\AddComfinoOrderStatuses' => __DIR__ . '/../..' . '/Setup/Patch/Data/AddComfinoOrderStatuses.php',
+        'Comfino\\ComfinoGateway\\Setup\\RecurringData' => __DIR__ . '/../..' . '/Setup/RecurringData.php',
         'Comfino\\ComfinoGateway\\Setup\\Uninstall' => __DIR__ . '/../..' . '/Setup/Uninstall.php',
         'Comfino\\Common\\Api\\Client' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Api/Client.php',
         'Comfino\\Common\\Api\\Response\\ValidateOrder' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Api/Response/ValidateOrder.php',
@@ -574,6 +456,7 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\Common\\Backend\\Factory\\ApiServiceFactory' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Factory/ApiServiceFactory.php',
         'Comfino\\Common\\Backend\\Factory\\OrderFactory' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Factory/OrderFactory.php',
         'Comfino\\Common\\Backend\\FileUtils' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/FileUtils.php',
+        'Comfino\\Common\\Backend\\Log\\ErrorMessageNormalizer' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Log/ErrorMessageNormalizer.php',
         'Comfino\\Common\\Backend\\Log\\LoggerFactory' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Log/LoggerFactory.php',
         'Comfino\\Common\\Backend\\Log\\SensitiveDataProcessor' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Log/SensitiveDataProcessor.php',
         'Comfino\\Common\\Backend\\Logger' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Logger.php',
@@ -582,6 +465,7 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\Common\\Backend\\Payment\\ProductTypeFilter\\FilterByCartValueLowerLimit' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Payment/ProductTypeFilter/FilterByCartValueLowerLimit.php',
         'Comfino\\Common\\Backend\\Payment\\ProductTypeFilter\\FilterByCartValueUpperLimit' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Payment/ProductTypeFilter/FilterByCartValueUpperLimit.php',
         'Comfino\\Common\\Backend\\Payment\\ProductTypeFilter\\FilterByExcludedCategory' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Payment/ProductTypeFilter/FilterByExcludedCategory.php',
+        'Comfino\\Common\\Backend\\Payment\\ProductTypeFilter\\FilterByExcludedProductId' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Payment/ProductTypeFilter/FilterByExcludedProductId.php',
         'Comfino\\Common\\Backend\\Payment\\ProductTypeFilter\\FilterByProductType' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Payment/ProductTypeFilter/FilterByProductType.php',
         'Comfino\\Common\\Backend\\Payment\\ProductTypeTools' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Payment/ProductTypeTools.php',
         'Comfino\\Common\\Backend\\RestEndpoint' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/RestEndpoint.php',
@@ -598,8 +482,8 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\Common\\Frontend\\PaywallIframeRenderer' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Frontend/PaywallIframeRenderer.php',
         'Comfino\\Common\\Frontend\\PaywallItemDetails' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Frontend/PaywallItemDetails.php',
         'Comfino\\Common\\Frontend\\PaywallRenderer' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Frontend/PaywallRenderer.php',
+        'Comfino\\Common\\Frontend\\ProductWidgetScriptHelper' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Frontend/ProductWidgetScriptHelper.php',
         'Comfino\\Common\\Frontend\\WidgetIframeRenderer' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Frontend/WidgetIframeRenderer.php',
-        'Comfino\\Common\\Frontend\\WidgetInitScriptHelper' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Frontend/WidgetInitScriptHelper.php',
         'Comfino\\Common\\Shop\\Cart' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Shop/Cart.php',
         'Comfino\\Common\\Shop\\OrderStatusAdapterInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Shop/OrderStatusAdapterInterface.php',
         'Comfino\\Common\\Shop\\Order\\StatusManager' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Shop/Order/StatusManager.php',
@@ -618,15 +502,29 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
         'Comfino\\Enum' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Enum.php',
         'Comfino\\ErrorLogger' => __DIR__ . '/../..' . '/src/ErrorLogger.php',
         'Comfino\\Extended\\Api\\Client' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Client.php',
+        'Comfino\\Extended\\Api\\Dto\\Plugin\\ErrorCategory' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Dto/Plugin/ErrorCategory.php',
+        'Comfino\\Extended\\Api\\Dto\\Plugin\\ErrorSeverity' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Dto/Plugin/ErrorSeverity.php',
+        'Comfino\\Extended\\Api\\Dto\\Plugin\\OperationContext' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Dto/Plugin/OperationContext.php',
         'Comfino\\Extended\\Api\\Dto\\Plugin\\ShopPluginError' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Dto/Plugin/ShopPluginError.php',
+        'Comfino\\Extended\\Api\\Request\\ClaimErrorLoggingToken' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Request/ClaimErrorLoggingToken.php',
+        'Comfino\\Extended\\Api\\Request\\GetLatestPluginRelease' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Request/GetLatestPluginRelease.php',
+        'Comfino\\Extended\\Api\\Request\\GetSupportedPlatforms' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Request/GetSupportedPlatforms.php',
         'Comfino\\Extended\\Api\\Request\\NotifyAbandonedCart' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Request/NotifyAbandonedCart.php',
         'Comfino\\Extended\\Api\\Request\\NotifyShopPluginRemoval' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Request/NotifyShopPluginRemoval.php',
         'Comfino\\Extended\\Api\\Request\\ReportShopPluginError' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Request/ReportShopPluginError.php',
+        'Comfino\\Extended\\Api\\Response\\ClaimErrorLoggingToken' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Response/ClaimErrorLoggingToken.php',
+        'Comfino\\Extended\\Api\\Response\\GetLatestPluginRelease' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Response/GetLatestPluginRelease.php',
+        'Comfino\\Extended\\Api\\Response\\GetSupportedPlatforms' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Response/GetSupportedPlatforms.php',
         'Comfino\\Extended\\Api\\Serializer\\Json' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Serializer/Json.php',
+        'Comfino\\Extended\\Auth\\PaywallAuthTokenGenerator' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Auth/PaywallAuthTokenGenerator.php',
         'Comfino\\FinancialProduct\\ProductTypesListTypeEnum' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/FinancialProduct/ProductTypesListTypeEnum.php',
+        'Comfino\\Frontend\\AbstractShopEnvironmentBuilder' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Frontend/AbstractShopEnvironmentBuilder.php',
+        'Comfino\\Frontend\\CapabilityResolver' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Frontend/CapabilityResolver.php',
+        'Comfino\\Frontend\\ThemeFamilyRules' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Frontend/ThemeFamilyRules.php',
         'Comfino\\Order\\OrderManager' => __DIR__ . '/../..' . '/src/Order/OrderManager.php',
         'Comfino\\Order\\ShopStatusManager' => __DIR__ . '/../..' . '/src/Order/ShopStatusManager.php',
         'Comfino\\Order\\StatusAdapter' => __DIR__ . '/../..' . '/src/Order/StatusAdapter.php',
+        'Comfino\\Platform\\PlatformInfoInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Platform/PlatformInfoInterface.php',
         'Comfino\\PluginShared\\CacheManager' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/PluginShared/CacheManager.php',
         'Comfino\\Shop\\Order\\Cart' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Shop/Order/Cart.php',
         'Comfino\\Shop\\Order\\CartInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Shop/Order/CartInterface.php',
@@ -653,9 +551,9 @@ class ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitd58bb4cc47fd24de27cc190303cb50cf::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit9e26be868de8e3fb47440d08c61e8064::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit9e26be868de8e3fb47440d08c61e8064::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit9e26be868de8e3fb47440d08c61e8064::$classMap;
 
         }, null, ClassLoader::class);
     }

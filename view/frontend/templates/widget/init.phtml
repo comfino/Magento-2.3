@@ -1,9 +1,14 @@
 <?php
 /** @var \Comfino\ComfinoGateway\Block\Widget\Init $block */
-/** @var \Magento\Framework\Escaper $escaper */
-$initScriptUrl = $block->getWidgetInitScriptUrl();
-if (!$initScriptUrl) {
+
+/* Product-page widget via the CDN product widget script (WIDGET_BRIDGE_MIGRATION_PLAN §3): emit the JSON config
+   block and the deferred per-platform script that reads it, imports the SDK, and calls sdk.bootstrapWidget().
+   Replaces the legacy inline init served from the comfino/script/index controller. */
+$configJson = $block->getWidgetConfigJson();
+
+if (!$configJson) {
     return;
 }
 ?>
-<script defer src="<?= $escaper->escapeUrl($initScriptUrl) ?>"></script>
+<script type="application/json" id="<?= $block->escapeHtmlAttr($block->getWidgetConfigElementId()) ?>"><?= /* @noEscape */ $configJson ?></script>
+<script defer src="<?= $block->escapeUrl($block->getProductWidgetScriptUrl()) ?>"></script>

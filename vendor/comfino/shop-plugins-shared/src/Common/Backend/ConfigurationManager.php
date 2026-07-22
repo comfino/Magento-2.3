@@ -43,10 +43,7 @@ final class ConfigurationManager
 
     public const OPT_SERIALIZE_ARRAYS = 1 << 0;
 
-    /**
-     * @var $this|null
-     */
-    private static $instance;
+    private static $instances = [];
     /**
      * @var mixed[]|null
      */
@@ -66,6 +63,7 @@ final class ConfigurationManager
      * @param int $options
      * @param StorageAdapterInterface $storageAdapter
      * @param SerializerInterface $serializer
+     * @param string $scope
      * @return self
      */
     public static function getInstance(
@@ -73,13 +71,14 @@ final class ConfigurationManager
         array $accessibleConfigOptions,
         int $options,
         StorageAdapterInterface $storageAdapter,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        string $scope = ''
     ): self {
-        if (self::$instance === null) {
-            self::$instance = new self($availConfigOptions, $accessibleConfigOptions, $options, $storageAdapter, $serializer);
+        if (!isset(self::$instances[$scope])) {
+            self::$instances[$scope] = new self($availConfigOptions, $accessibleConfigOptions, $options, $storageAdapter, $serializer);
         }
 
-        return self::$instance;
+        return self::$instances[$scope];
     }
 
     /**
