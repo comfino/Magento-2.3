@@ -13,7 +13,13 @@ class UpdateManager
      */
     private const PLATFORM = 'magento-2.3';
     private const CACHE_KEY = 'comfino_github_version_check';
-    private const CACHE_TTL = 86400; // 24 hours
+    private const LOCK_KEY = 'comfino_github_version_check_lock';
+    private const LOCK_TTL = 300; // 5 minutes
+    /* Jittered ~1 day interval (20-28h): shops tend to install/upgrade around the same calendar moments, so a fixed
+       24h TTL would make every installation re-check the shared release API at the same clustered hour indefinitely.
+       Randomizing lets each installation's check hour drift day to day instead. */
+    private const CACHE_TTL_MIN = 72000; // 20 hours
+    private const CACHE_TTL_MAX = 100800; // 28 hours
 
     /**
      * Check for available updates via the Comfino release API.
@@ -32,14 +38,29 @@ class UpdateManager
      */
     public static function checkForUpdates(string $currentVersion): array
     {
+        $cachePool = null;
         $cacheItem = null;
 
         try {
-            $cacheItem = CacheManager::getCachePool()->getItem(self::CACHE_KEY);
+            $cachePool = CacheManager::getCachePool();
+            $cacheItem = $cachePool->getItem(self::CACHE_KEY);
 
             if ($cacheItem->isHit()) {
                 return $cacheItem->get();
             }
+
+            /* Claim a short-lived exclusive lock before hitting the API. Magento's admin notification list polls
+               registered messages on essentially every admin page load, so concurrent requests can each observe the
+               cache as a miss before the first one writes its result back, firing duplicate release-check calls. */
+            $lockItem = $cachePool->getItem(self::LOCK_KEY);
+
+            if ($lockItem->isHit()) {
+                return ['update_available' => false, 'current_version' => $currentVersion];
+            }
+
+            $lockItem->set(true);
+            $lockItem->expiresAfter(self::LOCK_TTL);
+            $cachePool->save($lockItem);
         } catch (\Throwable $e) {
             // Cache not available - proceed without it.
         }
@@ -47,10 +68,10 @@ class UpdateManager
         $result = self::fetchLatestRelease($currentVersion);
 
         try {
-            if ($cacheItem !== null) {
+            if ($cachePool !== null && $cacheItem !== null) {
                 $cacheItem->set($result);
-                $cacheItem->expiresAfter(self::CACHE_TTL);
-                CacheManager::getCachePool()->save($cacheItem);
+                $cacheItem->expiresAfter(random_int(self::CACHE_TTL_MIN, self::CACHE_TTL_MAX));
+                $cachePool->save($cacheItem);
             }
         } catch (\Throwable $e) {
             // Ignore cache save errors.
